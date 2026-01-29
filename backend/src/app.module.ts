@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -15,8 +14,7 @@ import winston from 'winston';
       level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
       transports: [new winston.transports.Console()],
     }),
+    CommonModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
