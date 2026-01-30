@@ -9,6 +9,7 @@ import mustacheExpress from 'mustache-express';
 import { join } from 'path';
 import { LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { CsrfService } from './common/csrf.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -37,20 +38,24 @@ async function bootstrap() {
     app.use(morgan('dev'));
   }
 
+  // Template engine
+  app.setBaseViewsDir(join(__dirname, '..', 'views'));
+  app.setViewEngine('html');
+  app.engine('html', mustacheExpress());
+
   // Cookie
   app.use(cookieParser());
 
-  // Cors origin
+  // CORS protection
   const corsOption: CorsOptions = {
     origin: [clientUrl],
     credentials: true,
   };
   app.enableCors(corsOption);
 
-  // Template engine
-  app.setBaseViewsDir(join(__dirname, '..', 'views'));
-  app.setViewEngine('html');
-  app.engine('html', mustacheExpress());
+  // CSRF protection
+  const csrfService = app.get(CsrfService);
+  app.use(csrfService.protect());
 
   // Listen server
   await app.listen(port, () => {
