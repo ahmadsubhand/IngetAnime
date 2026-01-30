@@ -26,7 +26,7 @@ export class AppController {
   constructor(
     private prisma: PrismaService,
     private service: AuthService,
-    private csrfService: CsrfService,
+    private csrf: CsrfService,
   ) {}
 
   // Template engine test
@@ -61,12 +61,12 @@ export class AppController {
   @Get('/csrf-token')
   getCsrf(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return {
-      csrfToken: this.csrfService.generate(req, res),
+      csrfToken: this.csrf.generate(req, res),
     };
   }
 
   @Post('/csrf-test')
-  csrf() {
+  testCsrf() {
     return {
       message: 'csrf token valid',
     };
