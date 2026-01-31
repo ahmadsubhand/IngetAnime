@@ -1,22 +1,15 @@
 import {
-  Body,
   Controller,
   Get,
-  HttpCode,
   NotFoundException,
   Post,
   Req,
   Res,
   UseGuards,
-  UsePipes,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { PrismaService } from './common/prisma.service';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthService } from './auth/auth.service';
-import { ZodValidationPipe } from './common/zod-validation.pipe';
-import { AuthValidation } from './auth/auth.validation';
-import type { Login } from './auth/auth.validation';
 import { CsrfService } from './common/csrf.service';
 import { SkipThrottle } from '@nestjs/throttler';
 
@@ -25,14 +18,13 @@ import { SkipThrottle } from '@nestjs/throttler';
 export class AppController {
   constructor(
     private prisma: PrismaService,
-    private service: AuthService,
     private csrf: CsrfService,
   ) {}
 
   // Template engine test
   @Get()
   welcome(@Res() response: Response) {
-    response.render('index.html', {
+    response.render('index', {
       name: 'Ahmad Subhan',
     });
   }
@@ -70,21 +62,6 @@ export class AppController {
     return {
       message: 'csrf token valid',
     };
-  }
-
-  @Post('/auth/login')
-  @HttpCode(200)
-  @SkipThrottle({ default: false })
-  @UsePipes(new ZodValidationPipe(AuthValidation.Login))
-  async login(
-    @Body() request: Login,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const user = await this.service.validateUser(
-      request.username,
-      request.password,
-    );
-    return this.service.login(user, res);
   }
 
   @Get('/auth/profile')

@@ -9,19 +9,18 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     const baseUrl = config.get<string>('BASE_URL', 'http://localhost');
     const port = config.get<number>('PORT', 3000);
     const callback = `${baseUrl}:${port}/auth/google/callback`;
-    console.log(callback);
 
     super({
       clientID: config.getOrThrow('GOOGLE_CLIENT_ID'),
       clientSecret: config.getOrThrow('GOOGLE_CLIENT_SECRET'),
-      callbackURL: `${baseUrl}:${port}/auth/google/callback`,
+      callbackURL: callback,
       scope: ['email', 'profile'],
     });
   }
 
   validate(
-    accessToken: string,
-    refreshToken: string,
+    _accessToken: string,
+    _refreshToken: string,
     profile: Profile,
     done: VerifyCallback,
   ) {

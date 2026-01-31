@@ -5,7 +5,6 @@ import morgan from 'morgan';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import cookieParser from 'cookie-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import mustacheExpress from 'mustache-express';
 import { join } from 'path';
 import { LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -40,8 +39,7 @@ async function bootstrap() {
 
   // Template engine
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
-  app.setViewEngine('html');
-  app.engine('html', mustacheExpress());
+  app.setViewEngine('ejs');
 
   // Cookie
   app.use(cookieParser());

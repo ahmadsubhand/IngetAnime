@@ -14,13 +14,30 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  admin
+  user
+}
+
 model User {
   id Int @id @default(autoincrement())
 
-  username String @unique()
-  email    String @unique()
-  password String
-
+  username  String   @unique
+  picture   String?
+  role      Role     @default(user)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  email         String?   @unique // MyAnimeList OAuth doesn't have email
+  password      String? // OAuth doesn't need password
+  otpCode       String?   @map("otp_code")
+  otpExpiration DateTime? @map("otp_expiration")
+  isVerified    Boolean   @default(false) @map("is_verified")
+
+  googleId        String? @unique @map("google_id")
+  malId           String? @unique @map("mal_id")
+  malAccessToken  String? @unique @map("mal_access_token")
+  malRefreshToken String? @unique @map("mal_refresh_token")
+
+  @@map("users")
 }

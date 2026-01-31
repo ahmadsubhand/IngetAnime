@@ -6,6 +6,10 @@ import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { join } from 'path';
+import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter.js';
+import { MailService } from './mail.service';
 
 @Global()
 @Module({
@@ -30,6 +34,25 @@ import { APP_GUARD } from '@nestjs/core';
         limit: 10,
       },
     ]),
+    MailerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        transport: {
+          service: 'gmail',
+          auth: {
+            user: config.getOrThrow('MAILER_USER'),
+            pass: config.getOrThrow('MAILER_PASSWORD'),
+          },
+        },
+        defaults: {
+          from: config.getOrThrow('MAILER_USER'),
+        },
+        template: {
+          dir: join(__dirname, '..', '..', 'templates'),
+          adapter: new EjsAdapter(),
+        },
+      }),
+    }),
   ],
   providers: [
     PrismaService,
@@ -38,7 +61,8 @@ import { APP_GUARD } from '@nestjs/core';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    MailService,
   ],
-  exports: [PrismaService, CsrfService],
+  exports: [PrismaService, CsrfService, MailService],
 })
 export class CommonModule {}
