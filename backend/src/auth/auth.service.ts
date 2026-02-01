@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   GoneException,
+  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -311,5 +312,50 @@ export class AuthService {
 
       throw err;
     }
+  }
+
+  async loginWithGoogle(
+    googleId: string,
+    email: string,
+    picture?: string,
+  ): Promise<UserResponse & { statusCode: HttpStatus }> {
+    let user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+      select: { ...this.userSelect() },
+    });
+    let statusCode: HttpStatus;
+
+    if (!user) {
+      statusCode = HttpStatus.CREATED;
+      user = await this.prisma.user.create({
+        data: {
+          username: await this.findUniqueUsername(email),
+          email,
+          picture: picture,
+          isVerified: true,
+        },
+        select: this.userSelect(),
+      });
+    } else {
+      statusCode = HttpStatus.OK;
+      user = await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          googleId,
+          isVerified: true,
+          ...(!user.picture && { picture }),
+        },
+        select: this.userSelect(),
+      });
+    }
+
+    return {
+      ...user,
+      statusCode,
+    };
   }
 }

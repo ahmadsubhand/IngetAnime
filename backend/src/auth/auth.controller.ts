@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   Post,
   Req,
   Res,
@@ -28,6 +29,7 @@ import { JwtService } from '@nestjs/jwt';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { ConfigService } from '@nestjs/config';
+import { Profile } from 'passport-google-oauth20';
 
 dayjs.extend(duration);
 
@@ -56,7 +58,7 @@ export class AuthController {
   }
 
   @Post('register')
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ZodValidationPipe(AuthValidation.REGISTER))
   async register(
     @Body() data: Register,
@@ -71,12 +73,12 @@ export class AuthController {
     return {
       message: 'Account created successfully. OTP has been sent to your email',
       data: user,
-      statusCode: 201,
+      statusCode: HttpStatus.CREATED,
     };
   }
 
   @Post('login')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(AuthValidation.LOGIN))
   async login(
     @Body() data: Login,
@@ -87,12 +89,12 @@ export class AuthController {
     return {
       message: `Login successfully${user.isVerified ? '' : '. Please verify your email'}`,
       data: user,
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
     };
   }
 
   @Post('verify-email')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ZodValidationPipe(AuthValidation.EMAIL_VERIFICATION))
   async verifyEmail(
@@ -103,7 +105,7 @@ export class AuthController {
     return {
       message: 'Account verified successfully',
       data: user,
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
     };
   }
 
@@ -114,7 +116,7 @@ export class AuthController {
     },
   })
   @Post('resend-verification')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
   async resendVerification(
     @Req() req: Request & { user: JwtPayload },
@@ -123,19 +125,19 @@ export class AuthController {
     return {
       message: `OTP has been sent to ${user.email}`,
       data: user,
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
     };
   }
 
   @Post('logout')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
   logout(@Res({ passthrough: true }) res: Response): ApiResponse<boolean> {
     this.cookie.clearCookie(res, this.JWT_COOKIE_NAME);
     return {
       message: 'Logout successfully',
       data: true,
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
     };
   }
 
@@ -146,7 +148,7 @@ export class AuthController {
       limit: 1,
     },
   })
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(AuthValidation.FORGOT_PASSWORD))
   async forgotPassword(
     @Body() req: ForgotPassword,
@@ -155,12 +157,12 @@ export class AuthController {
     return {
       message: `Password reset link has been sent to ${user.email}`,
       data: user,
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
     };
   }
 
   @Post('reset-password')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(AuthValidation.RESET_PASSWORD))
   async resetPassword(
     @Body() req: ResetPassword,
@@ -171,7 +173,7 @@ export class AuthController {
     return {
       message: 'Password has been reset successfully',
       data: user,
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
     };
   }
 
@@ -181,9 +183,25 @@ export class AuthController {
 
   @Get('/google/callback')
   @UseGuards(AuthGuard('google'))
-  loginGoogle(@Req() req: Request) {
+  async loginWithGoogle(
+    @Req() req: Request & { user: Profile['_json'] },
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<UserResponse>> {
+    const { statusCode, ...user } = await this.service.loginWithGoogle(
+      req.user.sub,
+      req.user.email as string,
+      req.user.picture,
+    );
+    this.setAuthCookie(user.id, res);
+
+    res.status(statusCode);
     return {
-      data: req.user,
+      message:
+        statusCode === HttpStatus.OK
+          ? 'Login with Google successfully'
+          : 'Account created successfully. Google account linked',
+      data: user,
+      statusCode,
     };
   }
 }

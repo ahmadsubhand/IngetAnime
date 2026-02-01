@@ -24,7 +24,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     profile: Profile,
     done: VerifyCallback,
   ) {
-    console.log(profile);
-    done(null, profile);
+    done(null, profile._json);
   }
 }
