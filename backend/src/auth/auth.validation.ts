@@ -45,7 +45,16 @@ export class AuthValidation {
       ),
     password: z.string().min(8, 'Password must be at least 8 characters long'),
   });
+  static readonly EMAIL_VERIFICATION = z.object({
+    otpCode: z
+      .string()
+      .length(6, 'OTP must be exactly 6 digits')
+      .regex(/^\d+$/, 'OTP must contain only numbers'),
+  });
 }
 
 export type Login = z.infer<typeof AuthValidation.LOGIN>;
 export type Register = z.infer<typeof AuthValidation.REGISTER>;
+export type EmailVerification = z.infer<
+  typeof AuthValidation.EMAIL_VERIFICATION
+>;

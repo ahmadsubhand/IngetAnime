@@ -13,9 +13,10 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request, Response } from 'express';
 import { AuthValidation } from './auth.validation';
-import type { Login, Register } from './auth.validation';
+import type { EmailVerification, Login, Register } from './auth.validation';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
-import type { ApiResponse, UserResponse } from '../types';
+import type { ApiResponse, JwtPayload, UserResponse } from '../types';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('/auth')
 export class AuthController {
@@ -52,6 +53,42 @@ export class AuthController {
     this.service.setAccessToken(user, res);
     return {
       message: `Login successfully${user.isVerified ? '' : '. Please verify your email'}`,
+      data: user,
+      statusCode: 200,
+    };
+  }
+
+  @Post('/verify-email')
+  @HttpCode(200)
+  @UseGuards(AuthGuard('jwt'))
+  @UsePipes(new ZodValidationPipe(AuthValidation.EMAIL_VERIFICATION))
+  async verifyEmail(
+    @Body() data: EmailVerification,
+    @Req() req: Request & { user: JwtPayload },
+  ): Promise<ApiResponse<UserResponse>> {
+    const user = await this.service.verifyEmail(req.user.sub, data.otpCode);
+    return {
+      message: 'Account verified successfully',
+      data: user,
+      statusCode: 200,
+    };
+  }
+
+  @Throttle({
+    default: {
+      ttl: 6000,
+      limit: 1,
+    },
+  })
+  @Get('/resend-verification')
+  @HttpCode(200)
+  @UseGuards(AuthGuard('jwt'))
+  async resendVerification(
+    @Req() req: Request & { user: JwtPayload },
+  ): Promise<ApiResponse<{ email: string }>> {
+    const user = await this.service.resendVerification(req.user.sub);
+    return {
+      message: `OTP has been sent to ${user.email}`,
       data: user,
       statusCode: 200,
     };
