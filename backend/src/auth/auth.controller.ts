@@ -21,18 +21,27 @@ import { CookieService } from '../common/cookie.service';
 import { JwtService } from '@nestjs/jwt';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import { ConfigService } from '@nestjs/config';
 
 dayjs.extend(duration);
 
 @Controller('/auth')
 export class AuthController {
-  private readonly JWT_COOKIE_NAME = 'access_token';
-  private readonly JWT_MAX_AGE = dayjs.duration(28, 'days').asMilliseconds();
+  private JWT_COOKIE_NAME: string;
+  private JWT_MAX_AGE = dayjs.duration(28, 'days').asMilliseconds();
   constructor(
     private service: AuthService,
     private jwt: JwtService,
     private cookie: CookieService,
-  ) {}
+    config: ConfigService,
+  ) {
+    const environment = config.get<'production' | 'development'>(
+      'NODE_ENV',
+      'development',
+    );
+    this.JWT_COOKIE_NAME =
+      environment === 'production' ? '__Host-x-access-token' : 'x-access-token';
+  }
 
   setAuthCookie(userId: number, res: Response) {
     const payload: JwtPayload = { sub: userId };
@@ -98,7 +107,7 @@ export class AuthController {
       limit: 1,
     },
   })
-  @Get('/resend-verification')
+  @Post('/resend-verification')
   @HttpCode(200)
   @UseGuards(AuthGuard('jwt'))
   async resendVerification(
@@ -108,6 +117,18 @@ export class AuthController {
     return {
       message: `OTP has been sent to ${user.email}`,
       data: user,
+      statusCode: 200,
+    };
+  }
+
+  @Post('logout')
+  @HttpCode(200)
+  @UseGuards(AuthGuard('jwt'))
+  logout(@Res({ passthrough: true }) res: Response): ApiResponse<boolean> {
+    this.cookie.clearCookie(res, this.JWT_COOKIE_NAME);
+    return {
+      message: 'Logout successfully',
+      data: true,
       statusCode: 200,
     };
   }
