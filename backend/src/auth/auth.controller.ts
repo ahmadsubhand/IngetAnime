@@ -17,10 +17,28 @@ import type { EmailVerification, Login, Register } from './auth.validation';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import type { ApiResponse, JwtPayload, UserResponse } from '../types';
 import { Throttle } from '@nestjs/throttler';
+import { CookieService } from '../common/cookie.service';
+import { JwtService } from '@nestjs/jwt';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+
+dayjs.extend(duration);
 
 @Controller('/auth')
 export class AuthController {
-  constructor(private service: AuthService) {}
+  private readonly JWT_COOKIE_NAME = 'access_token';
+  private readonly JWT_MAX_AGE = dayjs.duration(28, 'days').asMilliseconds();
+  constructor(
+    private service: AuthService,
+    private jwt: JwtService,
+    private cookie: CookieService,
+  ) {}
+
+  setAuthCookie(userId: number, res: Response) {
+    const payload: JwtPayload = { sub: userId };
+    const token = this.jwt.sign(payload);
+    this.cookie.setCookie(res, this.JWT_COOKIE_NAME, token, this.JWT_MAX_AGE);
+  }
 
   @Post('/register')
   @HttpCode(201)
@@ -34,7 +52,7 @@ export class AuthController {
       data.password,
       data.username,
     );
-    this.service.setAccessToken(user, res);
+    this.setAuthCookie(user.id, res);
     return {
       message: 'Account created successfully. OTP has been sent to your email',
       data: user,
@@ -50,7 +68,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<UserResponse>> {
     const user = await this.service.login(data.identifier, data.password);
-    this.service.setAccessToken(user, res);
+    this.setAuthCookie(user.id, res);
     return {
       message: `Login successfully${user.isVerified ? '' : '. Please verify your email'}`,
       data: user,

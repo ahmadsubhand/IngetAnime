@@ -5,12 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
-import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
-import { ConfigService } from '@nestjs/config';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { JwtPayload, UserResponse } from '../types';
+import { UserResponse } from '../types';
 import bcrypt from 'bcrypt';
 import cryptoRandomString from 'crypto-random-string';
 import { Prisma } from '../generated/prisma/client';
@@ -22,8 +19,6 @@ dayjs.extend(duration);
 export class AuthService {
   constructor(
     private prisma: PrismaService,
-    private jwt: JwtService,
-    private config: ConfigService,
     private mail: MailService,
   ) {}
 
@@ -77,22 +72,6 @@ export class AuthService {
       }
       suffix++;
     }
-  }
-
-  setAccessToken(user: { username: string; id: number }, res: Response): void {
-    const payload: JwtPayload = { username: user.username, sub: user.id };
-    const token = this.jwt.sign(payload);
-    const environment = this.config.get<'production' | 'development'>(
-      'NODE_ENV',
-      'development',
-    );
-
-    res.cookie('access_token', token, {
-      httpOnly: true,
-      secure: environment === 'production',
-      sameSite: environment === 'production' ? 'none' : 'strict',
-      maxAge: dayjs.duration(28, 'days').asMilliseconds(),
-    });
   }
 
   // API function

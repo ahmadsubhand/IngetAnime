@@ -2,7 +2,6 @@ import { HttpStatus } from '@nestjs/common';
 import { Role } from '../generated/prisma/enums';
 
 export interface JwtPayload {
-  username: string;
   sub: number;
 }
 

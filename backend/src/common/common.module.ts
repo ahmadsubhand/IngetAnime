@@ -10,6 +10,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { join } from 'path';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter.js';
 import { MailService } from './mail.service';
+import { CookieService } from './cookie.service';
 
 @Global()
 @Module({
@@ -62,7 +63,8 @@ import { MailService } from './mail.service';
       useClass: ThrottlerGuard,
     },
     MailService,
+    CookieService,
   ],
-  exports: [PrismaService, CsrfService, MailService],
+  exports: [PrismaService, CsrfService, MailService, CookieService],
 })
 export class CommonModule {}
