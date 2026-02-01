@@ -13,7 +13,13 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request, Response } from 'express';
 import { AuthValidation } from './auth.validation';
-import type { EmailVerification, Login, Register } from './auth.validation';
+import type {
+  EmailVerification,
+  ForgotPassword,
+  Login,
+  Register,
+  ResetPassword,
+} from './auth.validation';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import type { ApiResponse, JwtPayload, UserResponse } from '../types';
 import { Throttle } from '@nestjs/throttler';
@@ -25,7 +31,7 @@ import { ConfigService } from '@nestjs/config';
 
 dayjs.extend(duration);
 
-@Controller('/auth')
+@Controller('auth')
 export class AuthController {
   private JWT_COOKIE_NAME: string;
   private JWT_MAX_AGE = dayjs.duration(28, 'days').asMilliseconds();
@@ -49,7 +55,7 @@ export class AuthController {
     this.cookie.setCookie(res, this.JWT_COOKIE_NAME, token, this.JWT_MAX_AGE);
   }
 
-  @Post('/register')
+  @Post('register')
   @HttpCode(201)
   @UsePipes(new ZodValidationPipe(AuthValidation.REGISTER))
   async register(
@@ -69,7 +75,7 @@ export class AuthController {
     };
   }
 
-  @Post('/login')
+  @Post('login')
   @HttpCode(200)
   @UsePipes(new ZodValidationPipe(AuthValidation.LOGIN))
   async login(
@@ -85,7 +91,7 @@ export class AuthController {
     };
   }
 
-  @Post('/verify-email')
+  @Post('verify-email')
   @HttpCode(200)
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ZodValidationPipe(AuthValidation.EMAIL_VERIFICATION))
@@ -107,7 +113,7 @@ export class AuthController {
       limit: 1,
     },
   })
-  @Post('/resend-verification')
+  @Post('resend-verification')
   @HttpCode(200)
   @UseGuards(AuthGuard('jwt'))
   async resendVerification(
@@ -129,6 +135,42 @@ export class AuthController {
     return {
       message: 'Logout successfully',
       data: true,
+      statusCode: 200,
+    };
+  }
+
+  @Post('forgot-password')
+  @Throttle({
+    default: {
+      ttl: 6000,
+      limit: 1,
+    },
+  })
+  @HttpCode(200)
+  @UsePipes(new ZodValidationPipe(AuthValidation.FORGOT_PASSWORD))
+  async forgotPassword(
+    @Body() req: ForgotPassword,
+  ): Promise<ApiResponse<{ email: string; username: string }>> {
+    const user = await this.service.forgotPassword(req.identifier);
+    return {
+      message: `Password reset link has been sent to ${user.email}`,
+      data: user,
+      statusCode: 200,
+    };
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  @UsePipes(new ZodValidationPipe(AuthValidation.RESET_PASSWORD))
+  async resetPassword(
+    @Body() req: ResetPassword,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<UserResponse>> {
+    const user = await this.service.resetPassword(req.token, req.newPassword);
+    this.setAuthCookie(user.id, res);
+    return {
+      message: 'Password has been reset successfully',
+      data: user,
       statusCode: 200,
     };
   }

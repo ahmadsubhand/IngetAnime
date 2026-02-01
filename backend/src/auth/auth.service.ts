@@ -1,25 +1,32 @@
 import {
   BadRequestException,
   ConflictException,
+  GoneException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { UserResponse } from '../types';
+import { JwtPayload, UserResponse } from '../types';
 import bcrypt from 'bcrypt';
 import cryptoRandomString from 'crypto-random-string';
 import { Prisma } from '../generated/prisma/client';
 import { MailService } from '../common/mail.service';
+import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 dayjs.extend(duration);
 
 @Injectable()
 export class AuthService {
+  private readonly SALT_ROUNDS = 10;
   constructor(
     private prisma: PrismaService,
     private mail: MailService,
+    private jwt: JwtService,
+    private config: ConfigService,
   ) {}
 
   // Helper function
@@ -82,7 +89,7 @@ export class AuthService {
     username: string,
   ): Promise<UserResponse> {
     try {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS);
       const otpCode = cryptoRandomString({ length: 6, type: 'numeric' });
       const otpExpiration = dayjs().add(10, 'minute').toISOString();
       const user = await this.prisma.user.create({
@@ -140,8 +147,8 @@ export class AuthService {
   }
 
   async verifyEmail(id: number, otpCode: string): Promise<UserResponse> {
-    const otpExpiration = (
-      await this.prisma.user.findUnique({
+    try {
+      const user = await this.prisma.user.findUnique({
         where: {
           id,
           otpCode,
@@ -149,28 +156,36 @@ export class AuthService {
         select: {
           otpExpiration: true,
         },
-      })
-    )?.otpExpiration;
-    if (!otpExpiration) {
-      throw new BadRequestException('Invalid token or account');
+      });
+      if (!user) {
+        throw new BadRequestException('Invalid otp code or account');
+      }
+
+      const isOTPExpired = dayjs().isAfter(dayjs(user.otpExpiration));
+      if (isOTPExpired) {
+        throw new GoneException('OTP code has expired');
+      }
+
+      const verifiedUser = await this.prisma.user.update({
+        where: {
+          id: id,
+        },
+        data: {
+          isVerified: true,
+        },
+        select: this.userSelect(),
+      });
+
+      return verifiedUser;
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2025'
+      ) {
+        throw new NotFoundException('User not found');
+      }
+      throw err;
     }
-
-    const isOTPExpired = dayjs().isAfter(dayjs(otpExpiration));
-    if (isOTPExpired) {
-      throw new BadRequestException('Token has expired');
-    }
-
-    const user = await this.prisma.user.update({
-      where: {
-        id: id,
-      },
-      data: {
-        isVerified: true,
-      },
-      select: this.userSelect(),
-    });
-
-    return user;
   }
 
   async resendVerification(id: number): Promise<{ email: string }> {
@@ -206,5 +221,95 @@ export class AuthService {
     return {
       email: maksedEmail,
     };
+  }
+
+  async forgotPassword(
+    identifier: string,
+  ): Promise<{ email: string; username: string }> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ username: identifier }, { email: identifier }],
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (!user.email) {
+      throw new NotFoundException('Email address not found');
+    }
+
+    const token = this.jwt.sign<JwtPayload>(
+      {
+        sub: user.id,
+        type: 'reset-password',
+      },
+      {
+        expiresIn: '10m',
+      },
+    );
+    const clientUrl = this.config.get<string>(
+      'CLIENT_URL',
+      'http://localhost:5173',
+    );
+    const resetPasswordLink = `${clientUrl}/auth/forgot-password?token=${token}`;
+
+    await this.mail.sendEmail(
+      user.email,
+      'IngetAnime - Reset Password',
+      'reset-password',
+      { resetLink: resetPasswordLink },
+    );
+
+    const [local, domain] = user.email.split('@');
+    const maksedEmail = `${this.maskString(local)}@${domain}`;
+    const maskedUsername = this.maskString(user.username);
+
+    return {
+      email: maksedEmail,
+      username: maskedUsername,
+    };
+  }
+
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<UserResponse> {
+    try {
+      const payload: JwtPayload = this.jwt.verify(token);
+      if (payload.type !== 'reset-password') {
+        throw new BadRequestException('Invalid reset password token');
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, this.SALT_ROUNDS);
+      const user = await this.prisma.user.update({
+        where: {
+          id: payload.sub,
+        },
+        data: {
+          password: hashedPassword,
+        },
+        select: this.userSelect(),
+      });
+
+      return user;
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2025'
+      ) {
+        throw new NotFoundException('User not found');
+      } else if (err instanceof TokenExpiredError) {
+        throw new GoneException('Token has expired');
+      } else if (err instanceof JsonWebTokenError) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      throw err;
+    }
   }
 }

@@ -3,6 +3,7 @@ import { Role } from '../generated/prisma/enums';
 
 export interface JwtPayload {
   sub: number;
+  type?: 'reset-password';
 }
 
 export interface ApiResponse<T> {
