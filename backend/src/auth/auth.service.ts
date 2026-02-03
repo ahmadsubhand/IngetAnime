@@ -319,13 +319,13 @@ export class AuthService {
     email: string,
     picture?: string,
   ): Promise<UserResponse & { statusCode: HttpStatus }> {
-    let user = await this.prisma.user.findUnique({
+    let user = await this.prisma.user.findFirst({
       where: {
-        email,
+        OR: [{ email }, { googleId }],
       },
-      select: { ...this.userSelect() },
+      select: { ...this.userSelect(), googleId: true },
     });
-    let statusCode: HttpStatus;
+    let statusCode: HttpStatus = HttpStatus.OK;
 
     if (!user) {
       statusCode = HttpStatus.CREATED;
@@ -335,19 +335,71 @@ export class AuthService {
           email,
           picture: picture,
           isVerified: true,
+          googleId,
+        },
+        select: { ...this.userSelect(), googleId: true },
+      });
+    } else {
+      if (!user.googleId) {
+        user = await this.prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            googleId,
+            isVerified: true,
+            ...(!user.picture && { picture }),
+          },
+          select: { ...this.userSelect(), googleId: true },
+        });
+      }
+    }
+
+    return {
+      ...user,
+      statusCode,
+    };
+  }
+
+  async loginWithMal(
+    accessToken: string,
+    refreshToken: string,
+    malId: string,
+    name: string,
+    picture?: string,
+  ): Promise<UserResponse & { statusCode: HttpStatus }> {
+    let user = await this.prisma.user.findFirst({
+      where: {
+        malId,
+      },
+      select: this.userSelect(),
+    });
+    let statusCode: HttpStatus = HttpStatus.OK;
+
+    if (!user) {
+      statusCode = HttpStatus.CREATED;
+      user = await this.prisma.user.create({
+        data: {
+          username: await this.findUniqueUsername(name),
+          picture: picture,
+          isVerified: true,
+          malId,
+          malAccessToken: accessToken,
+          malRefreshToken: refreshToken,
         },
         select: this.userSelect(),
       });
     } else {
-      statusCode = HttpStatus.OK;
       user = await this.prisma.user.update({
         where: {
           id: user.id,
         },
         data: {
-          googleId,
-          isVerified: true,
-          ...(!user.picture && { picture }),
+          ...(!user.picture && {
+            picture,
+          }),
+          malAccessToken: accessToken,
+          malRefreshToken: refreshToken,
         },
         select: this.userSelect(),
       });

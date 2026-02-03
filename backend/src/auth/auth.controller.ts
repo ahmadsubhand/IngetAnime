@@ -3,8 +3,11 @@ import {
   Controller,
   Get,
   HttpCode,
+  type HttpRedirectResponse,
   HttpStatus,
   Post,
+  Query,
+  Redirect,
   Req,
   Res,
   UseGuards,
@@ -30,6 +33,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { ConfigService } from '@nestjs/config';
 import { Profile } from 'passport-google-oauth20';
+import { MalService } from '../common/mal.service';
 
 dayjs.extend(duration);
 
@@ -41,6 +45,7 @@ export class AuthController {
     private service: AuthService,
     private jwt: JwtService,
     private cookie: CookieService,
+    private mal: MalService,
     config: ConfigService,
   ) {
     const environment = config.get<'production' | 'development'>(
@@ -177,7 +182,7 @@ export class AuthController {
     };
   }
 
-  @Get('/google')
+  @Get('google')
   @UseGuards(AuthGuard('google'))
   redirectGoogle() {}
 
@@ -200,6 +205,44 @@ export class AuthController {
         statusCode === HttpStatus.OK
           ? 'Login with Google successfully'
           : 'Account created successfully. Google account linked',
+      data: user,
+      statusCode,
+    };
+  }
+
+  @Get('mal')
+  @Redirect('https://myanimelist.net/v1/oauth2/authorize')
+  redirectMal(): HttpRedirectResponse {
+    const url = this.mal.generateAuthUrl();
+    return {
+      url,
+      statusCode: HttpStatus.FOUND,
+    };
+  }
+
+  @Get('/mal/callback')
+  async loginWithMal(
+    @Query('code') code: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<UserResponse>> {
+    const { access_token, refresh_token } = await this.mal.getToken(code);
+    const malProfile = await this.mal.getProfile(access_token);
+
+    const { statusCode, ...user } = await this.service.loginWithMal(
+      access_token,
+      refresh_token,
+      malProfile.id.toString(),
+      malProfile.name,
+      malProfile.picture,
+    );
+    this.setAuthCookie(user.id, res);
+
+    res.status(statusCode);
+    return {
+      message:
+        statusCode === HttpStatus.OK
+          ? 'Login with MyAnimeList successfully'
+          : 'Account created successfully. MyAnimeList account linked',
       data: user,
       statusCode,
     };

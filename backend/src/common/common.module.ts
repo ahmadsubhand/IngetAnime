@@ -11,6 +11,7 @@ import { join } from 'path';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter.js';
 import { MailService } from './mail.service';
 import { CookieService } from './cookie.service';
+import { MalService } from './mal.service';
 
 @Global()
 @Module({
@@ -64,7 +65,8 @@ import { CookieService } from './cookie.service';
     },
     MailService,
     CookieService,
+    MalService,
   ],
-  exports: [PrismaService, CsrfService, MailService, CookieService],
+  exports: [PrismaService, CsrfService, MailService, CookieService, MalService],
 })
 export class CommonModule {}

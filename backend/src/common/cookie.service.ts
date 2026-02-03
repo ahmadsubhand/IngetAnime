@@ -6,8 +6,8 @@ import { CookieOptions, Response } from 'express';
 export class CookieService {
   private readonly cookieOptions: CookieOptions;
 
-  constructor(private config: ConfigService) {
-    const environment = this.config.get<'production' | 'development'>(
+  constructor(config: ConfigService) {
+    const environment = config.get<'production' | 'development'>(
       'NODE_ENV',
       'development',
     );

@@ -20,3 +20,26 @@ export interface UserResponse {
   email: string | null;
   isVerified: boolean;
 }
+
+interface MalToken {
+  token_type: 'Bearer';
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+}
+
+interface MalProfile {
+  id: number;
+  name: string;
+  gender: 'male' | 'female';
+  birthday: string;
+  location: string;
+  joined_at: string;
+  picture: string;
+}
+
+interface MalError {
+  error: string;
+  message?: string;
+  hint?: string;
+}
