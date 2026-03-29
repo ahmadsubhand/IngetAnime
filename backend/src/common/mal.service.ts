@@ -3,6 +3,7 @@ import {
   HttpException,
   Inject,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cryptoRandomString from 'crypto-random-string';
@@ -90,12 +91,48 @@ export class MalService {
       });
       const data = (await response.json()) as MalProfile | MalError;
       if ('error' in data) {
+        if (data.error === 'invalid_token') {
+          throw new UnauthorizedException('MAL access token unauthorized');
+        }
         throw new BadRequestException(data.hint || data.message || data.error);
       }
       return data;
     } catch (err) {
       this.logger.warn(err);
       throw new HttpException('Failed to connet to MyAnimeList API', 500);
+    }
+  }
+
+  async getNewAccessToken(refreshToken: string): Promise<MalToken> {
+    try {
+      const url = 'https://myanimelist.net/v1/oauth2/token';
+      const params = new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+      });
+      const credentials = Buffer.from(
+        `${process.env.MAL_CLIENT_ID}:${process.env.MAL_CLIENT_SECRET}`,
+      ).toString('base64');
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${credentials}`,
+        },
+        body: params.toString(),
+      });
+      const data = (await response.json()) as MalToken | MalError;
+      if ('error' in data) {
+        if (data.error === 'invalid_token') {
+          throw new UnauthorizedException('MAL refresh token unauthorized');
+        }
+        throw new BadRequestException(data.hint || data.message || data.error);
+      }
+      return data;
+    } catch (err: unknown) {
+      this.logger.warn(err);
+      throw new HttpException(`Failed to get MyAnimeList token`, 500);
     }
   }
 }
