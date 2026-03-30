@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
   Post,
   Req,
@@ -58,6 +60,7 @@ export class AppController {
   }
 
   @Post('/csrf-test')
+  @HttpCode(HttpStatus.OK)
   testCsrf() {
     return {
       message: 'csrf token valid',

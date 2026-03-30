@@ -17,6 +17,7 @@ import { Prisma } from '../generated/prisma/client';
 import { MailService } from '../common/mail.service';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Login, Register, ResetPassword } from './auth.validation';
 
 dayjs.extend(duration);
 
@@ -84,19 +85,15 @@ export class AuthService {
 
   // API function
 
-  async register(
-    email: string,
-    password: string,
-    username: string,
-  ): Promise<UserResponse> {
+  async register(data: Register): Promise<UserResponse> {
     try {
-      const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS);
+      const hashedPassword = await bcrypt.hash(data.password, this.SALT_ROUNDS);
       const otpCode = cryptoRandomString({ length: 6, type: 'numeric' });
       const otpExpiration = dayjs().add(10, 'minute').toISOString();
       const user = await this.prisma.user.create({
         data: {
-          username,
-          email,
+          username: data.username,
+          email: data.email,
           password: hashedPassword,
           otpCode,
           otpExpiration,
@@ -105,7 +102,7 @@ export class AuthService {
       });
 
       await this.mail.sendEmail(
-        email,
+        data.email,
         'IngetAnime - Email Verification',
         'otp-register',
         { otp: otpCode },
@@ -117,17 +114,17 @@ export class AuthService {
         err instanceof Prisma.PrismaClientKnownRequestError &&
         err.code === 'P2002'
       ) {
-        throw new ConflictException('Username or email already in use');
+        throw new ConflictException('Username or email already exists');
       }
 
       throw err;
     }
   }
 
-  async login(identifier: string, password: string): Promise<UserResponse> {
+  async login(data: Login): Promise<UserResponse> {
     const user = await this.prisma.user.findFirst({
       where: {
-        OR: [{ username: identifier }, { email: identifier }],
+        OR: [{ username: data.identifier }, { email: data.identifier }],
       },
       select: {
         ...this.userSelect(),
@@ -136,11 +133,11 @@ export class AuthService {
     });
 
     const isPasswordValid = user?.password
-      ? await bcrypt.compare(password, user.password)
+      ? await bcrypt.compare(data.password, user.password)
       : false;
 
     if (!user || !isPasswordValid) {
-      throw new NotFoundException('Email or password is invalid');
+      throw new NotFoundException('Invalid email or password');
     }
 
     // Remove password
@@ -276,17 +273,17 @@ export class AuthService {
     };
   }
 
-  async resetPassword(
-    token: string,
-    newPassword: string,
-  ): Promise<UserResponse> {
+  async resetPassword(data: ResetPassword): Promise<UserResponse> {
     try {
-      const payload: JwtPayload = this.jwt.verify(token);
+      const payload: JwtPayload = this.jwt.verify(data.token);
       if (payload.type !== 'reset-password') {
         throw new BadRequestException('Invalid reset password token');
       }
 
-      const hashedPassword = await bcrypt.hash(newPassword, this.SALT_ROUNDS);
+      const hashedPassword = await bcrypt.hash(
+        data.newPassword,
+        this.SALT_ROUNDS,
+      );
       const user = await this.prisma.user.update({
         where: {
           id: payload.sub,

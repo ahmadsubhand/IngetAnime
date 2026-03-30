@@ -11,7 +11,6 @@ import {
   Req,
   Res,
   UseGuards,
-  UsePipes,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -64,16 +63,11 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ZodValidationPipe(AuthValidation.REGISTER))
   async register(
-    @Body() data: Register,
+    @Body(new ZodValidationPipe(AuthValidation.REGISTER)) data: Register,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<UserResponse>> {
-    const user = await this.service.register(
-      data.email,
-      data.password,
-      data.username,
-    );
+    const user = await this.service.register(data);
     this.setAuthCookie(user.id, res);
     return {
       message: 'Account created successfully. OTP has been sent to your email',
@@ -84,12 +78,11 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @UsePipes(new ZodValidationPipe(AuthValidation.LOGIN))
   async login(
-    @Body() data: Login,
+    @Body(new ZodValidationPipe(AuthValidation.LOGIN)) data: Login,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<UserResponse>> {
-    const user = await this.service.login(data.identifier, data.password);
+    const user = await this.service.login(data);
     this.setAuthCookie(user.id, res);
     return {
       message: `Login successfully${user.isVerified ? '' : '. Please verify your email'}`,
@@ -101,9 +94,9 @@ export class AuthController {
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
-  @UsePipes(new ZodValidationPipe(AuthValidation.EMAIL_VERIFICATION))
   async verifyEmail(
-    @Body() data: EmailVerification,
+    @Body(new ZodValidationPipe(AuthValidation.EMAIL_VERIFICATION))
+    data: EmailVerification,
     @Req() req: Request & { user: JwtPayload },
   ): Promise<ApiResponse<UserResponse>> {
     const user = await this.service.verifyEmail(req.user.sub, data.otpCode);
@@ -154,11 +147,11 @@ export class AuthController {
     },
   })
   @HttpCode(HttpStatus.OK)
-  @UsePipes(new ZodValidationPipe(AuthValidation.FORGOT_PASSWORD))
   async forgotPassword(
-    @Body() req: ForgotPassword,
+    @Body(new ZodValidationPipe(AuthValidation.FORGOT_PASSWORD))
+    data: ForgotPassword,
   ): Promise<ApiResponse<{ email: string; username: string }>> {
-    const user = await this.service.forgotPassword(req.identifier);
+    const user = await this.service.forgotPassword(data.identifier);
     return {
       message: `Password reset link has been sent to ${user.email}`,
       data: user,
@@ -168,12 +161,12 @@ export class AuthController {
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  @UsePipes(new ZodValidationPipe(AuthValidation.RESET_PASSWORD))
   async resetPassword(
-    @Body() req: ResetPassword,
+    @Body(new ZodValidationPipe(AuthValidation.RESET_PASSWORD))
+    data: ResetPassword,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<UserResponse>> {
-    const user = await this.service.resetPassword(req.token, req.newPassword);
+    const user = await this.service.resetPassword(data);
     this.setAuthCookie(user.id, res);
     return {
       message: 'Password has been reset successfully',

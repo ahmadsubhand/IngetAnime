@@ -1,41 +1,4 @@
-## Installation ##
-0. Express types
-$ npm install -D @types/express
+# Bug Issue
 
-1. Config (.env)
-$ npm i --save @nestjs/config
-```app.module.ts
-imports: [
-  ConfigModule.forRoot({
-    isGlobal: true,
-  }),
-],
-```
-
-2. Logging
-Winston
-$ npm install --save nest-winston winston
-```app.module.ts
-imports: [
-  WinstonModule.forRoot({
-    format: winston.format.json(),
-    level: 'debug',
-    transports: [new winston.transports.Console()],
-  }),
-],
-```
-
-Morgan
-$ npm install morgan
-$ npm i --save-dev @types/morgan
-```main.ts
-
-```
-
-3. Cookie
-$ npm i cookie-parser
-$ npm i -D @types/cookie-parser
-
-4. Template engine
-$ npm i mustache-express
-$ npm i --save-dev @types/mustache-express
+1. Auth
+- If system fails to send email verification, system keeps register user as unverifed account

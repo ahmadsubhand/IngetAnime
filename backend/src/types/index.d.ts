@@ -31,11 +31,11 @@ interface MalToken {
 interface MalProfile {
   id: number;
   name: string;
-  gender: 'male' | 'female';
+  gender?: 'male' | 'female';
   birthday: string;
   location: string;
   joined_at: string;
-  picture: string;
+  picture?: string;
 }
 
 interface MalError {
