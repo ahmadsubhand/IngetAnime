@@ -107,13 +107,13 @@ export class AuthController {
     };
   }
 
+  @Post('resend-verification')
   @Throttle({
     default: {
-      ttl: 6000,
+      ttl: 60000,
       limit: 1,
     },
   })
-  @Post('resend-verification')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
   async resendVerification(
@@ -142,7 +142,7 @@ export class AuthController {
   @Post('forgot-password')
   @Throttle({
     default: {
-      ttl: 6000,
+      ttl: 60000,
       limit: 1,
     },
   })
@@ -204,7 +204,7 @@ export class AuthController {
   }
 
   @Get('mal')
-  @Redirect('https://myanimelist.net/v1/oauth2/authorize')
+  @Redirect()
   redirectMal(): HttpRedirectResponse {
     const url = this.mal.generateAuthUrl();
     return {
