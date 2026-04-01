@@ -244,7 +244,7 @@ export class AuthService {
     const token = this.jwt.sign<JwtPayload>(
       {
         sub: user.id,
-        type: 'reset-password',
+        type: 'reset_password',
       },
       {
         expiresIn: '10m',
@@ -276,7 +276,7 @@ export class AuthService {
   async resetPassword(data: ResetPassword): Promise<UserResponse> {
     try {
       const payload: JwtPayload = this.jwt.verify(data.token);
-      if (payload.type !== 'reset-password') {
+      if (payload.type !== 'reset_password') {
         throw new BadRequestException('Invalid reset password token');
       }
 

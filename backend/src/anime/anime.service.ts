@@ -70,7 +70,7 @@ export class AnimeService {
     }
   }
 
-  async getAnimeList(userId: number, data: GetAnimeList): Promise<AnimeList> {
+  async getAnimeList(data: GetAnimeList, userId?: number): Promise<AnimeList> {
     const accessToken = await this.getMalConnection(userId);
     const url = `https://api.myanimelist.net/v2/anime`;
     const params = new URLSearchParams({

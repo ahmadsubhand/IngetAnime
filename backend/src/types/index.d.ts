@@ -3,7 +3,7 @@ import { Role } from '../generated/prisma/enums';
 
 export interface JwtPayload {
   sub: number;
-  type?: 'reset-password';
+  type: 'access_token' | 'reset_password';
 }
 
 export interface ApiResponse<T> {

@@ -7,11 +7,9 @@ import {
   Post,
   Req,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { PrismaService } from './common/prisma.service';
-import { AuthGuard } from '@nestjs/passport';
 import { CsrfService } from './common/csrf.service';
 import { SkipThrottle } from '@nestjs/throttler';
 
@@ -65,11 +63,5 @@ export class AppController {
     return {
       message: 'csrf token valid',
     };
-  }
-
-  @Get('/auth/profile')
-  @UseGuards(AuthGuard('jwt'))
-  get(@Req() req: Request) {
-    return req.user;
   }
 }

@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { doubleCsrf } from 'csrf-csrf';
 import type { Request, Response, RequestHandler, NextFunction } from 'express';
+import { JwtPayload } from '../types';
 
 @Injectable()
 export class CsrfService {
@@ -19,8 +20,8 @@ export class CsrfService {
       cookieName:
         environment === 'production' ? '__Host-x-csrf-token' : 'x-csrf-token',
       getSecret: () => csrfSecret,
-      getSessionIdentifier: (req: Request) => {
-        const user = req.user as { sub?: number } | undefined;
+      getSessionIdentifier: (req: Request & { user?: JwtPayload }) => {
+        const user = req.user as JwtPayload | undefined;
         return user?.sub?.toString() ?? 'anonymous';
       },
       cookieOptions: {

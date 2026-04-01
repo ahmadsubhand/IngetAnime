@@ -13,7 +13,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
 import type { Request, Response } from 'express';
 import { AuthValidation } from './auth.validation';
 import type {
@@ -31,8 +30,8 @@ import { JwtService } from '@nestjs/jwt';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { ConfigService } from '@nestjs/config';
-import { Profile } from 'passport-google-oauth20';
 import { MalService } from '../common/mal.service';
+import { AuthGuard } from './guard/auth.guard';
 
 dayjs.extend(duration);
 
@@ -55,8 +54,7 @@ export class AuthController {
       environment === 'production' ? '__Host-x-access-token' : 'x-access-token';
   }
 
-  setAuthCookie(userId: number, res: Response) {
-    const payload: JwtPayload = { sub: userId };
+  setAuthCookie(payload: JwtPayload, res: Response) {
     const token = this.jwt.sign(payload);
     this.cookie.setCookie(res, this.JWT_COOKIE_NAME, token, this.JWT_MAX_AGE);
   }
@@ -68,7 +66,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<UserResponse>> {
     const user = await this.service.register(data);
-    this.setAuthCookie(user.id, res);
+    this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
     return {
       message: 'Account created successfully. OTP has been sent to your email',
       data: user,
@@ -83,7 +81,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<UserResponse>> {
     const user = await this.service.login(data);
-    this.setAuthCookie(user.id, res);
+    this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
     return {
       message: `Login successfully${user.isVerified ? '' : '. Please verify your email'}`,
       data: user,
@@ -93,7 +91,7 @@ export class AuthController {
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard)
   async verifyEmail(
     @Body(new ZodValidationPipe(AuthValidation.EMAIL_VERIFICATION))
     data: EmailVerification,
@@ -115,7 +113,7 @@ export class AuthController {
     },
   })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard)
   async resendVerification(
     @Req() req: Request & { user: JwtPayload },
   ): Promise<ApiResponse<{ email: string }>> {
@@ -129,7 +127,7 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard)
   logout(@Res({ passthrough: true }) res: Response): ApiResponse<boolean> {
     this.cookie.clearCookie(res, this.JWT_COOKIE_NAME);
     return {
@@ -167,7 +165,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<UserResponse>> {
     const user = await this.service.resetPassword(data);
-    this.setAuthCookie(user.id, res);
+    this.setAuthCookie({ sub: user.id, type: 'reset_password' }, res);
     return {
       message: 'Password has been reset successfully',
       data: user,
@@ -175,33 +173,33 @@ export class AuthController {
     };
   }
 
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  redirectGoogle() {}
+  // @Get('google')
+  // @UseGuards(AuthGuard('google'))
+  // redirectGoogle() {}
 
-  @Get('/google/callback')
-  @UseGuards(AuthGuard('google'))
-  async loginWithGoogle(
-    @Req() req: Request & { user: Profile['_json'] },
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<UserResponse>> {
-    const { statusCode, ...user } = await this.service.loginWithGoogle(
-      req.user.sub,
-      req.user.email as string,
-      req.user.picture,
-    );
-    this.setAuthCookie(user.id, res);
+  // @Get('/google/callback')
+  // @UseGuards(AuthGuard('google'))
+  // async loginWithGoogle(
+  //   @Req() req: Request & { user: Profile['_json'] },
+  //   @Res({ passthrough: true }) res: Response,
+  // ): Promise<ApiResponse<UserResponse>> {
+  //   const { statusCode, ...user } = await this.service.loginWithGoogle(
+  //     req.user.sub,
+  //     req.user.email as string,
+  //     req.user.picture,
+  //   );
+  //   this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
 
-    res.status(statusCode);
-    return {
-      message:
-        statusCode === HttpStatus.OK
-          ? 'Login with Google successfully'
-          : 'Account created successfully. Google account linked',
-      data: user,
-      statusCode,
-    };
-  }
+  //   res.status(statusCode);
+  //   return {
+  //     message:
+  //       statusCode === HttpStatus.OK
+  //         ? 'Login with Google successfully'
+  //         : 'Account created successfully. Google account linked',
+  //     data: user,
+  //     statusCode,
+  //   };
+  // }
 
   @Get('mal')
   @Redirect()
@@ -228,7 +226,7 @@ export class AuthController {
       malProfile.name,
       malProfile.picture,
     );
-    this.setAuthCookie(user.id, res);
+    this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
 
     res.status(statusCode);
     return {
