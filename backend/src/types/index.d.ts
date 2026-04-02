@@ -21,6 +21,18 @@ export interface UserResponse {
   isVerified: boolean;
 }
 
+// Google Auth Types
+
+interface StateObject {
+  mode: 'login';
+  state: string;
+}
+
+interface GoogleError {
+  error: string;
+  error_description?: string;
+}
+
 // MAL Auth Types
 
 interface MalToken {

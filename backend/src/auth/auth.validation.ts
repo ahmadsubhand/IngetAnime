@@ -79,6 +79,15 @@ export class AuthValidation {
       message: 'Passwords do not match',
       path: ['confirmPassword'],
     });
+
+  static readonly GET_AUTH_URL = z.object({
+    mode: z.enum(['login']),
+  });
+
+  static readonly THIRD_PARTY_LOGIN = z.object({
+    code: z.string().min(1, 'Authorization code required'),
+    state: z.string().min(1, 'Auth state required'),
+  });
 }
 
 export type Login = z.infer<typeof AuthValidation.LOGIN>;
@@ -88,3 +97,5 @@ export type EmailVerification = z.infer<
 >;
 export type ForgotPassword = z.infer<typeof AuthValidation.FORGOT_PASSWORD>;
 export type ResetPassword = z.infer<typeof AuthValidation.RESET_PASSWORD>;
+export type GetAuthUrl = z.infer<typeof AuthValidation.GET_AUTH_URL>;
+export type ThirdPartyLogin = z.infer<typeof AuthValidation.THIRD_PARTY_LOGIN>;

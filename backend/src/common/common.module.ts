@@ -14,6 +14,7 @@ import { CookieService } from './cookie.service';
 import { MalService } from './mal.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtService } from './jwt.service';
+import { GoogleService } from './google.service';
 
 @Global()
 @Module({
@@ -75,6 +76,7 @@ import { JwtService } from './jwt.service';
     JwtService,
     MailService,
     CookieService,
+    GoogleService,
     MalService,
   ],
   exports: [
@@ -83,6 +85,7 @@ import { JwtService } from './jwt.service';
     JwtService,
     MailService,
     CookieService,
+    GoogleService,
     MalService,
   ],
 })

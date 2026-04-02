@@ -9,7 +9,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { UserResponse } from '../types';
+import { MalProfile, UserResponse } from '../types';
 import bcrypt from 'bcrypt';
 import cryptoRandomString from 'crypto-random-string';
 import { Prisma } from '../generated/prisma/client';
@@ -304,7 +304,7 @@ export class AuthService {
   async loginWithGoogle(
     googleId: string,
     email: string,
-    picture?: string,
+    picture?: string | null,
   ): Promise<UserResponse & { statusCode: HttpStatus }> {
     let user = await this.prisma.user.findFirst({
       where: {
@@ -351,10 +351,10 @@ export class AuthService {
   async loginWithMal(
     accessToken: string,
     refreshToken: string,
-    malId: string,
-    name: string,
-    picture?: string,
+    malProfile: MalProfile,
   ): Promise<UserResponse & { statusCode: HttpStatus }> {
+    const malId = malProfile.id.toString();
+
     let user = await this.prisma.user.findFirst({
       where: {
         malId,
@@ -367,8 +367,8 @@ export class AuthService {
       statusCode = HttpStatus.CREATED;
       user = await this.prisma.user.create({
         data: {
-          username: await this.findUniqueUsername(name),
-          picture: picture,
+          username: await this.findUniqueUsername(malProfile.name),
+          picture: malProfile.picture,
           isVerified: true,
           malId,
           malAccessToken: accessToken,
@@ -383,7 +383,7 @@ export class AuthService {
         },
         data: {
           ...(!user.picture && {
-            picture,
+            picture: malProfile.picture,
           }),
           malAccessToken: accessToken,
           malRefreshToken: refreshToken,

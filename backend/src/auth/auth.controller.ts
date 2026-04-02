@@ -1,13 +1,12 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
-  type HttpRedirectResponse,
   HttpStatus,
   Post,
   Query,
-  Redirect,
   Req,
   Res,
   UseGuards,
@@ -18,12 +17,19 @@ import { AuthValidation } from './auth.validation';
 import type {
   EmailVerification,
   ForgotPassword,
+  GetAuthUrl,
   Login,
   Register,
   ResetPassword,
+  ThirdPartyLogin,
 } from './auth.validation';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
-import type { ApiResponse, JwtPayload, UserResponse } from '../types';
+import type {
+  ApiResponse,
+  JwtPayload,
+  StateObject,
+  UserResponse,
+} from '../types';
 import { Throttle } from '@nestjs/throttler';
 import { CookieService } from '../common/cookie.service';
 import dayjs from 'dayjs';
@@ -32,6 +38,8 @@ import { ConfigService } from '@nestjs/config';
 import { MalService } from '../common/mal.service';
 import { AuthGuard } from './guard/auth.guard';
 import { JwtService } from '../common/jwt.service';
+import { GoogleService } from '../common/google.service';
+import cryptoRandomString from 'crypto-random-string';
 
 dayjs.extend(duration);
 
@@ -39,10 +47,13 @@ dayjs.extend(duration);
 export class AuthController {
   private JWT_COOKIE_NAME: string;
   private JWT_MAX_AGE = dayjs.duration(28, 'days').asMilliseconds();
+  private STATE_COOKIE_NAME: string;
+  private STATE_MAX_AGE = dayjs.duration(5, 'minutes').asMilliseconds();
   constructor(
     private service: AuthService,
     private jwt: JwtService,
     private cookie: CookieService,
+    private google: GoogleService,
     private mal: MalService,
     config: ConfigService,
   ) {
@@ -52,11 +63,54 @@ export class AuthController {
     );
     this.JWT_COOKIE_NAME =
       environment === 'production' ? '__Host-x-access-token' : 'x-access-token';
+    this.STATE_COOKIE_NAME =
+      environment === 'production' ? '__Host-x-oauth-state' : 'x-oauth-state';
   }
 
   setAuthCookie(payload: JwtPayload, res: Response) {
     const token = this.jwt.createToken(payload);
     this.cookie.setCookie(res, this.JWT_COOKIE_NAME, token, this.JWT_MAX_AGE);
+  }
+
+  getAndSetAuthState(mode: StateObject['mode'], res: Response) {
+    const randomString = cryptoRandomString({
+      length: 24,
+      type: 'alphanumeric',
+    });
+
+    this.cookie.setCookie(
+      res,
+      this.STATE_COOKIE_NAME,
+      randomString,
+      this.STATE_MAX_AGE,
+    );
+
+    const stateObject: StateObject = { mode, state: randomString };
+    const stateParsed = JSON.stringify(stateObject);
+    const stateEncoded = Buffer.from(stateParsed).toString('base64');
+
+    return stateEncoded;
+  }
+
+  getAndCheckAuthState(state: string, req: Request) {
+    let stateObject: StateObject;
+
+    try {
+      const stateDecoded = state;
+      const stateParsed = Buffer.from(stateDecoded, 'base64').toString('utf-8');
+      stateObject = JSON.parse(stateParsed) as StateObject;
+    } catch {
+      throw new BadRequestException('Invalid state');
+    }
+
+    const cookieState = req.cookies?.[this.STATE_COOKIE_NAME] as
+      | string
+      | undefined;
+    if (stateObject.state !== cookieState) {
+      throw new BadRequestException('Invalid state');
+    }
+
+    return stateObject;
   }
 
   @Post('register')
@@ -173,59 +227,96 @@ export class AuthController {
     };
   }
 
-  // @Get('google')
-  // redirectGoogle() {
-
-  // }
-
-  // @Get('/google/callback')
-  // @UseGuards(AuthGuard('google'))
-  // async loginWithGoogle(
-  //   @Req() req: Request & { user: Profile['_json'] },
-  //   @Res({ passthrough: true }) res: Response,
-  // ): Promise<ApiResponse<UserResponse>> {
-  //   const { statusCode, ...user } = await this.service.loginWithGoogle(
-  //     req.user.sub,
-  //     req.user.email as string,
-  //     req.user.picture,
-  //   );
-  //   this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
-
-  //   res.status(statusCode);
-  //   return {
-  //     message:
-  //       statusCode === HttpStatus.OK
-  //         ? 'Login with Google successfully'
-  //         : 'Account created successfully. Google account linked',
-  //     data: user,
-  //     statusCode,
-  //   };
-  // }
-
-  @Get('mal')
-  @Redirect()
-  redirectMal(): HttpRedirectResponse {
-    const url = this.mal.generateAuthUrl();
+  @Get('google')
+  @HttpCode(HttpStatus.OK)
+  getGoogleAuthUrl(
+    @Query(new ZodValidationPipe(AuthValidation.GET_AUTH_URL))
+    data: GetAuthUrl,
+    @Res({ passthrough: true }) res: Response,
+  ): ApiResponse<{ url: string }> {
+    const { mode } = data;
+    const state = this.getAndSetAuthState(mode, res);
+    const url = this.google.generateAuthUrl(state);
     return {
-      url,
-      statusCode: HttpStatus.FOUND,
+      message: 'Generate Google auth url successfully',
+      data: { url },
+      statusCode: HttpStatus.OK,
     };
   }
 
-  @Get('/mal/callback')
-  async loginWithMal(
-    @Query('code') code: string,
+  @Post('google')
+  async loginWithGoogle(
+    @Body(new ZodValidationPipe(AuthValidation.THIRD_PARTY_LOGIN))
+    data: ThirdPartyLogin,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
   ): Promise<ApiResponse<UserResponse>> {
-    const { access_token, refresh_token } = await this.mal.getToken(code);
+    const stateObject = this.getAndCheckAuthState(data.state, req);
+    if (stateObject.mode !== 'login') {
+      throw new BadRequestException('Invalid state type');
+    }
+
+    const credentials = await this.google.getToken(data.code);
+    this.google.setCredential(credentials);
+    const { id, email, picture } = await this.google.getProfile();
+    if (id && email) {
+      const { statusCode, ...user } = await this.service.loginWithGoogle(
+        id.toString(),
+        email,
+        picture,
+      );
+      this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
+
+      res.status(statusCode);
+      return {
+        message:
+          statusCode === HttpStatus.OK
+            ? 'Login with Google successfully'
+            : 'Account created successfully. Google account linked',
+        data: user,
+        statusCode,
+      };
+    } else {
+      throw new BadRequestException('Invalid google account');
+    }
+  }
+
+  @Get('mal')
+  @HttpCode(HttpStatus.OK)
+  getMalAuthUrl(
+    @Query(new ZodValidationPipe(AuthValidation.GET_AUTH_URL))
+    data: GetAuthUrl,
+    @Res({ passthrough: true }) res: Response,
+  ): ApiResponse<{ url: string }> {
+    const { mode } = data;
+    const state = this.getAndSetAuthState(mode, res);
+    const url = this.mal.generateAuthUrl(state);
+    return {
+      message: 'Generate MyAnimeList auth url successfully',
+      data: { url },
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @Post('mal')
+  async loginWithMal(
+    @Body(new ZodValidationPipe(AuthValidation.THIRD_PARTY_LOGIN))
+    data: ThirdPartyLogin,
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+  ): Promise<ApiResponse<UserResponse>> {
+    const stateObject = this.getAndCheckAuthState(data.state, req);
+    if (stateObject.mode !== 'login') {
+      throw new BadRequestException('Invalid state type');
+    }
+
+    const { access_token, refresh_token } = await this.mal.getToken(data.code);
     const malProfile = await this.mal.getProfile(access_token);
 
     const { statusCode, ...user } = await this.service.loginWithMal(
       access_token,
       refresh_token,
-      malProfile.id.toString(),
-      malProfile.name,
-      malProfile.picture,
+      malProfile,
     );
     this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
 
