@@ -5,9 +5,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { JwtPayload } from '../../types';
+import { JwtService } from '../../common/jwt.service';
 
 @Injectable()
 abstract class BaseGuard implements CanActivate {
@@ -33,12 +32,12 @@ abstract class BaseGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwt.verifyAsync<JwtPayload>(token);
-      request['user'] = payload;
+      const data = await this.jwt.verifyToken(token, 'access_token');
+      request['user'] = data;
       return true;
-    } catch {
+    } catch (error) {
       if (this.isAuthOptional()) return true;
-      throw new UnauthorizedException('Invalid or expired token');
+      throw error;
     }
   }
 

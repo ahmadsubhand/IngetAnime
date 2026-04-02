@@ -26,12 +26,12 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import type { ApiResponse, JwtPayload, UserResponse } from '../types';
 import { Throttle } from '@nestjs/throttler';
 import { CookieService } from '../common/cookie.service';
-import { JwtService } from '@nestjs/jwt';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { ConfigService } from '@nestjs/config';
 import { MalService } from '../common/mal.service';
 import { AuthGuard } from './guard/auth.guard';
+import { JwtService } from '../common/jwt.service';
 
 dayjs.extend(duration);
 
@@ -55,7 +55,7 @@ export class AuthController {
   }
 
   setAuthCookie(payload: JwtPayload, res: Response) {
-    const token = this.jwt.sign(payload);
+    const token = this.jwt.createToken(payload);
     this.cookie.setCookie(res, this.JWT_COOKIE_NAME, token, this.JWT_MAX_AGE);
   }
 
@@ -174,8 +174,9 @@ export class AuthController {
   }
 
   // @Get('google')
-  // @UseGuards(AuthGuard('google'))
-  // redirectGoogle() {}
+  // redirectGoogle() {
+
+  // }
 
   // @Get('/google/callback')
   // @UseGuards(AuthGuard('google'))

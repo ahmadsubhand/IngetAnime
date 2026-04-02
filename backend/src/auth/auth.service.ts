@@ -5,19 +5,18 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { JwtPayload, UserResponse } from '../types';
+import { UserResponse } from '../types';
 import bcrypt from 'bcrypt';
 import cryptoRandomString from 'crypto-random-string';
 import { Prisma } from '../generated/prisma/client';
 import { MailService } from '../common/mail.service';
-import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Login, Register, ResetPassword } from './auth.validation';
+import { JwtService } from '../common/jwt.service';
 
 dayjs.extend(duration);
 
@@ -241,14 +240,12 @@ export class AuthService {
       throw new NotFoundException('Email address not found');
     }
 
-    const token = this.jwt.sign<JwtPayload>(
+    const token = this.jwt.createToken(
       {
         sub: user.id,
         type: 'reset_password',
       },
-      {
-        expiresIn: '10m',
-      },
+      '10m',
     );
     const clientUrl = this.config.get<string>(
       'CLIENT_URL',
@@ -275,10 +272,7 @@ export class AuthService {
 
   async resetPassword(data: ResetPassword): Promise<UserResponse> {
     try {
-      const payload: JwtPayload = this.jwt.verify(data.token);
-      if (payload.type !== 'reset_password') {
-        throw new BadRequestException('Invalid reset password token');
-      }
+      const payload = await this.jwt.verifyToken(data.token, 'reset_password');
 
       const hashedPassword = await bcrypt.hash(
         data.newPassword,
@@ -301,10 +295,6 @@ export class AuthService {
         err.code === 'P2025'
       ) {
         throw new NotFoundException('User not found');
-      } else if (err instanceof TokenExpiredError) {
-        throw new GoneException('Token has expired');
-      } else if (err instanceof JsonWebTokenError) {
-        throw new UnauthorizedException('Invalid token');
       }
 
       throw err;

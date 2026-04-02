@@ -12,6 +12,8 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter.js'
 import { MailService } from './mail.service';
 import { CookieService } from './cookie.service';
 import { MalService } from './mal.service';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtService } from './jwt.service';
 
 @Global()
 @Module({
@@ -36,6 +38,13 @@ import { MalService } from './mal.service';
         limit: 10,
       },
     ]),
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.getOrThrow('JWT_SECRET'),
+        signOptions: { expiresIn: config.get('JWT_EXPIRATION', '28d') },
+      }),
+    }),
     MailerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -63,10 +72,18 @@ import { MalService } from './mal.service';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    JwtService,
     MailService,
     CookieService,
     MalService,
   ],
-  exports: [PrismaService, CsrfService, MailService, CookieService, MalService],
+  exports: [
+    PrismaService,
+    CsrfService,
+    JwtService,
+    MailService,
+    CookieService,
+    MalService,
+  ],
 })
 export class CommonModule {}
