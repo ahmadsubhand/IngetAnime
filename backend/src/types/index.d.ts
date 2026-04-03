@@ -1,5 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { Role } from '../generated/prisma/enums';
+import { GetAuthUrl } from '../auth/auth.validation';
+import { CreateAnime } from '../anime/anime.validation';
 
 export interface JwtPayload {
   sub: number;
@@ -21,10 +23,21 @@ export interface UserResponse {
   isVerified: boolean;
 }
 
+export interface AnimeResponse {
+  malId: number;
+  picture: string;
+  title: string;
+  titleEN: string | null;
+  titleID: string | null;
+  releaseAt: string | null;
+  episodeTotal: number;
+  status: CreateAnime['status'];
+}
+
 // Google Auth Types
 
 interface StateObject {
-  mode: 'login';
+  mode: GetAuthUrl['mode'];
   state: string;
 }
 
