@@ -1,5 +1,0 @@
-# Bug Issue
-
-1. Auth
-- If system fails to send email verification, system keeps register user as unverifed account
-- API with rate limitting limits endpoint access even user only doing input mistake (400, 404)

@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Role } from '../generated/prisma/enums';
+import { AccessType, Role } from '../generated/prisma/enums';
 import { GetAuthUrl } from '../auth/auth.validation';
 import { CreateAnime } from '../anime/anime.validation';
 
@@ -24,7 +24,9 @@ export interface UserResponse {
 }
 
 export interface AnimeResponse {
+  id: number;
   malId: number;
+  updateAt: string;
   picture: string;
   title: string;
   titleEN: string | null;
@@ -32,6 +34,25 @@ export interface AnimeResponse {
   releaseAt: string | null;
   episodeTotal: number;
   status: CreateAnime['status'];
+}
+
+export interface AnimePlatformResponse {
+  id: number;
+  animeId: number;
+  platformId: number;
+  link: string;
+  accessType: AccessType;
+  nextEpisodeAiringAt: string | null;
+  lastEpisodeAiredAt: string | null;
+  intervalInDays: number;
+  episodeAired: number;
+  isMainPlatform: boolean;
+  isHiatus: boolean;
+}
+
+export interface PlatformResponse {
+  id: number;
+  name: string;
 }
 
 // Google Auth Types

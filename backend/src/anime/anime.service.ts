@@ -1,13 +1,27 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { MalService } from '../common/mal.service';
 import { ConfigService } from '@nestjs/config';
-import { AnimeList, MalError, MalListAnime } from '../types';
-import { GetAnimeList } from './anime.validation';
+import {
+  AnimeList,
+  AnimePlatformResponse,
+  AnimeResponse,
+  MalError,
+  MalListAnime,
+  PlatformResponse,
+} from '../types';
+import { CreateAnime, GetAnimeList, UpdateAnime } from './anime.validation';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { Prisma } from '../generated/prisma/client';
+
+dayjs.extend(utc);
 
 @Injectable()
 export class AnimeService {
@@ -67,6 +81,148 @@ export class AnimeService {
 
         return access_token;
       }
+    }
+  }
+
+  dateToISOString(date?: Date | string | null): string | null {
+    return date ? dayjs.utc(date).toISOString() : null;
+  }
+
+  ISOStringToYYYMMDD(date?: Date | string | null): string | null {
+    return date ? dayjs.utc(date).format('YYYY-MM-DD') : null;
+  }
+
+  async createAnime(data: CreateAnime): Promise<AnimeResponse> {
+    try {
+      const anime = await this.prisma.anime.create({
+        data: {
+          ...data,
+          releaseAt: this.dateToISOString(data.releaseAt),
+        },
+      });
+
+      return {
+        ...anime,
+        updateAt: this.dateToISOString(anime.updateAt) || dayjs().toISOString(),
+        releaseAt: this.ISOStringToYYYMMDD(anime.releaseAt),
+      };
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException('Anime already exists');
+      }
+
+      throw error;
+    }
+  }
+
+  async getAnimeDetail(id: number): Promise<
+    AnimeResponse & {
+      platforms: (AnimePlatformResponse & {
+        platform: PlatformResponse;
+      })[];
+    }
+  > {
+    const anime = await this.prisma.anime.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        platforms: {
+          include: {
+            platform: true,
+          },
+        },
+      },
+    });
+
+    if (!anime) {
+      throw new NotFoundException('Anime not found');
+    }
+
+    const animePlatforms = anime.platforms.map((animePlatform) => {
+      return {
+        ...animePlatform,
+        nextEpisodeAiringAt: this.dateToISOString(
+          animePlatform.nextEpisodeAiringAt,
+        ),
+        lastEpisodeAiredAt: this.dateToISOString(
+          animePlatform.lastEpisodeAiredAt,
+        ),
+      };
+    });
+
+    return {
+      ...anime,
+      updateAt: this.dateToISOString(anime.updateAt) || dayjs().toISOString(),
+      releaseAt: this.ISOStringToYYYMMDD(anime.releaseAt),
+      platforms: animePlatforms || [],
+    };
+  }
+
+  async updateAnime(
+    animeId: number,
+    data: UpdateAnime,
+  ): Promise<AnimeResponse> {
+    try {
+      const releaseAt =
+        data.releaseAt || data.releaseAt === null
+          ? this.dateToISOString(data.releaseAt)
+          : undefined;
+
+      const anime = await this.prisma.anime.update({
+        where: {
+          id: animeId,
+        },
+        data: {
+          ...data,
+          releaseAt,
+        },
+      });
+
+      return {
+        ...anime,
+        updateAt: this.dateToISOString(anime.updateAt) || dayjs().toISOString(),
+        releaseAt: this.ISOStringToYYYMMDD(anime.releaseAt),
+      };
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException('Anime not found');
+      }
+
+      throw error;
+    }
+  }
+
+  async deleteAnime(
+    animeId: number,
+  ): Promise<{ id: AnimeResponse['id']; title: AnimeResponse['title'] }> {
+    try {
+      const anime = await this.prisma.anime.delete({
+        where: {
+          id: animeId,
+        },
+        select: {
+          id: true,
+          title: true,
+        },
+      });
+
+      return anime;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException('Anime not found');
+      }
+
+      throw error;
     }
   }
 
