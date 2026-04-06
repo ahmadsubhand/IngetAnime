@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { PlatformResponse } from '../types';
-import type { PlatformName } from './platform.validator';
+import type { PlatformName } from './platform.validation';
 import { Prisma } from '../generated/prisma/client';
 
 @Injectable()

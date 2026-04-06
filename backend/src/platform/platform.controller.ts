@@ -11,8 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiResponse, PlatformResponse } from '../types';
-import type { PlatformId, PlatformName } from './platform.validator';
-import { PlatformValidation } from './platform.validator';
+import type { PlatformId, PlatformName } from './platform.validation';
+import { PlatformValidation } from './platform.validation';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { PlatformService } from './platform.service';
 import { AuthGuard } from '../auth/guard/auth.guard';
