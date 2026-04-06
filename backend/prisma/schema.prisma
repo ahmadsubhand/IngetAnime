@@ -107,11 +107,13 @@ model Anime {
 }
 
 model AnimePlatform {
-  id         Int @id @default(autoincrement())
-  animeId    Int @map("anime_id")
-  platformId Int @map("platform_id")
+  id         Int  @id @default(autoincrement())
+  animeId    Int  @map("anime_id")
+  platformId Int  @map("platform_id")
+  // each anime only have one link in every platform
+  linkId     Int  @map("link_id")
+  // MyAnimeList seperate each anime part to different entity while some platform merge all part to one entity
 
-  link                String     @unique
   accessType          AccessType @map("access_type")
   nextEpisodeAiringAt DateTime?  @map("next_episode_airing_at")
   lastEpisodeAiredAt  DateTime?  @map("last_episode_aired_at")
@@ -122,17 +124,30 @@ model AnimePlatform {
 
   anime     Anime       @relation(fields: [animeId], references: [id], onDelete: Cascade)
   platform  Platform    @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  link      Link        @relation(fields: [linkId], references: [id], onDelete: Cascade)
   animeList AnimeList[]
 
   @@unique([platformId, animeId])
   @@map("anime_platform")
 }
 
+model Link {
+  id         Int    @id @default(autoincrement())
+  platformId Int    @map("platform_id")
+  url        String @unique
+
+  platform       Platform        @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  animePlatforms AnimePlatform[]
+
+  @@map("links")
+}
+
 model Platform {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  animePlatform AnimePlatform[]
+  animePlatforms AnimePlatform[]
+  links          Link[]
 
   @@map("platforms")
 }

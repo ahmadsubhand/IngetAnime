@@ -40,7 +40,6 @@ export interface AnimePlatformResponse {
   id: number;
   animeId: number;
   platformId: number;
-  link: string;
   accessType: AccessType;
   nextEpisodeAiringAt: string | null;
   lastEpisodeAiredAt: string | null;
@@ -48,11 +47,18 @@ export interface AnimePlatformResponse {
   episodeAired: number;
   isMainPlatform: boolean;
   isHiatus: boolean;
+  link: LinkResponse;
 }
 
 export interface PlatformResponse {
   id: number;
   name: string;
+}
+
+export interface LinkResponse {
+  id: number;
+  url: string;
+  platformId: number;
 }
 
 // Google Auth Types
