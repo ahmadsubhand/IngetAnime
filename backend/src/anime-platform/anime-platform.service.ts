@@ -19,14 +19,13 @@ import {
   PlatformResponse,
 } from '../types';
 import { AnimePlatform, Prisma } from '../generated/prisma/client';
-import { UtcService } from '../common/utc.service';
-import dayjs from 'dayjs';
+import { DateFormatterService } from '../common/date-formatter.service';
 
 @Injectable()
 export class AnimePlatformService {
   constructor(
     private prisma: PrismaService,
-    private utc: UtcService,
+    private dateFormatter: DateFormatterService,
   ) {}
 
   async setUpMainPlatform(animeId: number) {
@@ -34,64 +33,6 @@ export class AnimePlatformService {
       where: { animeId },
       data: { isMainPlatform: false },
     });
-  }
-
-  // Request need undefined
-  formattedEpisodeAirRequest(
-    lastEpisodeAiredAt?: Date | string | null,
-    nextEpisodeAiringAt?: Date | string | null,
-  ): {
-    lastEpisodeAiredAt?: string | null;
-    nextEpisodeAiringAt?: string | null;
-  } {
-    let formattedLastAiredAt: string | null | undefined;
-    let formattedNextAiringAt: string | null | undefined;
-
-    if (lastEpisodeAiredAt) {
-      formattedLastAiredAt = dayjs(lastEpisodeAiredAt).toISOString();
-    } else {
-      formattedLastAiredAt = lastEpisodeAiredAt;
-    }
-
-    if (nextEpisodeAiringAt) {
-      formattedNextAiringAt = dayjs(nextEpisodeAiringAt).toISOString();
-    } else {
-      formattedNextAiringAt = nextEpisodeAiringAt;
-    }
-
-    return {
-      lastEpisodeAiredAt: formattedLastAiredAt,
-      nextEpisodeAiringAt: formattedNextAiringAt,
-    };
-  }
-
-  // Request avoid undefined
-  formattedEpisodeAirResponse(
-    lastEpisodeAiredAt: Date | string | null,
-    nextEpisodeAiringAt: Date | string | null,
-  ): {
-    lastEpisodeAiredAt: string | null;
-    nextEpisodeAiringAt: string | null;
-  } {
-    let formattedLastAiredAt: string | null;
-    let formattedNextAiringAt: string | null;
-
-    if (lastEpisodeAiredAt) {
-      formattedLastAiredAt = dayjs(lastEpisodeAiredAt).toISOString();
-    } else {
-      formattedLastAiredAt = lastEpisodeAiredAt;
-    }
-
-    if (nextEpisodeAiringAt) {
-      formattedNextAiringAt = dayjs(nextEpisodeAiringAt).toISOString();
-    } else {
-      formattedNextAiringAt = nextEpisodeAiringAt;
-    }
-
-    return {
-      lastEpisodeAiredAt: formattedLastAiredAt,
-      nextEpisodeAiringAt: formattedNextAiringAt,
-    };
   }
 
   async createAnimePlatformLink(link: string, platformId: number) {
@@ -151,7 +92,7 @@ export class AnimePlatformService {
       const animePlatform = await this.prisma.animePlatform.create({
         data: {
           ...newData,
-          ...this.formattedEpisodeAirRequest(
+          ...this.dateFormatter.animePlatformRequest(
             newData.lastEpisodeAiredAt,
             newData.nextEpisodeAiringAt,
           ),
@@ -173,7 +114,7 @@ export class AnimePlatformService {
 
       return {
         ...animePlatform,
-        ...this.formattedEpisodeAirResponse(
+        ...this.dateFormatter.animePlatformResponse(
           animePlatform.lastEpisodeAiredAt,
           animePlatform.nextEpisodeAiringAt,
         ),
@@ -212,16 +153,16 @@ export class AnimePlatformService {
     }
     return {
       ...animePlatform,
-      ...this.formattedEpisodeAirResponse(
+      ...this.dateFormatter.animePlatformResponse(
         animePlatform.lastEpisodeAiredAt,
         animePlatform.nextEpisodeAiringAt,
       ),
       anime: {
         ...animePlatform.anime,
-        updateAt: animePlatform.anime.updateAt
-          ? dayjs(animePlatform.anime.updateAt).toISOString()
-          : dayjs().toISOString(),
-        releaseAt: this.utc.ISOStringToYYYMMDD(animePlatform.anime.releaseAt),
+        ...this.dateFormatter.animeResponse(
+          animePlatform.anime.releaseAt,
+          animePlatform.anime.updateAt,
+        ),
       },
     };
   }
@@ -255,7 +196,7 @@ export class AnimePlatformService {
         },
         data: {
           ...newData,
-          ...this.formattedEpisodeAirRequest(
+          ...this.dateFormatter.animePlatformRequest(
             newData.lastEpisodeAiredAt,
             newData.nextEpisodeAiringAt,
           ),
@@ -276,7 +217,7 @@ export class AnimePlatformService {
 
       return {
         ...animePlatform,
-        ...this.formattedEpisodeAirResponse(
+        ...this.dateFormatter.animePlatformResponse(
           animePlatform.lastEpisodeAiredAt,
           animePlatform.nextEpisodeAiringAt,
         ),
@@ -339,7 +280,7 @@ export class AnimePlatformService {
           },
           data: {
             ...newData,
-            ...this.formattedEpisodeAirRequest(
+            ...this.dateFormatter.animePlatformRequest(
               data.lastEpisodeAiredAt,
               data.nextEpisodeAiringAt,
             ),
@@ -373,7 +314,7 @@ export class AnimePlatformService {
             data: {
               ...newData,
               ...param,
-              ...this.formattedEpisodeAirRequest(
+              ...this.dateFormatter.animePlatformRequest(
                 data.lastEpisodeAiredAt,
                 data.nextEpisodeAiringAt,
               ),
@@ -399,7 +340,7 @@ export class AnimePlatformService {
 
       return {
         ...animePlatform,
-        ...this.formattedEpisodeAirResponse(
+        ...this.dateFormatter.animePlatformResponse(
           animePlatform.lastEpisodeAiredAt,
           animePlatform.nextEpisodeAiringAt,
         ),
