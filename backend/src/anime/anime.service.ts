@@ -20,6 +20,7 @@ import { CreateAnime, GetAnimeList, UpdateAnime } from './anime.validation';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Prisma } from '../generated/prisma/client';
+import { DateFormatterService } from '../common/date-formatter.service';
 
 dayjs.extend(utc);
 
@@ -30,6 +31,7 @@ export class AnimeService {
     private prisma: PrismaService,
     private mal: MalService,
     private config: ConfigService,
+    private dateFormatter: DateFormatterService,
   ) {
     this.CLIENT_ID = this.config.getOrThrow('MAL_CLIENT_ID');
   }
@@ -84,27 +86,18 @@ export class AnimeService {
     }
   }
 
-  dateToISOString(date?: Date | string | null): string | null {
-    return date ? dayjs.utc(date).toISOString() : null;
-  }
-
-  ISOStringToYYYMMDD(date?: Date | string | null): string | null {
-    return date ? dayjs.utc(date).format('YYYY-MM-DD') : null;
-  }
-
   async createAnime(data: CreateAnime): Promise<AnimeResponse> {
     try {
       const anime = await this.prisma.anime.create({
         data: {
           ...data,
-          releaseAt: this.dateToISOString(data.releaseAt),
+          ...this.dateFormatter.animeRequest(data.releaseAt),
         },
       });
 
       return {
         ...anime,
-        updateAt: this.dateToISOString(anime.updateAt) || dayjs().toISOString(),
-        releaseAt: this.ISOStringToYYYMMDD(anime.releaseAt),
+        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
       };
     } catch (error) {
       if (
@@ -146,19 +139,16 @@ export class AnimeService {
     const animePlatforms = anime.platforms.map((animePlatform) => {
       return {
         ...animePlatform,
-        nextEpisodeAiringAt: this.dateToISOString(
-          animePlatform.nextEpisodeAiringAt,
-        ),
-        lastEpisodeAiredAt: this.dateToISOString(
+        ...this.dateFormatter.animePlatformResponse(
           animePlatform.lastEpisodeAiredAt,
+          animePlatform.nextEpisodeAiringAt,
         ),
       };
     });
 
     return {
       ...anime,
-      updateAt: this.dateToISOString(anime.updateAt) || dayjs().toISOString(),
-      releaseAt: this.ISOStringToYYYMMDD(anime.releaseAt),
+      ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
       platforms: animePlatforms || [],
     };
   }
@@ -168,25 +158,19 @@ export class AnimeService {
     data: UpdateAnime,
   ): Promise<AnimeResponse> {
     try {
-      const releaseAt =
-        data.releaseAt || data.releaseAt === null
-          ? this.dateToISOString(data.releaseAt)
-          : undefined;
-
       const anime = await this.prisma.anime.update({
         where: {
           id: animeId,
         },
         data: {
           ...data,
-          releaseAt,
+          ...this.dateFormatter.animeRequest(data.releaseAt),
         },
       });
 
       return {
         ...anime,
-        updateAt: this.dateToISOString(anime.updateAt) || dayjs().toISOString(),
-        releaseAt: this.ISOStringToYYYMMDD(anime.releaseAt),
+        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
       };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {

@@ -16,6 +16,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtService } from './jwt.service';
 import { GoogleService } from './google.service';
 import { UtcService } from './utc.service';
+import { DateFormatterService } from './date-formatter.service';
 
 @Global()
 @Module({
@@ -80,6 +81,7 @@ import { UtcService } from './utc.service';
     GoogleService,
     MalService,
     UtcService,
+    DateFormatterService,
   ],
   exports: [
     PrismaService,
@@ -90,6 +92,7 @@ import { UtcService } from './utc.service';
     GoogleService,
     MalService,
     UtcService,
+    DateFormatterService,
   ],
 })
 export class CommonModule {}
