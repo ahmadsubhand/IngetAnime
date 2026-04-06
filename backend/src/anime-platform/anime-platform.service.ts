@@ -11,7 +11,7 @@ import {
   CreateAnimePlatform,
   CreateOrUpdateAnimePlatform,
   UpdateAnimePlatform,
-} from './anime-platform.validator';
+} from './anime-platform.validation';
 import {
   AnimePlatformResponse,
   AnimeResponse,

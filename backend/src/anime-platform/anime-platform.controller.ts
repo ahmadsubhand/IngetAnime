@@ -14,13 +14,13 @@ import {
 } from '@nestjs/common';
 import { AnimePlatformService } from './anime-platform.service';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
-import { AnimePlatformValidation } from './anime-platform.validator';
+import { AnimePlatformValidation } from './anime-platform.validation';
 import type {
   AnimePlatformId,
   CreateAnimePlatform,
   CreateOrUpdateAnimePlatform,
   UpdateAnimePlatform,
-} from './anime-platform.validator';
+} from './anime-platform.validation';
 import {
   AnimePlatformResponse,
   AnimeResponse,
