@@ -1,7 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
-import { AccessType, Role } from '../generated/prisma/enums';
+import { AccessType, Role, AnimeStatus } from '../generated/prisma/enums';
 import { GetAuthUrl } from '../auth/auth.validation';
-import { CreateAnime } from '../anime/anime.validation';
 
 export interface JwtPayload {
   sub: number;
@@ -33,7 +32,7 @@ export interface AnimeResponse {
   titleID: string | null;
   releaseAt: string | null;
   episodeTotal: number;
-  status: CreateAnime['status'];
+  status: AnimeStatus;
 }
 
 export interface AnimePlatformResponse {

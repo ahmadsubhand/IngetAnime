@@ -133,6 +133,7 @@ export class AnimeService {
         platforms: {
           include: {
             platform: true,
+            link: true,
           },
         },
       },
@@ -188,11 +189,12 @@ export class AnimeService {
         releaseAt: this.ISOStringToYYYMMDD(anime.releaseAt),
       };
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
-      ) {
-        throw new NotFoundException('Anime not found');
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException('Anime already exists');
+        } else if (error.code === 'P2025') {
+          throw new NotFoundException('Anime not found');
+        }
       }
 
       throw error;

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { IndexValidation } from '../validator/index.validation';
+import { AnimeStatus } from '../generated/prisma/enums';
 
 export const idBody = z.number().int().positive();
 
@@ -25,6 +27,8 @@ export const fields = z.string().regex(/^[^,\s]+(,[^,\s]+)*$/, {
 });
 
 export class AnimeValidation {
+  private static statusTypeValues = Object.values(AnimeStatus);
+
   static readonly CREATE_ANIME = z.object({
     malId: z.number().int().positive(),
     picture: z.url(),
@@ -39,20 +43,13 @@ export class AnimeValidation {
       .transform((value) => (value === '' ? null : value))
       .nullable()
       .default(null),
-    releaseAt: z
-      .string('Invalid date format. Use YYYY-MM-DD')
-      .regex(/^$|^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use YYYY-MM-DD')
-      .refine((value) => !value || !isNaN(Date.parse(value)), 'Invalid date')
-      .transform((value) => (value === '' ? null : value))
-      .nullable()
-      .default(null),
+    releaseAt: IndexValidation.OPTIONAL_DATE.default(null),
     episodeTotal: z.number().int().nonnegative().default(0),
     status: z
-      .enum(['currently_airing', 'finished_airing', 'not_yet_aired'], {
-        error:
-          'status must be one of: currently_airing, finished_airing, or not_yet_aired',
+      .enum(AnimeStatus, {
+        error: `Status must be one of: ${this.statusTypeValues.join(', ')}`,
       })
-      .default('not_yet_aired'),
+      .default(AnimeStatus.not_yet_aired),
   });
 
   static readonly ANIME_ID = z.object({
@@ -72,18 +69,11 @@ export class AnimeValidation {
       .transform((value) => (value === '' ? null : value))
       .nullable()
       .optional(),
-    releaseAt: z
-      .string('Invalid date format. Use YYYY-MM-DD')
-      .regex(/^$|^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use YYYY-MM-DD')
-      .refine((value) => !value || !isNaN(Date.parse(value)), 'Invalid date')
-      .transform((value) => (value === '' ? null : value))
-      .nullable()
-      .optional(),
+    releaseAt: IndexValidation.OPTIONAL_DATE.optional(),
     episodeTotal: z.number().int().nonnegative().optional(),
     status: z
-      .enum(['currently_airing', 'finished_airing', 'not_yet_aired'], {
-        error:
-          'status must be one of: currently_airing, finished_airing, or not_yet_aired',
+      .enum(AnimeStatus, {
+        error: `Status must be one of: ${this.statusTypeValues.join(', ')}`,
       })
       .optional(),
   });
