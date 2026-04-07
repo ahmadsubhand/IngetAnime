@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -8,7 +9,14 @@ import { ConfigService } from '@nestjs/config';
 import cryptoRandomString from 'crypto-random-string';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { MalError, MalProfile, MalToken } from '../types';
+import {
+  MalError,
+  MalProfile,
+  MalToken,
+  MalStatusRequest,
+  MalStatusResponse,
+} from '../types';
+import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class MalService {
@@ -20,6 +28,7 @@ export class MalService {
   constructor(
     config: ConfigService,
     @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
+    private prisma: PrismaService,
   ) {
     this.CODE_CHALLENGE = cryptoRandomString({
       length: 64,
@@ -121,5 +130,125 @@ export class MalService {
     }
 
     return data;
+  }
+
+  async getMalConnection(userId?: number): Promise<string | undefined> {
+    if (!userId) {
+      return undefined;
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        malAccessToken: true,
+        malRefreshToken: true,
+      },
+    });
+
+    if (!user || !user.malAccessToken || !user.malRefreshToken) {
+      return undefined;
+    }
+
+    try {
+      // Check token validity
+      await this.getProfile(user.malAccessToken);
+      return user.malAccessToken;
+    } catch (err) {
+      if (err instanceof UnauthorizedException) {
+        const { access_token, refresh_token } = await this.getNewAccessToken(
+          user.malRefreshToken,
+        );
+
+        await this.prisma.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            malAccessToken: access_token,
+            malRefreshToken: refresh_token,
+          },
+        });
+
+        return access_token;
+      }
+    }
+  }
+
+  async updateMalStatus(
+    userId: number,
+    malId: number,
+    data: MalStatusRequest,
+  ): Promise<MalStatusResponse> {
+    const accessToken = await this.getMalConnection(userId);
+    if (!accessToken) {
+      throw new ForbiddenException('Account not connected to MyAnimeList');
+    }
+
+    const { status, num_watched_episodes, score, start_date, finish_date } =
+      data;
+
+    const url = `https://api.myanimelist.net/v2/anime/${malId}/my_list_status`;
+    const params = new URLSearchParams({
+      ...(status && { status }),
+      ...((num_watched_episodes === 0 || num_watched_episodes) && {
+        num_watched_episodes: num_watched_episodes.toString(),
+      }),
+      ...((score === 0 || score) && {
+        score: score.toString(),
+      }),
+      ...(start_date === null
+        ? { start_date: '0000-00-00' }
+        : start_date && { start_date }),
+      ...(finish_date === null
+        ? { finish_date: '0000-00-00' }
+        : finish_date && { finish_date }),
+    });
+
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: params.toString(),
+    });
+    const result = (await response.json()) as MalStatusResponse | MalError;
+    if ('error' in result) {
+      throw new BadRequestException(
+        result.hint || result.message || result.error,
+      );
+    }
+
+    return result;
+  }
+
+  async deleteMalStatus(
+    userId: number,
+    malId: number,
+  ): Promise<MalStatusResponse> {
+    const accessToken = await this.getMalConnection(userId);
+    if (!accessToken) {
+      throw new ForbiddenException('Account not connected to MyAnimeList');
+    }
+
+    const url = `https://api.myanimelist.net/v2/anime/${malId}/my_list_status`;
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const result = (await response.json()) as MalStatusResponse | MalError;
+    if ('error' in result) {
+      throw new BadRequestException(
+        result.hint || result.message || result.error,
+      );
+    }
+    console.log(result);
+
+    return result;
   }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE anime_list RENAME TO user_anime_list;

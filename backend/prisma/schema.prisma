@@ -59,12 +59,12 @@ model User {
   malAccessToken  String? @unique @map("mal_access_token")
   malRefreshToken String? @unique @map("mal_refresh_token")
 
-  animList AnimeList[]
+  userAnimeList UserAnimeList[]
 
   @@map("users")
 }
 
-model AnimeList {
+model UserAnimeList {
   id              Int  @id @default(autoincrement())
   userId          Int  @map("user_id")
   animeId         Int  @map("anime_id")
@@ -84,7 +84,7 @@ model AnimeList {
   platform AnimePlatform? @relation(fields: [animePlatformId], references: [id])
 
   @@unique([userId, animeId])
-  @@map("anime_list")
+  @@map("user_anime_list")
 }
 
 model Anime {
@@ -100,18 +100,18 @@ model Anime {
   episodeTotal Int         @default(0) @map("episode_total")
   status       AnimeStatus @default(not_yet_aired)
 
-  platforms AnimePlatform[]
-  animeList AnimeList[]
+  platforms     AnimePlatform[]
+  userAnimeList UserAnimeList[]
 
   @@map("anime")
 }
 
 model AnimePlatform {
-  id         Int  @id @default(autoincrement())
-  animeId    Int  @map("anime_id")
-  platformId Int  @map("platform_id")
+  id         Int @id @default(autoincrement())
+  animeId    Int @map("anime_id")
+  platformId Int @map("platform_id")
   // each anime only have one link in every platform
-  linkId     Int  @map("link_id")
+  linkId     Int @map("link_id")
   // MyAnimeList seperate each anime part to different entity while some platform merge all part to one entity
 
   accessType          AccessType @map("access_type")
@@ -122,10 +122,10 @@ model AnimePlatform {
   isMainPlatform      Boolean    @default(false) @map("is_main_platform")
   isHiatus            Boolean    @default(false) @map("is_hiatus")
 
-  anime     Anime       @relation(fields: [animeId], references: [id], onDelete: Cascade)
-  platform  Platform    @relation(fields: [platformId], references: [id], onDelete: Cascade)
-  link      Link        @relation(fields: [linkId], references: [id], onDelete: Cascade)
-  animeList AnimeList[]
+  anime         Anime           @relation(fields: [animeId], references: [id], onDelete: Cascade)
+  platform      Platform        @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  link          Link            @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  userAnimeList UserAnimeList[]
 
   @@unique([platformId, animeId])
   @@map("anime_platform")

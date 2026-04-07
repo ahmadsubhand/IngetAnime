@@ -1,5 +1,10 @@
 import { HttpStatus } from '@nestjs/common';
-import { AccessType, Role, AnimeStatus } from '../generated/prisma/enums';
+import {
+  AccessType,
+  Role,
+  AnimeStatus,
+  ListStatus,
+} from '../generated/prisma/enums';
 import { GetAuthUrl } from '../auth/auth.validation';
 
 export interface JwtPayload {
@@ -58,6 +63,21 @@ export interface LinkResponse {
   id: number;
   url: string;
   platformId: number;
+}
+
+export interface UserAnimeListResponse {
+  id: number;
+  userId: number;
+  animeId: number;
+  animePlatformId: number | null;
+  startDate: string | null;
+  finishDate: string | null;
+  progress: number;
+  score: number;
+  episodesDifference: number;
+  status: ListStatus;
+  isSyncedWithMal: boolean;
+  updateAt: string;
 }
 
 // Google Auth Types
@@ -192,4 +212,27 @@ interface AnimeList {
     prev?: string;
     next?: string;
   };
+}
+
+interface MalStatusRequest {
+  status?: ListStatus;
+  num_watched_episodes?: number;
+  score?: number;
+  start_date?: string | null;
+  finish_date?: string | null;
+}
+
+interface MalStatusResponse {
+  status: ListStatus;
+  score: number;
+  num_episodes_watched: number;
+  is_rewatching: boolean;
+  updated_at: string;
+  start_date?: string;
+  finish_date?: string;
+  // priority: 0;
+  // num_times_rewatched: 0;
+  // rewatch_value: 0;
+  // tags: [];
+  // comments: '';
 }
