@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
-import { MalService } from '../common/mal.service';
 import { ConfigService } from '@nestjs/config';
 import {
   AnimePlatformResponse,
@@ -19,7 +18,6 @@ import { DateFormatterService } from '../common/date-formatter.service';
 export class AnimeService {
   constructor(
     private prisma: PrismaService,
-    private mal: MalService,
     private config: ConfigService,
     private dateFormatter: DateFormatterService,
   ) {}
