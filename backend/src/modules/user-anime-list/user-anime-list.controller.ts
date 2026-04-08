@@ -16,7 +16,7 @@ import {
 import { UserAnimeListService } from './user-anime-list.service';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import type { Request, Response } from 'express';
-import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import type {
   AnimeId,
   CreateOrUpdateUserAnimeList,
@@ -27,11 +27,11 @@ import { UserAnimeListValidation } from './user-anime-list.validation';
 import {
   AnimeResponse,
   ApiResponse,
-  JwtPayload,
   UserAnimeListFullRelation,
   UserAnimeListResponse,
   UserAnimeListShortRelation,
-} from '../types';
+} from '../../types/entity';
+import { JwtPayload } from '../../types';
 
 @Controller('/anime')
 export class UserAnimeListController {

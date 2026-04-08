@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AnimePlatformService } from './anime-platform.service';
-import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { AnimePlatformValidation } from './anime-platform.validation';
 import type {
   AnimePlatformId,
@@ -26,7 +26,7 @@ import {
   AnimePlatformResponse,
   AnimePlatformShortRelation,
   ApiResponse,
-} from '../types';
+} from '../../types/entity';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
 import type { Response } from 'express';

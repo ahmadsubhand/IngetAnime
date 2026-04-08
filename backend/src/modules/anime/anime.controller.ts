@@ -17,8 +17,8 @@ import {
   AnimeResponse,
   ApiResponse,
   PlatformResponse,
-} from '../types';
-import { ZodValidationPipe } from '../common/zod-validation.pipe';
+} from '../../types/entity';
+import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { AnimeValidation } from './anime.validation';
 import type { AnimeId, CreateAnime, UpdateAnime } from './anime.validation';
 import { AuthGuard } from '../auth/guard/auth.guard';

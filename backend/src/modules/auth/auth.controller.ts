@@ -23,22 +23,18 @@ import type {
   ResetPassword,
   ThirdPartyLogin,
 } from './auth.validation';
-import { ZodValidationPipe } from '../common/zod-validation.pipe';
-import type {
-  ApiResponse,
-  JwtPayload,
-  StateObject,
-  UserResponse,
-} from '../types';
+import { ZodValidationPipe } from '../../common/zod-validation.pipe';
+import type { JwtPayload, StateObject } from '../../types';
+import type { ApiResponse, UserResponse } from '../../types/entity';
 import { Throttle } from '@nestjs/throttler';
-import { CookieService } from '../common/cookie.service';
+import { CookieService } from '../../common/cookie.service';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { ConfigService } from '@nestjs/config';
-import { MalService } from '../common/mal.service';
+import { MalService } from '../../common/mal.service';
 import { AuthGuard } from './guard/auth.guard';
-import { JwtService } from '../common/jwt.service';
-import { GoogleService } from '../common/google.service';
+import { JwtService } from '../../common/jwt.service';
+import { GoogleService } from '../../common/google.service';
 import cryptoRandomString from 'crypto-random-string';
 
 dayjs.extend(duration);

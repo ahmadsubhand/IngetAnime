@@ -10,10 +10,10 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiResponse, PlatformResponse } from '../types';
+import { ApiResponse, PlatformResponse } from '../../types/entity';
 import type { PlatformId, PlatformName } from './platform.validation';
 import { PlatformValidation } from './platform.validation';
-import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { PlatformService } from './platform.service';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';

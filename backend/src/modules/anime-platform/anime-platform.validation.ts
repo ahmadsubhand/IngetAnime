@@ -1,6 +1,6 @@
 import z from 'zod';
-import { AccessType } from '../generated/prisma/enums';
-import { IndexValidation } from '../validator/index.validation';
+import { AccessType } from '../../generated/prisma/enums';
+import { IndexValidation } from '../../validator/index.validation';
 
 export class AnimePlatformValidation {
   private static accessTypeValues = Object.values(AccessType);

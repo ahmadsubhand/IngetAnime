@@ -3,10 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
-import { PlatformResponse } from '../types';
+import { PrismaService } from '../../common/prisma.service';
+import { PlatformResponse } from '../../types/entity';
 import type { PlatformName } from './platform.validation';
-import { Prisma } from '../generated/prisma/client';
+import { Prisma } from '../../generated/prisma/client';
 
 @Injectable()
 export class PlatformService {

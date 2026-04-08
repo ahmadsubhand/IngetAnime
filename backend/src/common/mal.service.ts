@@ -15,7 +15,7 @@ import {
   MalToken,
   MalStatusRequest,
   MalStatusResponse,
-} from '../types';
+} from '../types/mal';
 import { PrismaService } from './prisma.service';
 
 @Injectable()

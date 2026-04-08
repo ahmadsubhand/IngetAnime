@@ -1,6 +1,6 @@
 import z from 'zod';
-import { IndexValidation } from '../validator/index.validation';
-import { ListStatus } from '../generated/prisma/enums';
+import { IndexValidation } from '../../validator/index.validation';
+import { ListStatus } from '../../generated/prisma/enums';
 
 export class UserAnimeListValidation {
   private static statusTypeValues = Object.values(ListStatus);

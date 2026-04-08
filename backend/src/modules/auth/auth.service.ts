@@ -6,17 +6,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
+import { PrismaService } from '../../common/prisma.service';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { MalProfile, UserResponse } from '../types';
+import { UserResponse } from '../../types/entity';
+import { MalProfile } from '../../types/mal';
 import bcrypt from 'bcrypt';
 import cryptoRandomString from 'crypto-random-string';
-import { Prisma } from '../generated/prisma/client';
-import { MailService } from '../common/mail.service';
+import { Prisma } from '../../generated/prisma/client';
+import { MailService } from '../../common/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { Login, Register, ResetPassword } from './auth.validation';
-import { JwtService } from '../common/jwt.service';
+import { JwtService } from '../../common/jwt.service';
 
 dayjs.extend(duration);
 

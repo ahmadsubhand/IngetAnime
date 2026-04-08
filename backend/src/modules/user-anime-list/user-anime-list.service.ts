@@ -4,21 +4,21 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
+import { PrismaService } from '../../common/prisma.service';
 import {
   CreateOrUpdateUserAnimeList,
   CreateUserAnimeList,
   UpdateUserAnimeList,
 } from './user-anime-list.validation';
-import { Prisma, UserAnimeList } from '../generated/prisma/client';
+import { Prisma, UserAnimeList } from '../../generated/prisma/client';
 import {
   AnimeResponse,
   UserAnimeListFullRelation,
   UserAnimeListResponse,
   UserAnimeListShortRelation,
-} from '../types';
-import { DateFormatterService } from '../common/date-formatter.service';
-import { MalService } from '../common/mal.service';
+} from '../../types/entity';
+import { DateFormatterService } from '../../common/date-formatter.service';
+import { MalService } from '../../common/mal.service';
 
 @Injectable()
 export class UserAnimeListService {

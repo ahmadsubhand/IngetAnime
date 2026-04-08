@@ -7,9 +7,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import { JwtService } from '../../common/jwt.service';
-import { JwtPayload, UserResponse } from '../../types';
-import { PrismaService } from '../../common/prisma.service';
+import { JwtService } from '../../../common/jwt.service';
+import { JwtPayload } from '../../../types';
+import { UserResponse } from '../../../types/entity';
+import { PrismaService } from '../../../common/prisma.service';
 import { Reflector } from '@nestjs/core';
 import { Role } from '../decorator/role.decarator';
 

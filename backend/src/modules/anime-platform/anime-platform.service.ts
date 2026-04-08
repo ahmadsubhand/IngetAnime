@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
+import { PrismaService } from '../../common/prisma.service';
 import {
   AnimePlatformId,
   CreateAnimePlatform,
@@ -16,9 +16,9 @@ import {
   AnimePlatformFullRelation,
   AnimePlatformResponse,
   AnimePlatformShortRelation,
-} from '../types';
-import { AnimePlatform, Prisma } from '../generated/prisma/client';
-import { DateFormatterService } from '../common/date-formatter.service';
+} from '../../types/entity';
+import { AnimePlatform, Prisma } from '../../generated/prisma/client';
+import { DateFormatterService } from '../../common/date-formatter.service';
 
 @Injectable()
 export class AnimePlatformService {

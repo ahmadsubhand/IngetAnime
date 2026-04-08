@@ -3,16 +3,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../common/prisma.service';
+import { PrismaService } from '../../common/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import {
   AnimePlatformResponse,
   AnimeResponse,
   PlatformResponse,
-} from '../types';
+} from '../../types/entity';
 import { CreateAnime, UpdateAnime } from './anime.validation';
-import { Prisma } from '../generated/prisma/client';
-import { DateFormatterService } from '../common/date-formatter.service';
+import { Prisma } from '../../generated/prisma/client';
+import { DateFormatterService } from '../../common/date-formatter.service';
 
 @Injectable()
 export class AnimeService {
