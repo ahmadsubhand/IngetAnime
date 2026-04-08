@@ -35,6 +35,14 @@ export interface AnimeResponse {
   status: AnimeStatus;
 }
 
+export interface AnimeFullRelation {
+  animePlatforms: (AnimePlatformResponse & {
+    platform: PlatformResponse;
+    link: LinkResponse;
+  })[];
+  userAnimeList: UserAnimeListResponse | null;
+}
+
 export interface AnimePlatformResponse {
   id: number;
   animeId: number;
@@ -96,7 +104,7 @@ interface UserAnimeListShortRelation {
   anime: {
     title: AnimeResponse['title'];
   };
-  platform: {
+  animePlatform: {
     link: { url: LinkResponse['url'] };
     platform: { name: PlatformResponse['name'] };
   } | null;
@@ -104,7 +112,7 @@ interface UserAnimeListShortRelation {
 
 interface UserAnimeListFullRelation {
   anime: AnimeResponse;
-  platform:
+  animePlatform:
     | ({
         link: LinkResponse;
         platform: PlatformResponse;
@@ -113,18 +121,7 @@ interface UserAnimeListFullRelation {
 }
 
 interface AnimeListResponse {
-  anime: (AnimeNode &
-    AnimeResponse & {
-      platforms: (AnimePlatformResponse & {
-        link: LinkResponse;
-        platform: PlatformResponse;
-      })[];
-      userAnimeList:
-        | (UserAnimeListResponse & {
-            platform: AnimePlatformResponse | null;
-          })
-        | null;
-    })[];
+  anime: (AnimeNode & AnimeResponse & AnimeFullRelation)[];
   paging?: {
     prev?: string;
     next?: string;

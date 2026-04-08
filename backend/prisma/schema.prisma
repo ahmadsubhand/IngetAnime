@@ -79,9 +79,9 @@ model UserAnimeList {
   isSyncedWithMal    Boolean    @default(false)
   updatedAt          DateTime   @updatedAt @map("updated_at")
 
-  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  anime    Anime          @relation(fields: [animeId], references: [id], onDelete: Cascade)
-  platform AnimePlatform? @relation(fields: [animePlatformId], references: [id])
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anime         Anime          @relation(fields: [animeId], references: [id], onDelete: Cascade)
+  animePlatform AnimePlatform? @relation(fields: [animePlatformId], references: [id])
 
   @@unique([userId, animeId])
   @@map("user_anime_list")
@@ -100,8 +100,8 @@ model Anime {
   episodeTotal Int         @default(0) @map("episode_total")
   status       AnimeStatus @default(not_yet_aired)
 
-  platforms     AnimePlatform[]
-  userAnimeList UserAnimeList[]
+  animePlatforms AnimePlatform[]
+  userAnimeList  UserAnimeList[]
 
   @@map("anime")
 }
