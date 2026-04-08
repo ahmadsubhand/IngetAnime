@@ -51,6 +51,23 @@ export interface AnimePlatformResponse {
   episodeAired: number;
   isMainPlatform: boolean;
   isHiatus: boolean;
+}
+
+export interface AnimePlatformShortRelation {
+  platform: {
+    name: PlatformResponse['name'];
+  };
+  anime: {
+    title: AnimeResponse['title'];
+  };
+  link: {
+    url: LinkResponse['url'];
+  };
+}
+
+export interface AnimePlatformFullRelation {
+  platform: PlatformResponse;
+  anime: AnimeResponse;
   link: LinkResponse;
 }
 

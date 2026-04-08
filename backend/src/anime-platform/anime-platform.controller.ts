@@ -22,11 +22,10 @@ import type {
   UpdateAnimePlatform,
 } from './anime-platform.validation';
 import {
+  AnimePlatformFullRelation,
   AnimePlatformResponse,
-  AnimeResponse,
+  AnimePlatformShortRelation,
   ApiResponse,
-  LinkResponse,
-  PlatformResponse,
 } from '../types';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
@@ -45,17 +44,7 @@ export class AnimePlatformController {
     param: AnimePlatformId,
     @Body(new ZodValidationPipe(AnimePlatformValidation.CREATE_ANIME_PLATFORM))
     data: CreateAnimePlatform,
-  ): Promise<
-    ApiResponse<
-      Omit<AnimePlatformResponse, 'link'> & {
-        platform: { name: PlatformResponse['name'] };
-      } & {
-        anime: { title: AnimeResponse['title'] };
-      } & {
-        link: { url: LinkResponse['url'] };
-      }
-    >
-  > {
+  ): Promise<ApiResponse<AnimePlatformResponse & AnimePlatformShortRelation>> {
     const animePlatform = await this.service.createAnimePlatform(param, data);
     return {
       message: 'Create anime platform successfully',
@@ -69,13 +58,7 @@ export class AnimePlatformController {
   async getAnimePlatformDetail(
     @Param(new ZodValidationPipe(AnimePlatformValidation.ANIME_PLATFORM_ID))
     param: AnimePlatformId,
-  ): Promise<
-    ApiResponse<
-      AnimePlatformResponse & { platform: PlatformResponse } & {
-        anime: AnimeResponse;
-      }
-    >
-  > {
+  ): Promise<ApiResponse<AnimePlatformResponse & AnimePlatformFullRelation>> {
     const animePlatform = await this.service.getAnimePlatformDetail(param);
     return {
       message: 'Get anime platform detail successfully',
@@ -93,17 +76,7 @@ export class AnimePlatformController {
     param: AnimePlatformId,
     @Body(new ZodValidationPipe(AnimePlatformValidation.UPDATE_ANIME_PLATFORM))
     data: UpdateAnimePlatform,
-  ): Promise<
-    ApiResponse<
-      Omit<AnimePlatformResponse, 'link'> & {
-        platform: { name: PlatformResponse['name'] };
-      } & {
-        anime: { title: AnimeResponse['title'] };
-      } & {
-        link: { url: LinkResponse['url'] };
-      }
-    >
-  > {
+  ): Promise<ApiResponse<AnimePlatformResponse & AnimePlatformShortRelation>> {
     const animePlatform = await this.service.updateAnimePlatform(param, data);
     return {
       message: 'Update anime platform successfully',
@@ -125,17 +98,7 @@ export class AnimePlatformController {
     )
     data: CreateOrUpdateAnimePlatform,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<
-    ApiResponse<
-      Omit<AnimePlatformResponse, 'link'> & {
-        platform: { name: PlatformResponse['name'] };
-      } & {
-        anime: { title: AnimeResponse['title'] };
-      } & {
-        link: { url: LinkResponse['url'] };
-      }
-    >
-  > {
+  ): Promise<ApiResponse<AnimePlatformResponse & AnimePlatformShortRelation>> {
     const { statusCode, ...animePlatform } =
       await this.service.createOrUpdateAnimePlatform(param, data);
 
@@ -159,13 +122,7 @@ export class AnimePlatformController {
     param: AnimePlatformId,
   ): Promise<
     ApiResponse<
-      {
-        id: AnimePlatformResponse['id'];
-      } & {
-        platform: { name: PlatformResponse['name'] };
-      } & {
-        anime: { title: AnimeResponse['title'] };
-      }
+      { id: AnimePlatformResponse['id'] } & AnimePlatformShortRelation
     >
   > {
     const animePlatform = await this.service.deleteAnimePlatform(param);
