@@ -80,6 +80,26 @@ export interface UserAnimeListResponse {
   updateAt: string;
 }
 
+interface UserAnimeListShortRelation {
+  anime: {
+    title: AnimeResponse['title'];
+  };
+  platform: {
+    link: { url: LinkResponse['url'] };
+    platform: { name: PlatformResponse['name'] };
+  } | null;
+}
+
+interface UserAnimeListFullRelation {
+  anime: AnimeResponse;
+  platform:
+    | ({
+        link: LinkResponse;
+        platform: PlatformResponse;
+      } & AnimePlatformResponse)
+    | null;
+}
+
 // Google Auth Types
 
 interface StateObject {

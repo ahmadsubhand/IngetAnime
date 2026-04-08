@@ -25,13 +25,12 @@ import type {
 } from './user-anime-list.validation';
 import { UserAnimeListValidation } from './user-anime-list.validation';
 import {
-  AnimePlatformResponse,
   AnimeResponse,
   ApiResponse,
   JwtPayload,
-  LinkResponse,
-  PlatformResponse,
+  UserAnimeListFullRelation,
   UserAnimeListResponse,
+  UserAnimeListShortRelation,
 } from '../types';
 
 @Controller('/anime')
@@ -47,19 +46,7 @@ export class UserAnimeListController {
     param: AnimeId,
     @Body(new ZodValidationPipe(UserAnimeListValidation.CREATE_USER_ANIME_LIST))
     data: CreateUserAnimeList,
-  ): Promise<
-    ApiResponse<
-      UserAnimeListResponse & {
-        anime: { title: AnimeResponse['title'] };
-      } & {
-        platform:
-          | ({ link: { url: LinkResponse['url'] } } & {
-              platform: { name: PlatformResponse['name'] };
-            })
-          | null;
-      }
-    >
-  > {
+  ): Promise<ApiResponse<UserAnimeListResponse & UserAnimeListShortRelation>> {
     const userAnimeList = await this.service.createUserAnimeList(
       param.animeId,
       req.user.sub,
@@ -79,21 +66,7 @@ export class UserAnimeListController {
     @Req() req: Request & { user: JwtPayload },
     @Param(new ZodValidationPipe(UserAnimeListValidation.ANIME_ID))
     param: AnimeId,
-  ): Promise<
-    ApiResponse<
-      UserAnimeListResponse & {
-        anime: AnimeResponse;
-      } & {
-        platform:
-          | (AnimePlatformResponse & {
-              link: LinkResponse;
-            } & {
-              platform: PlatformResponse;
-            })
-          | null;
-      }
-    >
-  > {
+  ): Promise<ApiResponse<UserAnimeListResponse & UserAnimeListFullRelation>> {
     const userAnimeList = await this.service.getUserAnimeListDetail(
       param.animeId,
       req.user.sub,
@@ -114,19 +87,7 @@ export class UserAnimeListController {
     param: AnimeId,
     @Body(new ZodValidationPipe(UserAnimeListValidation.UPDATE_USER_ANIME_LIST))
     data: UpdateUserAnimeList,
-  ): Promise<
-    ApiResponse<
-      UserAnimeListResponse & {
-        anime: { title: AnimeResponse['title'] };
-      } & {
-        platform:
-          | ({ link: { url: LinkResponse['url'] } } & {
-              platform: { name: PlatformResponse['name'] };
-            })
-          | null;
-      }
-    >
-  > {
+  ): Promise<ApiResponse<UserAnimeListResponse & UserAnimeListShortRelation>> {
     const userAnimeList = await this.service.updateUserAnimeList(
       param.animeId,
       req.user.sub,
@@ -152,19 +113,7 @@ export class UserAnimeListController {
       ),
     )
     data: CreateOrUpdateUserAnimeList,
-  ): Promise<
-    ApiResponse<
-      UserAnimeListResponse & {
-        anime: { title: AnimeResponse['title'] };
-      } & {
-        platform:
-          | ({ link: { url: LinkResponse['url'] } } & {
-              platform: { name: PlatformResponse['name'] };
-            })
-          | null;
-      }
-    >
-  > {
+  ): Promise<ApiResponse<UserAnimeListResponse & UserAnimeListShortRelation>> {
     const { statusCode, ...userAnimeList } =
       await this.service.createOrUpdateUserAnimeList(
         param.animeId,
@@ -200,11 +149,7 @@ export class UserAnimeListController {
           malId: AnimeResponse['malId'];
         };
       } & {
-        platform:
-          | ({ link: { url: LinkResponse['url'] } } & {
-              platform: { name: PlatformResponse['name'] };
-            })
-          | null;
+        platform: UserAnimeListShortRelation['platform'];
       }
     >
   > {

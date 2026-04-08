@@ -12,11 +12,10 @@ import {
 } from './user-anime-list.validation';
 import { Prisma, UserAnimeList } from '../generated/prisma/client';
 import {
-  AnimePlatformResponse,
   AnimeResponse,
-  LinkResponse,
-  PlatformResponse,
+  UserAnimeListFullRelation,
   UserAnimeListResponse,
+  UserAnimeListShortRelation,
 } from '../types';
 import { DateFormatterService } from '../common/date-formatter.service';
 import { MalService } from '../common/mal.service';
@@ -62,17 +61,7 @@ export class UserAnimeListService {
     animeId: number,
     userId: number,
     data: CreateUserAnimeList,
-  ): Promise<
-    UserAnimeListResponse & {
-      anime: { title: AnimeResponse['title'] };
-    } & {
-      platform:
-        | ({ link: { url: LinkResponse['url'] } } & {
-            platform: { name: PlatformResponse['name'] };
-          })
-        | null;
-    }
-  > {
+  ): Promise<UserAnimeListResponse & UserAnimeListShortRelation> {
     try {
       const userAnimeList = await this.prisma.userAnimeList.create({
         data: {
@@ -133,19 +122,7 @@ export class UserAnimeListService {
   async getUserAnimeListDetail(
     animeId: number,
     userId: number,
-  ): Promise<
-    UserAnimeListResponse & {
-      anime: AnimeResponse;
-    } & {
-      platform:
-        | (AnimePlatformResponse & {
-            link: LinkResponse;
-          } & {
-            platform: PlatformResponse;
-          })
-        | null;
-    }
-  > {
+  ): Promise<UserAnimeListResponse & UserAnimeListFullRelation> {
     const userAnimeList = await this.prisma.userAnimeList.findUnique({
       where: {
         userId_animeId: { animeId, userId },
@@ -194,17 +171,7 @@ export class UserAnimeListService {
     animeId: number,
     userId: number,
     data: UpdateUserAnimeList,
-  ): Promise<
-    UserAnimeListResponse & {
-      anime: { title: AnimeResponse['title'] };
-    } & {
-      platform:
-        | ({ link: { url: LinkResponse['url'] } } & {
-            platform: { name: PlatformResponse['name'] };
-          })
-        | null;
-    }
-  > {
+  ): Promise<UserAnimeListResponse & UserAnimeListShortRelation> {
     try {
       const userAnimeList = await this.prisma.userAnimeList.update({
         where: {
@@ -268,28 +235,11 @@ export class UserAnimeListService {
     userId: number,
     data: CreateOrUpdateUserAnimeList,
   ): Promise<
-    UserAnimeListResponse & {
-      anime: { title: AnimeResponse['title'] };
-    } & {
-      platform:
-        | ({ link: { url: LinkResponse['url'] } } & {
-            platform: { name: PlatformResponse['name'] };
-          })
-        | null;
-    } & {
-      statusCode: HttpStatus;
-    }
+    UserAnimeListResponse &
+      UserAnimeListShortRelation & { statusCode: HttpStatus }
   > {
     try {
-      let userAnimeList: UserAnimeList & {
-          anime: { title: AnimeResponse['title'] };
-        } & {
-          platform:
-            | ({ link: { url: LinkResponse['url'] } } & {
-                platform: { name: PlatformResponse['name'] };
-              })
-            | null;
-        },
+      let userAnimeList: UserAnimeList & UserAnimeListShortRelation,
         statusCode = HttpStatus.OK;
 
       try {
@@ -406,11 +356,7 @@ export class UserAnimeListService {
         malId: AnimeResponse['malId'];
       };
     } & {
-      platform:
-        | ({ link: { url: LinkResponse['url'] } } & {
-            platform: { name: PlatformResponse['name'] };
-          })
-        | null;
+      platform: UserAnimeListShortRelation['platform'];
     }
   > {
     try {
