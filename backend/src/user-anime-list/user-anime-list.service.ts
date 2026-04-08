@@ -57,6 +57,27 @@ export class UserAnimeListService {
     }
   }
 
+  // : Prisma.UserAnimeListInclude | Prisma.UserAnimeListSelect
+  private selectedRelationQuery = {
+    anime: {
+      select: { title: true },
+    },
+    platform: {
+      select: {
+        link: {
+          select: {
+            url: true,
+          },
+        },
+        platform: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    },
+  };
+
   async createUserAnimeList(
     animeId: number,
     userId: number,
@@ -73,25 +94,7 @@ export class UserAnimeListService {
           userId,
           animeId,
         },
-        include: {
-          anime: {
-            select: { title: true },
-          },
-          platform: {
-            select: {
-              link: {
-                select: {
-                  url: true,
-                },
-              },
-              platform: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-          },
-        },
+        include: this.selectedRelationQuery,
       });
 
       if (data.isSyncedWithMal) {
@@ -184,25 +187,7 @@ export class UserAnimeListService {
             data.finishDate,
           ),
         },
-        include: {
-          anime: {
-            select: { title: true },
-          },
-          platform: {
-            select: {
-              link: {
-                select: {
-                  url: true,
-                },
-              },
-              platform: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-          },
-        },
+        include: this.selectedRelationQuery,
       });
 
       if (data.isSyncedWithMal) {
@@ -256,25 +241,7 @@ export class UserAnimeListService {
             userId,
             animeId,
           },
-          include: {
-            anime: {
-              select: { title: true },
-            },
-            platform: {
-              select: {
-                link: {
-                  select: {
-                    url: true,
-                  },
-                },
-                platform: {
-                  select: {
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
+          include: this.selectedRelationQuery,
         });
       } catch (error) {
         if (
@@ -292,25 +259,7 @@ export class UserAnimeListService {
               userId,
               animeId,
             },
-            include: {
-              anime: {
-                select: { title: true },
-              },
-              platform: {
-                select: {
-                  link: {
-                    select: {
-                      url: true,
-                    },
-                  },
-                  platform: {
-                    select: {
-                      name: true,
-                    },
-                  },
-                },
-              },
-            },
+            include: this.selectedRelationQuery,
           });
         } else {
           throw error;
@@ -367,24 +316,11 @@ export class UserAnimeListService {
         select: {
           id: true,
           isSyncedWithMal: true,
+          ...this.selectedRelationQuery,
           anime: {
             select: {
               title: true,
               malId: true,
-            },
-          },
-          platform: {
-            select: {
-              link: {
-                select: {
-                  url: true,
-                },
-              },
-              platform: {
-                select: {
-                  name: true,
-                },
-              },
             },
           },
         },
