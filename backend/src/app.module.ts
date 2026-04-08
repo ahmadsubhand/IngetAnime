@@ -6,6 +6,7 @@ import { AnimeModule } from './modules/anime/anime.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { AnimePlatformModule } from './modules/anime-platform/anime-platform.module';
 import { UserAnimeListModule } from './modules/user-anime-list/user-anime-list.module';
+import { AnimeExplorationModule } from './modules/anime-exploration/anime-exploration.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserAnimeListModule } from './modules/user-anime-list/user-anime-list.m
     PlatformModule,
     AnimePlatformModule,
     UserAnimeListModule,
+    AnimeExplorationModule,
   ],
   controllers: [AppController],
 })

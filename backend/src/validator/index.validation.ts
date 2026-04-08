@@ -17,4 +17,11 @@ export class IndexValidation {
     .refine((value) => !value || !isNaN(Date.parse(value)), 'Invalid date')
     .transform((value) => (value === '' ? null : value))
     .nullable();
+
+  static readonly FIELDS = z
+    .string()
+    .regex(
+      /^$|^[^,\s]+(,[^,\s]+)*$/,
+      'Invalid format. Value must be seperated by comma without any space',
+    );
 }

@@ -1,4 +1,4 @@
-import { ListStatus } from '../generated/prisma/enums';
+import { AnimeStatus, ListStatus } from '../generated/prisma/enums';
 
 // MAL Auth Types
 
@@ -86,7 +86,7 @@ interface AnimeNode {
   created_at?: string;
   updated_at?: string;
   media_type?: 'tv' | 'movie' | 'ova' | 'ona' | 'special';
-  status?: 'finished_airing' | 'currently_airing' | 'not_yet_aired';
+  status?: AnimeStatus;
   genres?: Genre[];
   my_list_status?: MyListStatus;
   num_episodes?: number;
@@ -108,14 +108,6 @@ interface MalListAnime {
   data: {
     node: AnimeNode;
   }[];
-  paging?: {
-    prev?: string;
-    next?: string;
-  };
-}
-
-interface AnimeList {
-  anime: AnimeNode[];
   paging?: {
     prev?: string;
     next?: string;

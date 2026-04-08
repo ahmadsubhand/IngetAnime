@@ -5,6 +5,7 @@ import {
   AnimeStatus,
   ListStatus,
 } from '../generated/prisma/enums';
+import { AnimeNode } from './mal';
 
 export interface ApiResponse<T> {
   message: string;
@@ -109,4 +110,23 @@ interface UserAnimeListFullRelation {
         platform: PlatformResponse;
       } & AnimePlatformResponse)
     | null;
+}
+
+interface AnimeListResponse {
+  anime: (AnimeNode &
+    AnimeResponse & {
+      platforms: (AnimePlatformResponse & {
+        link: LinkResponse;
+        platform: PlatformResponse;
+      })[];
+      userAnimeList:
+        | (UserAnimeListResponse & {
+            platform: AnimePlatformResponse | null;
+          })
+        | null;
+    })[];
+  paging?: {
+    prev?: string;
+    next?: string;
+  };
 }
