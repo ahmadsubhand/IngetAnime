@@ -8,29 +8,20 @@ import {
   Param,
   Patch,
   Post,
-  Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AnimeService } from './anime.service';
 import {
-  AnimeList,
   AnimePlatformResponse,
   AnimeResponse,
   ApiResponse,
-  JwtPayload,
   PlatformResponse,
 } from '../types';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AnimeValidation } from './anime.validation';
-import type {
-  AnimeId,
-  CreateAnime,
-  GetAnimeList,
-  UpdateAnime,
-} from './anime.validation';
-import { AuthGuard, OptionalAuthGuard } from '../auth/guard/auth.guard';
+import type { AnimeId, CreateAnime, UpdateAnime } from './anime.validation';
+import { AuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
 
 @Controller('anime')
@@ -107,22 +98,6 @@ export class AnimeController {
     return {
       message: 'Delete anime successfully',
       data: anime,
-      statusCode: HttpStatus.OK,
-    };
-  }
-
-  @Get()
-  @UseGuards(OptionalAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  async getAnimeList(
-    @Req() req: { user?: JwtPayload },
-    @Query(new ZodValidationPipe(AnimeValidation.GET_ANIME_LIST))
-    data: GetAnimeList,
-  ): Promise<ApiResponse<AnimeList>> {
-    const animeList = await this.service.getAnimeList(data, req.user?.sub);
-    return {
-      message: 'Get all anime list success',
-      data: animeList,
       statusCode: HttpStatus.OK,
     };
   }
