@@ -73,7 +73,7 @@ export class AnimeExplorationService {
         malId: { in: allMalId },
       },
       include: {
-        platforms: {
+        animePlatforms: {
           include: {
             link: true,
             platform: true,
@@ -83,16 +83,13 @@ export class AnimeExplorationService {
           where: {
             userId,
           },
-          include: {
-            platform: true,
-          },
         },
       },
     });
 
     // Sort anime platform based on user selected platform, isMainPlatform, or platform id
     for (const anime of animeFromDatabase) {
-      anime.platforms.sort((a, b) => {
+      anime.animePlatforms.sort((a, b) => {
         const animePlatformId = anime.userAnimeList[0].animePlatformId;
         if (
           animePlatformId &&
@@ -137,18 +134,9 @@ export class AnimeExplorationService {
                 userAnimeList.finishDate,
                 userAnimeList.updatedAt,
               ),
-              platform: userAnimeList.platform
-                ? {
-                    ...userAnimeList.platform,
-                    ...this.dateFormatter.animePlatformResponse(
-                      userAnimeList.platform.nextEpisodeAiringAt,
-                      userAnimeList.platform.lastEpisodeAiredAt,
-                    ),
-                  }
-                : null,
             }
           : null,
-        platforms: [...databaseAnime.platforms].map((platform) => ({
+        animePlatforms: [...databaseAnime.animePlatforms].map((platform) => ({
           ...platform,
           ...this.dateFormatter.animePlatformResponse(
             platform.lastEpisodeAiredAt,
