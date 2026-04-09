@@ -12,11 +12,11 @@ import { AnimeExplorationModule } from './modules/anime-exploration/anime-explor
   imports: [
     CommonModule,
     AuthModule,
+    AnimeExplorationModule,
     AnimeModule,
     PlatformModule,
     AnimePlatformModule,
     UserAnimeListModule,
-    AnimeExplorationModule,
   ],
   controllers: [AppController],
 })

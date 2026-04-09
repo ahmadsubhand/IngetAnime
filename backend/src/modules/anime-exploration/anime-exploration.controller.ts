@@ -3,22 +3,29 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { AnimeExplorationService } from './anime-exploration.service';
-import { OptionalAuthGuard } from '../auth/guard/auth.guard';
+import { AuthGuard, OptionalAuthGuard } from '../auth/guard/auth.guard';
 import { Request } from 'express';
 import { JwtPayload } from '../../types';
-import {
-  AnimeExplorationValidation,
-  type GetAnimeList,
+import type {
+  GetAnimeRanking,
+  GetAnimeList,
+  AnimeSeason,
+  GetSeasonalAnime,
+  GetSuggestedAnime,
 } from './anime-exploration.validation';
+import { AnimeExplorationValidation } from './anime-exploration.validation';
 import { AnimeListResponse, ApiResponse } from '../../types/entity';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('anime')
+@SkipThrottle()
 export class AnimeExplorationController {
   constructor(private service: AnimeExplorationService) {}
 
@@ -33,6 +40,62 @@ export class AnimeExplorationController {
     const animeList = await this.service.getAnimeList(data, req.user?.sub);
     return {
       message: 'Get anime list successfully',
+      data: animeList,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @Get('ranking')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalAuthGuard)
+  async getAnimeRanking(
+    @Req() req: Request & { user?: JwtPayload },
+    @Query(new ZodValidationPipe(AnimeExplorationValidation.GET_ANIME_RANKING))
+    data: GetAnimeRanking,
+  ): Promise<ApiResponse<AnimeListResponse>> {
+    const animeList = await this.service.getAnimeRanking(data, req.user?.sub);
+    return {
+      message: 'Get anime ranking successfully',
+      data: animeList,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @Get('/season/:year/:season')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalAuthGuard)
+  async getSeasonalAnime(
+    @Req() req: Request & { user?: JwtPayload },
+    @Param(new ZodValidationPipe(AnimeExplorationValidation.ANIME_SEASON))
+    param: AnimeSeason,
+    @Query(new ZodValidationPipe(AnimeExplorationValidation.GET_SEASONAL_ANIME))
+    data: GetSeasonalAnime,
+  ): Promise<ApiResponse<AnimeListResponse>> {
+    const animeList = await this.service.getSeasonalAnime(
+      data,
+      param,
+      req.user?.sub,
+    );
+    return {
+      message: 'Get seasonal anime successfully',
+      data: animeList,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @Get('suggestions')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  async getSuggestedAnime(
+    @Req() req: Request & { user: JwtPayload },
+    @Query(
+      new ZodValidationPipe(AnimeExplorationValidation.GET_SUGGESTED_ANIME),
+    )
+    data: GetSuggestedAnime,
+  ): Promise<ApiResponse<AnimeListResponse>> {
+    const animeList = await this.service.getSuggestedAnime(data, req.user.sub);
+    return {
+      message: 'Get suggessted anime successfully',
       data: animeList,
       statusCode: HttpStatus.OK,
     };

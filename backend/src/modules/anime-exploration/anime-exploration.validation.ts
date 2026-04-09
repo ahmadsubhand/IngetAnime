@@ -26,16 +26,78 @@ watching, completed, on_hold, dropped, plan_to_watch
 */
 
 export class AnimeExplorationValidation {
+  private static defaultFields =
+    'id,title,main_picture,alternative_titles,start_date,num_episodes,status';
+
+  private static rankingType = [
+    'all',
+    'airing',
+    'upcoming',
+    'tv',
+    'ova',
+    'movie',
+    'special',
+    'bypopularity',
+    'favorite',
+  ];
+
+  private static sort = ['anime_score', 'anime_num_list_users'];
+
+  private static season = ['winter', 'spring', 'summer', 'fall'];
+
   static readonly GET_ANIME_LIST = z.object({
     q: z.string().min(3),
-    limit: z.coerce.number().min(1).max(100).default(10),
-    offset: z.coerce.number().min(1).default(0),
-    fields: IndexValidation.FIELDS.default(
-      'id,title,main_picture,alternative_titles,start_date,num_episodes,status',
-    ),
+    limit: z.coerce.number().int().min(1).max(100).default(100),
+    offset: z.coerce.number().int().nonnegative().default(0),
+    fields: IndexValidation.FIELDS.default(this.defaultFields),
+  });
+
+  static readonly GET_ANIME_RANKING = z.object({
+    ranking_type: z.enum(this.rankingType, {
+      error: `Ranking type must be one of: ${this.rankingType.join(', ')}`,
+    }),
+    limit: z.coerce.number().int().min(1).max(500).default(100),
+    offset: z.coerce.number().int().nonnegative().default(0),
+    fields: IndexValidation.FIELDS.default(this.defaultFields),
+  });
+
+  static readonly ANIME_SEASON = z.object({
+    year: z.coerce.number().int().min(1917),
+    season: z.enum(this.season, {
+      error: `Season must be one of: ${this.sort.join(', ')}`,
+    }),
+  });
+
+  static readonly GET_SEASONAL_ANIME = z.object({
+    sort: z
+      .enum(this.sort, {
+        error: `Sort must be one of: ${this.sort.join(', ')}`,
+      })
+      .optional(),
+    limit: z.coerce.number().int().min(1).max(500).default(100),
+    offset: z.coerce.number().int().nonnegative().default(0),
+    fields: IndexValidation.FIELDS.default(this.defaultFields),
+  });
+
+  static readonly GET_SUGGESTED_ANIME = z.object({
+    limit: z.coerce.number().int().min(1).max(100).default(100),
+    offset: z.coerce.number().int().nonnegative().default(0),
+    fields: IndexValidation.FIELDS.default(this.defaultFields),
   });
 }
 
 export type GetAnimeList = z.infer<
   typeof AnimeExplorationValidation.GET_ANIME_LIST
+>;
+export type GetAnimeRanking = z.infer<
+  typeof AnimeExplorationValidation.GET_ANIME_RANKING
+>;
+export type AnimeSeason = z.infer<
+  typeof AnimeExplorationValidation.ANIME_SEASON
+>;
+export type GetSeasonalAnime = z.infer<
+  typeof AnimeExplorationValidation.GET_SEASONAL_ANIME
+>;
+export type GetSuggestedAnime = z.infer<
+  typeof AnimeExplorationValidation.GET_SUGGESTED_ANIME
 >;

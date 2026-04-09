@@ -1,6 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { MalService } from '../../common/mal.service';
-import { GetAnimeList } from './anime-exploration.validation';
+import {
+  AnimeSeason,
+  GetAnimeList,
+  GetAnimeRanking,
+  GetSeasonalAnime,
+  GetSuggestedAnime,
+} from './anime-exploration.validation';
 import { AnimeListResponse } from '../../types/entity';
 import { ConfigService } from '@nestjs/config';
 import { MalError, MalListAnime } from '../../types/mal';
@@ -22,11 +32,11 @@ export class AnimeExplorationService {
     this.CLIENT_ID = this.config.getOrThrow('MAL_CLIENT_ID');
   }
 
-  getServerPageLink(link: string) {
+  getServerPageLink(link: string, endpoint: string) {
     const port = this.config.get<number>('PORT', 3000);
     const baseUrl = this.config.get<string>('BASE_URL', 'http://localhost');
     const queryLink = link.split('?')[1];
-    return `${baseUrl}:${port}?${queryLink}`;
+    return `${baseUrl}:${port}${endpoint}?${queryLink}`;
   }
 
   async insertAnimePlatform(
@@ -181,10 +191,158 @@ export class AnimeExplorationService {
 
     const animeList = await this.insertAnimePlatform(animeFromMal.data);
     const prevListLink = animeFromMal.paging?.prev
-      ? this.getServerPageLink(animeFromMal.paging?.prev)
+      ? this.getServerPageLink(animeFromMal.paging?.prev, '/anime')
       : undefined;
     const nextListLink = animeFromMal.paging?.next
-      ? this.getServerPageLink(animeFromMal.paging?.next)
+      ? this.getServerPageLink(animeFromMal.paging?.next, '/anime')
+      : undefined;
+
+    return {
+      anime: animeList,
+      ...((prevListLink || nextListLink) && {
+        paging: {
+          prev: prevListLink,
+          next: nextListLink,
+        },
+      }),
+    };
+  }
+
+  async getAnimeRanking(
+    data: GetAnimeRanking,
+    userId?: number,
+  ): Promise<AnimeListResponse> {
+    const accessToken = await this.mal.getMalConnection(userId);
+    const url = `https://api.myanimelist.net/v2/anime/ranking`;
+    const params = new URLSearchParams({
+      ranking_type: data.ranking_type,
+      ...(data.limit && { limit: data.limit.toString() }),
+      ...(data.offset && { offset: data.offset.toString() }),
+      ...(data.fields && { fields: data.fields }),
+    });
+
+    const response = await fetch(`${url}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        ...(accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : { 'X-MAL-CLIENT-ID': this.CLIENT_ID }),
+      },
+    });
+    const animeFromMal = (await response.json()) as MalListAnime | MalError;
+    if ('error' in animeFromMal) {
+      throw new BadRequestException(
+        animeFromMal.hint || animeFromMal.message || animeFromMal.error,
+      );
+    }
+
+    const animeList = await this.insertAnimePlatform(animeFromMal.data);
+    const prevListLink = animeFromMal.paging?.prev
+      ? this.getServerPageLink(animeFromMal.paging?.prev, '/anime/ranking')
+      : undefined;
+    const nextListLink = animeFromMal.paging?.next
+      ? this.getServerPageLink(animeFromMal.paging?.next, '/anime/ranking')
+      : undefined;
+
+    return {
+      anime: animeList,
+      ...((prevListLink || nextListLink) && {
+        paging: {
+          prev: prevListLink,
+          next: nextListLink,
+        },
+      }),
+    };
+  }
+
+  async getSeasonalAnime(
+    data: GetSeasonalAnime,
+    param: AnimeSeason,
+    userId?: number,
+  ): Promise<AnimeListResponse> {
+    const accessToken = await this.mal.getMalConnection(userId);
+    const url = `https://api.myanimelist.net/v2/anime/season/${param.year}/${param.season}`;
+    const params = new URLSearchParams({
+      ...(data.sort && { sort: data.sort }),
+      ...(data.limit && { limit: data.limit.toString() }),
+      ...(data.offset && { offset: data.offset.toString() }),
+      ...(data.fields && { fields: data.fields }),
+    });
+
+    const response = await fetch(`${url}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        ...(accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : { 'X-MAL-CLIENT-ID': this.CLIENT_ID }),
+      },
+    });
+    const animeFromMal = (await response.json()) as MalListAnime | MalError;
+    if ('error' in animeFromMal) {
+      throw new BadRequestException(
+        animeFromMal.hint || animeFromMal.message || animeFromMal.error,
+      );
+    }
+
+    const animeList = await this.insertAnimePlatform(animeFromMal.data);
+    const prevListLink = animeFromMal.paging?.prev
+      ? this.getServerPageLink(
+          animeFromMal.paging?.prev,
+          `/anime/season/${param.year}/${param.season}`,
+        )
+      : undefined;
+    const nextListLink = animeFromMal.paging?.next
+      ? this.getServerPageLink(
+          animeFromMal.paging?.next,
+          `/anime/season/${param.year}/${param.season}`,
+        )
+      : undefined;
+
+    return {
+      anime: animeList,
+      ...((prevListLink || nextListLink) && {
+        paging: {
+          prev: prevListLink,
+          next: nextListLink,
+        },
+      }),
+    };
+  }
+
+  async getSuggestedAnime(
+    data: GetSuggestedAnime,
+    userId: number,
+  ): Promise<AnimeListResponse> {
+    const accessToken = await this.mal.getMalConnection(userId);
+    if (!accessToken) {
+      throw new ForbiddenException('Account not connected to MyAnimeList');
+    }
+    const url = `https://api.myanimelist.net/v2/anime/suggestions`;
+    const params = new URLSearchParams({
+      ...(data.limit && { limit: data.limit.toString() }),
+      ...(data.offset && { offset: data.offset.toString() }),
+      ...(data.fields && { fields: data.fields }),
+    });
+
+    const response = await fetch(`${url}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const animeFromMal = (await response.json()) as MalListAnime | MalError;
+    if ('error' in animeFromMal) {
+      throw new BadRequestException(
+        animeFromMal.hint || animeFromMal.message || animeFromMal.error,
+      );
+    }
+
+    const animeList = await this.insertAnimePlatform(animeFromMal.data);
+    const prevListLink = animeFromMal.paging?.prev
+      ? this.getServerPageLink(animeFromMal.paging?.prev, `/anime/suggestions`)
+      : undefined;
+    const nextListLink = animeFromMal.paging?.next
+      ? this.getServerPageLink(animeFromMal.paging?.next, `/anime/suggestions`)
       : undefined;
 
     return {
