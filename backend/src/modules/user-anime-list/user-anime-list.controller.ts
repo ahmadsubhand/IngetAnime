@@ -32,6 +32,7 @@ import {
   UserAnimeListShortRelation,
 } from '../../types/entity';
 import { JwtPayload } from '../../types';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('/anime')
 export class UserAnimeListController {
@@ -59,6 +60,7 @@ export class UserAnimeListController {
     };
   }
 
+  @SkipThrottle()
   @Get('/:animeId/my-list-status')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)

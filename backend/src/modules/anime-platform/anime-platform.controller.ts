@@ -30,6 +30,7 @@ import {
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
 import type { Response } from 'express';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('/anime')
 export class AnimePlatformController {
@@ -53,6 +54,7 @@ export class AnimePlatformController {
     };
   }
 
+  @SkipThrottle()
   @Get('/:animeId/platform/:platformId')
   @HttpCode(HttpStatus.OK)
   async getAnimePlatformDetail(

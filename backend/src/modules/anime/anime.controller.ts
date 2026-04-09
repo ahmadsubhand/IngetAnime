@@ -27,7 +27,6 @@ import { Request } from 'express';
 import { JwtPayload } from '../../types';
 
 @Controller('anime')
-@SkipThrottle()
 export class AnimeController {
   constructor(private service: AnimeService) {}
 
@@ -47,6 +46,7 @@ export class AnimeController {
     };
   }
 
+  @SkipThrottle()
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(OptionalAuthGuard)
