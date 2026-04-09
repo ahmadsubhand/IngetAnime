@@ -4,12 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { ConfigService } from '@nestjs/config';
-import {
-  AnimePlatformResponse,
-  AnimeResponse,
-  PlatformResponse,
-} from '../../types/entity';
+import { AnimeFullRelation, AnimeResponse } from '../../types/entity';
 import { CreateAnime, UpdateAnime } from './anime.validation';
 import { Prisma } from '../../generated/prisma/client';
 import { DateFormatterService } from '../../common/date-formatter.service';
@@ -18,16 +13,8 @@ import { DateFormatterService } from '../../common/date-formatter.service';
 export class AnimeService {
   constructor(
     private prisma: PrismaService,
-    private config: ConfigService,
     private dateFormatter: DateFormatterService,
   ) {}
-
-  getServerPageLink(link: string) {
-    const port = this.config.get<number>('PORT', 3000);
-    const baseUrl = this.config.get<string>('BASE_URL', 'http://localhost');
-    const queryLink = link.split('?')[1];
-    return `${baseUrl}:${port}?${queryLink}`;
-  }
 
   async createAnime(data: CreateAnime): Promise<AnimeResponse> {
     try {
@@ -54,22 +41,24 @@ export class AnimeService {
     }
   }
 
-  async getAnimeDetail(id: number): Promise<
-    AnimeResponse & {
-      platforms: (AnimePlatformResponse & {
-        platform: PlatformResponse;
-      })[];
-    }
-  > {
+  async getAnimeDetail(
+    id: number,
+    userId?: number,
+  ): Promise<AnimeResponse & AnimeFullRelation> {
     const anime = await this.prisma.anime.findUnique({
       where: {
         id,
       },
       include: {
-        platforms: {
+        animePlatforms: {
           include: {
             platform: true,
             link: true,
+          },
+        },
+        userAnimeList: {
+          where: {
+            userId,
           },
         },
       },
@@ -79,20 +68,41 @@ export class AnimeService {
       throw new NotFoundException('Anime not found');
     }
 
-    const animePlatforms = anime.platforms.map((animePlatform) => {
-      return {
-        ...animePlatform,
-        ...this.dateFormatter.animePlatformResponse(
-          animePlatform.lastEpisodeAiredAt,
-          animePlatform.nextEpisodeAiringAt,
-        ),
-      };
-    });
-
     return {
       ...anime,
       ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
-      platforms: animePlatforms || [],
+      animePlatforms: [...anime.animePlatforms]
+        .map((animePlatform) => ({
+          ...animePlatform,
+          ...this.dateFormatter.animePlatformResponse(
+            animePlatform.lastEpisodeAiredAt,
+            animePlatform.nextEpisodeAiringAt,
+          ),
+        }))
+        .sort((a, b) => {
+          const animePlatformId = anime.userAnimeList[0].animePlatformId;
+          if (
+            animePlatformId &&
+            (a.id === animePlatformId || b.id === animePlatformId)
+          ) {
+            return (
+              Number(b.id === animePlatformId) -
+              Number(a.id === animePlatformId)
+            );
+          } else if (a.isMainPlatform !== b.isMainPlatform) {
+            return Number(b.isMainPlatform) - Number(a.isMainPlatform);
+          } else {
+            return a.platformId - b.platformId;
+          }
+        }),
+      userAnimeList: {
+        ...anime.userAnimeList[0],
+        ...this.dateFormatter.userAnimeListResponse(
+          anime.userAnimeList[0].startDate,
+          anime.userAnimeList[0].finishDate,
+          anime.userAnimeList[0].updatedAt,
+        ),
+      },
     };
   }
 

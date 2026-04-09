@@ -8,21 +8,23 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AnimeService } from './anime.service';
 import {
-  AnimePlatformResponse,
+  AnimeFullRelation,
   AnimeResponse,
   ApiResponse,
-  PlatformResponse,
 } from '../../types/entity';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { AnimeValidation } from './anime.validation';
 import type { AnimeId, CreateAnime, UpdateAnime } from './anime.validation';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { AuthGuard, OptionalAuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
+import { Request } from 'express';
+import { JwtPayload } from '../../types';
 
 @Controller('anime')
 @SkipThrottle()
@@ -47,19 +49,13 @@ export class AnimeController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalAuthGuard)
   async getAnimeDetail(
+    @Req() req: Request & { user?: JwtPayload },
     @Param(new ZodValidationPipe(AnimeValidation.ANIME_ID))
     data: AnimeId,
-  ): Promise<
-    ApiResponse<
-      AnimeResponse & {
-        platforms: (AnimePlatformResponse & {
-          platform: PlatformResponse;
-        })[];
-      }
-    >
-  > {
-    const anime = await this.service.getAnimeDetail(data.id);
+  ): Promise<ApiResponse<AnimeResponse & AnimeFullRelation>> {
+    const anime = await this.service.getAnimeDetail(data.id, req.user?.sub);
     return {
       message: 'Get anime detail successfully',
       data: anime,
