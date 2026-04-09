@@ -62,7 +62,7 @@ export class UserAnimeListService {
     anime: {
       select: { title: true },
     },
-    platform: {
+    animePlatform: {
       select: {
         link: {
           select: {
@@ -132,7 +132,7 @@ export class UserAnimeListService {
       },
       include: {
         anime: true,
-        platform: {
+        animePlatform: {
           include: {
             link: true,
             platform: true,
@@ -158,12 +158,12 @@ export class UserAnimeListService {
           userAnimeList.anime.updateAt,
         ),
       },
-      platform: userAnimeList.platform
+      animePlatform: userAnimeList.animePlatform
         ? {
-            ...userAnimeList.platform,
+            ...userAnimeList.animePlatform,
             ...this.dateFormatter.animePlatformResponse(
-              userAnimeList.platform.lastEpisodeAiredAt,
-              userAnimeList.platform.nextEpisodeAiringAt,
+              userAnimeList.animePlatform.lastEpisodeAiredAt,
+              userAnimeList.animePlatform.nextEpisodeAiringAt,
             ),
           }
         : null,
@@ -305,7 +305,7 @@ export class UserAnimeListService {
         malId: AnimeResponse['malId'];
       };
     } & {
-      platform: UserAnimeListShortRelation['platform'];
+      animePlatform: UserAnimeListShortRelation['animePlatform'];
     }
   > {
     try {
@@ -317,6 +317,7 @@ export class UserAnimeListService {
           id: true,
           isSyncedWithMal: true,
           ...this.selectedRelationQuery,
+          // take only anime platform query, rewrite anime query
           anime: {
             select: {
               title: true,

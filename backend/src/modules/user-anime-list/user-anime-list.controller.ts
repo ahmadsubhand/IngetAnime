@@ -149,7 +149,7 @@ export class UserAnimeListController {
           malId: AnimeResponse['malId'];
         };
       } & {
-        platform: UserAnimeListShortRelation['platform'];
+        animePlatform: UserAnimeListShortRelation['animePlatform'];
       }
     >
   > {
