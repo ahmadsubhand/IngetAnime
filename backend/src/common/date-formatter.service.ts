@@ -94,4 +94,21 @@ export class DateFormatterService {
       updateAt: dayjs(updateAt).toISOString(),
     };
   }
+
+  userResponse(
+    updatedAt?: Date | string | null,
+    createdAt?: Date | string | null,
+  ): {
+    updatedAt: string;
+    createdAt: string;
+  } {
+    return {
+      updatedAt: updatedAt
+        ? dayjs(updatedAt).toISOString()
+        : dayjs().toISOString(),
+      createdAt: createdAt
+        ? dayjs(createdAt).toISOString()
+        : dayjs().toISOString(),
+    };
+  }
 }

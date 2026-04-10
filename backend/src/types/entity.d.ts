@@ -127,3 +127,34 @@ interface AnimeListResponse {
     next?: string;
   };
 }
+
+interface UserFullResponse {
+  id: number;
+  email: string | null;
+  username: string;
+  picture: string | null;
+  isVerified: boolean;
+  role: Role;
+  malId: number | null;
+  googleId: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export type UserAnimeListComputed = (UserAnimeListResponse & {
+  anime: AnimeResponse & {
+    animePlatforms: (AnimePlatformResponse & {
+      platform: PlatformResponse;
+      link: LinkResponse;
+    })[];
+  };
+  remainingWatchableEpisodes: number;
+})[];
+
+interface UserAnimeListComputedResponse {
+  userAnimeList: UserAnimeListComputed;
+  paging?: {
+    prev?: string;
+    next?: string;
+  };
+}

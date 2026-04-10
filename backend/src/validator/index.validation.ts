@@ -24,4 +24,13 @@ export class IndexValidation {
       /^$|^[^,\s]+(,[^,\s]+)*$/,
       'Invalid format. Value must be seperated by comma without any space',
     );
+
+  static readonly USERNAME = z
+    .string()
+    .min(3, 'Username must be at least 3 characters long')
+    .max(20, 'Username must not exceed 20 characters')
+    .regex(
+      /^(?!_)(?!.*__)[a-zA-Z0-9_]+(?<!_)$/,
+      'Username can only contain letters, numbers, and underscores, but cannot start or end with an underscore',
+    );
 }
