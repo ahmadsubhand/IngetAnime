@@ -5,12 +5,13 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { AuthGuard, OptionalAuthGuard } from '../auth/guard/auth.guard';
 import { Request } from 'express';
 import { JwtPayload } from '../../types';
 import {
@@ -20,18 +21,21 @@ import {
 } from '../../types/entity';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type {
+  CheckEmail,
+  CheckUsername,
   GetUserAnimeList,
   ImportAnimeListFromMal,
+  UpdateUserDetail,
 } from './user.validation';
 import { UserValidation } from './user.validation';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 
 @Controller('user')
-@SkipThrottle()
 export class UserController {
   constructor(private service: UserService) {}
 
-  @Get('/me')
+  @SkipThrottle()
+  @Get('me')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   async getUserDetail(
@@ -45,6 +49,23 @@ export class UserController {
     };
   }
 
+  @Put('me')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  async updateUserDetail(
+    @Req() req: Request & { user: JwtPayload },
+    @Body(new ZodValidationPipe(UserValidation.UPDATE_USER_DETAIL))
+    data: UpdateUserDetail,
+  ): Promise<ApiResponse<UserResponse>> {
+    const user = await this.service.updateUserDetail(req.user.sub, data);
+    return {
+      message: 'Update user detail successfully',
+      data: user,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @SkipThrottle()
   @Get('/me/my-list-status')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
@@ -82,6 +103,46 @@ export class UserController {
     return {
       message: 'Import user anime list from MyAnimeList successfully',
       data: count,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @SkipThrottle()
+  @Get('/check/email')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalAuthGuard)
+  async checkEmailAvailability(
+    @Req() req: Request & { user?: JwtPayload },
+    @Query(new ZodValidationPipe(UserValidation.CHECK_EMAIL))
+    data: CheckEmail,
+  ): Promise<ApiResponse<{ email: string }>> {
+    const email = await this.service.checkEmailAvailability(
+      data.email,
+      req.user?.sub,
+    );
+    return {
+      message: 'Check email availability successfully',
+      data: email,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @SkipThrottle()
+  @Get('/check/username')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalAuthGuard)
+  async checkUsernameAvailability(
+    @Req() req: Request & { user?: JwtPayload },
+    @Query(new ZodValidationPipe(UserValidation.CHECK_USERNAME))
+    data: CheckUsername,
+  ): Promise<ApiResponse<{ username: string }>> {
+    const username = await this.service.checkUsernameAvailability(
+      data.username,
+      req.user?.sub,
+    );
+    return {
+      message: 'Check usernam availability successfully',
+      data: username,
       statusCode: HttpStatus.OK,
     };
   }

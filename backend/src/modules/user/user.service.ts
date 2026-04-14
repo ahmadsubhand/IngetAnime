@@ -1,14 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import {
   UserAnimeListComputed,
   UserAnimeListComputedResponse,
   UserFullResponse,
+  UserResponse,
 } from '../../types/entity';
 import { DateFormatterService } from '../../common/date-formatter.service';
 import {
   GetUserAnimeList,
   ImportAnimeListFromMal,
+  UpdateUserDetail,
   UserValidation,
 } from './user.validation';
 import { Prisma } from '../../generated/prisma/client';
@@ -16,6 +22,9 @@ import { ConfigService } from '@nestjs/config';
 import { MalStatusWithPagination } from '../../types/mal';
 import { MalService } from '../../common/mal.service';
 import { SkipThrottle } from '@nestjs/throttler';
+import cryptoRandomString from 'crypto-random-string';
+import dayjs from 'dayjs';
+import { MailService } from '../../common/mail.service';
 
 @Injectable()
 @SkipThrottle()
@@ -25,6 +34,7 @@ export class UserService {
     private dateFormatter: DateFormatterService,
     private config: ConfigService,
     private mal: MalService,
+    private mail: MailService,
   ) {}
 
   getServerPageLink(link: string, endpoint: string) {
@@ -32,6 +42,17 @@ export class UserService {
     const baseUrl = this.config.get<string>('BASE_URL', 'http://localhost');
     const queryLink = link.split('?')[1];
     return `${baseUrl}:${port}${endpoint}?${queryLink}`;
+  }
+
+  toUserData(user: UserResponse): UserResponse {
+    return {
+      id: user.id,
+      username: user.username,
+      picture: user.picture,
+      role: user.role,
+      email: user.email,
+      isVerified: user.isVerified,
+    };
   }
 
   async getUserDetail(userId: number): Promise<UserFullResponse> {
@@ -60,6 +81,50 @@ export class UserService {
       googleId: user.googleId ? parseInt(user.googleId) : null,
       ...this.dateFormatter.userResponse(user?.updatedAt, user?.createdAt),
     };
+  }
+
+  async updateUserDetail(
+    userId: number,
+    data: UpdateUserDetail,
+  ): Promise<UserResponse> {
+    try {
+      let user = await this.prisma.user.update({
+        where: { id: userId },
+        data,
+      });
+
+      // If email change reverified user
+      if (!user.googleId && !user.malId) {
+        const otpCode = cryptoRandomString({ length: 6, type: 'numeric' });
+        const otpExpiration = dayjs().add(10, 'minute').toISOString();
+        user = await this.prisma.user.update({
+          where: { id: userId },
+          data: {
+            isVerified: false,
+            otpCode,
+            otpExpiration,
+          },
+        });
+
+        await this.mail.sendEmail(
+          data.email,
+          'IngetAnime - Email Verification',
+          'otp-register',
+          { otp: otpCode },
+        );
+      }
+
+      return this.toUserData(user);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException('Username or email already exists');
+        } else if (error.code === 'P2025') {
+          throw new NotFoundException('User not found');
+        }
+      }
+      throw error;
+    }
   }
 
   async getUserAnimeList(
@@ -227,5 +292,33 @@ export class UserService {
     );
 
     return count;
+  }
+
+  async checkEmailAvailability(
+    email: string,
+    userId?: number,
+  ): Promise<{ email: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+    if (user && user.id !== userId) {
+      throw new ConflictException('Email already in use');
+    }
+    return { email };
+  }
+
+  async checkUsernameAvailability(
+    username: string,
+    userId?: number,
+  ): Promise<{ username: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { username },
+      select: { id: true },
+    });
+    if (user && user.id !== userId) {
+      throw new ConflictException('Username already in use');
+    }
+    return { username };
   }
 }
