@@ -6,16 +6,25 @@ import {
   UserFullResponse,
 } from '../../types/entity';
 import { DateFormatterService } from '../../common/date-formatter.service';
-import { GetUserAnimeList, UserValidation } from './user.validation';
+import {
+  GetUserAnimeList,
+  ImportAnimeListFromMal,
+  UserValidation,
+} from './user.validation';
 import { Prisma } from '../../generated/prisma/client';
 import { ConfigService } from '@nestjs/config';
+import { MalStatusWithPagination } from '../../types/mal';
+import { MalService } from '../../common/mal.service';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Injectable()
+@SkipThrottle()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private dateFormatter: DateFormatterService,
     private config: ConfigService,
+    private mal: MalService,
   ) {}
 
   getServerPageLink(link: string, endpoint: string) {
@@ -188,5 +197,35 @@ export class UserService {
         },
       }),
     };
+  }
+
+  async importAnimeListFromMal(
+    userId: number,
+    data: ImportAnimeListFromMal,
+  ): Promise<{ count: number }> {
+    const isLeft = true,
+      limit = 100,
+      userAnimeList: MalStatusWithPagination['my_list_status'] = [];
+    let offset = 0;
+    while (isLeft) {
+      const userAnimeListFromMal = await this.mal.getAllMalStatus(
+        userId,
+        limit,
+        offset,
+      );
+      userAnimeList.push(...userAnimeListFromMal.my_list_status);
+      if (!userAnimeListFromMal.paging?.next) {
+        break;
+      }
+      offset += limit;
+    }
+
+    const count = await this.mal.importAllMalStatusToDatabase(
+      userAnimeList,
+      userId,
+      data,
+    );
+
+    return count;
   }
 }

@@ -39,7 +39,7 @@ export class UserValidation {
   });
 
   public static readonly IMPORT_ANIME_LIST_FROM_MAL = z.object({
-    is_synced_with_mal: z.coerce.boolean(),
+    isSyncedWithMal: z.coerce.boolean(),
     importType: z.enum(this.ImportType, {
       error: `Import type muse be one of: ${Object.values(this.ImportType).join(', ')}`,
     }),

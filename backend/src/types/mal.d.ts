@@ -58,14 +58,6 @@ interface Broadcast {
   start_time: string;
 }
 
-interface MyListStatus {
-  status: 'watching' | 'completed' | 'on_hold' | 'dropped' | 'plan_to_watch';
-  score: number;
-  num_episodes_watched: number;
-  is_rewatching: boolean;
-  updated_at: string;
-}
-
 interface AnimeNode {
   id: number;
   title: string;
@@ -88,7 +80,7 @@ interface AnimeNode {
   media_type?: 'tv' | 'movie' | 'ova' | 'ona' | 'special';
   status?: AnimeStatus;
   genres?: Genre[];
-  my_list_status?: MyListStatus;
+  my_list_status?: MalStatusResponse;
   num_episodes?: number;
   start_season?: StartSeason;
   broadcast?: Broadcast;
@@ -135,4 +127,12 @@ interface MalStatusResponse {
   // rewatch_value: 0;
   // tags: [];
   // comments: '';
+}
+
+interface MalStatusWithPagination {
+  my_list_status: (MalStatusResponse & { malId: AnimeNode['id'] })[];
+  paging?: {
+    prev?: string;
+    next?: string;
+  };
 }

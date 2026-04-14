@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Post,
   Query,
   Req,
   UseGuards,
@@ -16,8 +18,11 @@ import {
   UserAnimeListComputedResponse,
   UserResponse,
 } from '../../types/entity';
-import { SkipThrottle } from '@nestjs/throttler';
-import type { GetUserAnimeList } from './user.validation';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import type {
+  GetUserAnimeList,
+  ImportAnimeListFromMal,
+} from './user.validation';
 import { UserValidation } from './user.validation';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 
@@ -55,6 +60,28 @@ export class UserController {
     return {
       message: 'Get user detail successfully',
       data: userAnimeList,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @Post('/me/import-from-mal')
+  @Throttle({
+    default: {
+      ttl: 60000,
+      limit: 1,
+    },
+  })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  async importAnimeListFromMal(
+    @Req() req: Request & { user: JwtPayload },
+    @Body(new ZodValidationPipe(UserValidation.IMPORT_ANIME_LIST_FROM_MAL))
+    data: ImportAnimeListFromMal,
+  ): Promise<ApiResponse<{ count: number }>> {
+    const count = await this.service.importAnimeListFromMal(req.user.sub, data);
+    return {
+      message: 'Import user anime list from MyAnimeList successfully',
+      data: count,
       statusCode: HttpStatus.OK,
     };
   }

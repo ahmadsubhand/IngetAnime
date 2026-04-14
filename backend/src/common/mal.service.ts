@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -15,8 +16,13 @@ import {
   MalToken,
   MalStatusRequest,
   MalStatusResponse,
+  MalListAnime,
+  MalStatusWithPagination,
 } from '../types/mal';
 import { PrismaService } from './prisma.service';
+import { UtcService } from './utc.service';
+import { ImportAnimeListFromMal } from '../modules/user/user.validation';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class MalService {
@@ -29,6 +35,7 @@ export class MalService {
     config: ConfigService,
     @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     private prisma: PrismaService,
+    private utc: UtcService,
   ) {
     this.CODE_CHALLENGE = cryptoRandomString({
       length: 64,
@@ -176,6 +183,48 @@ export class MalService {
     }
   }
 
+  async importMalAnimeToDatabase(
+    animeFromMAL: MalListAnime['data'],
+  ): Promise<{ count: number }> {
+    // Preparing for insert new anime
+    const allMalId = animeFromMAL.map((anime) => anime.node.id);
+    const existingAnime = await this.prisma.anime.findMany({
+      where: {
+        malId: {
+          in: allMalId,
+        },
+      },
+    });
+    const existingIds = new Set(existingAnime.map((anime) => anime.malId));
+    const newAnime = animeFromMAL.filter(
+      (anime) => !existingIds.has(anime.node.id),
+    );
+
+    // Add anime if not already in database
+    if (newAnime.length > 0) {
+      const results = await this.prisma.anime.createMany({
+        data: newAnime.map((anime) => {
+          return {
+            malId: anime.node.id,
+            picture: anime.node.main_picture
+              ? anime.node.main_picture.large
+              : 'https://ik.imagekit.io/hq9ajk99t/_Pngtree_no%20image%20vector%20illustration%20isolated_4979075.png?updatedAt=1749865837127',
+            title: anime.node.title,
+            titleEN: anime.node.alternative_titles?.en,
+            releaseAt: this.utc.dateToISOString(anime.node.start_date),
+            episodeTotal: anime.node.num_episodes,
+            status: anime.node.status,
+          };
+        }),
+        skipDuplicates: true,
+      });
+
+      return { ...results };
+    } else {
+      return { count: 0 };
+    }
+  }
+
   async updateMalStatus(
     userId: number,
     malId: number,
@@ -224,6 +273,59 @@ export class MalService {
     return result;
   }
 
+  async getAllMalStatus(
+    userId: number,
+    limit: number,
+    offset: number,
+  ): Promise<MalStatusWithPagination> {
+    const accessToken = await this.getMalConnection(userId);
+    if (!accessToken) {
+      throw new ForbiddenException('Account not connected to MyAnimeList');
+    }
+
+    const url = 'https://api.myanimelist.net/v2/users/@me/animelist';
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      offset: offset.toString(),
+      fields:
+        'id,title,main_picture,alternative_titles,start_date,num_episodes,status,my_list_status',
+    });
+
+    const response = await fetch(`${url}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const listFromMal = (await response.json()) as MalListAnime | MalError;
+    if ('error' in listFromMal) {
+      throw new BadRequestException(
+        listFromMal.hint || listFromMal.message || listFromMal.error,
+      );
+    }
+
+    await this.importMalAnimeToDatabase(listFromMal.data);
+
+    return {
+      my_list_status: [...listFromMal.data].map((anime) => {
+        if (!anime.node.my_list_status)
+          throw new NotFoundException(
+            'User anime list from MyAnimeList not found',
+          );
+        return {
+          ...anime.node.my_list_status,
+          malId: anime.node.id,
+        };
+      }),
+      ...((listFromMal.paging?.prev || listFromMal.paging?.next) && {
+        paging: {
+          prev: listFromMal.paging.prev,
+          next: listFromMal.paging.next,
+        },
+      }),
+    };
+  }
+
   async deleteMalStatus(
     userId: number,
     malId: number,
@@ -247,7 +349,104 @@ export class MalService {
         result.hint || result.message || result.error,
       );
     }
-    console.log(result);
+
+    return result;
+  }
+
+  async importAllMalStatusToDatabase(
+    userAnimeListFromMal: MalStatusWithPagination['my_list_status'],
+    userId: number,
+    data: ImportAnimeListFromMal,
+  ): Promise<{ count: number }> {
+    const allMalId = userAnimeListFromMal.map((list) => list.malId);
+    const animeFromDatabase = await this.prisma.anime.findMany({
+      where: {
+        malId: { in: allMalId },
+      },
+      include: {
+        userAnimeList: {
+          where: { userId },
+        },
+      },
+    });
+
+    const userAnimeListFromMalMap = new Map(
+      userAnimeListFromMal.map((list) => [list.malId, list]),
+    );
+
+    const createFormattedData = (
+      myListStatusFromMal: MalStatusResponse,
+      anime: { id: number },
+    ) => {
+      return {
+        userId,
+        animeId: anime.id,
+        startDate: this.utc.dateToISOString(myListStatusFromMal.start_date),
+        finishDate: this.utc.dateToISOString(myListStatusFromMal.finish_date),
+        progress: myListStatusFromMal.num_episodes_watched,
+        score: myListStatusFromMal.score,
+        status: myListStatusFromMal.status,
+        updatedAt: dayjs(myListStatusFromMal.updated_at).toISOString(),
+        isSyncedWithMal: data.isSyncedWithMal,
+      };
+    };
+
+    let result: { count: number };
+    if (data.importType === 'skip_duplicates') {
+      result = await this.prisma.userAnimeList.createMany({
+        data: animeFromDatabase.map((anime) => {
+          const myListStatusFromMal = userAnimeListFromMalMap.get(anime.malId);
+          if (!myListStatusFromMal) {
+            throw new Error(
+              `Anime with malId ${anime.malId} not found in database`,
+            );
+          }
+          return createFormattedData(myListStatusFromMal, anime);
+        }),
+        skipDuplicates: true,
+      });
+    } else {
+      let resultLength = 0;
+      await Promise.all(
+        animeFromDatabase.map((anime) => {
+          const myListStatusFromMal = userAnimeListFromMalMap.get(anime.malId);
+          if (!myListStatusFromMal) {
+            throw new Error(
+              `Anime with malId ${anime.malId} not found in database`,
+            );
+          }
+          if (data.importType === 'overwrite_all') {
+            resultLength += 1;
+            return this.prisma.userAnimeList.upsert({
+              where: {
+                userId_animeId: { userId, animeId: anime.id },
+              },
+              update: createFormattedData(myListStatusFromMal, anime),
+              create: createFormattedData(myListStatusFromMal, anime),
+            });
+          } else if (data.importType === 'latest_updated') {
+            const isShouldUpdate =
+              !anime.userAnimeList[0].updatedAt ||
+              dayjs(myListStatusFromMal.updated_at).isAfter(
+                dayjs(anime.userAnimeList[0].updatedAt),
+              );
+            if (isShouldUpdate) resultLength += 1;
+            return this.prisma.userAnimeList.upsert({
+              where: {
+                userId_animeId: { userId, animeId: anime.id },
+              },
+              update: isShouldUpdate
+                ? createFormattedData(myListStatusFromMal, anime)
+                : {},
+              create: createFormattedData(myListStatusFromMal, anime),
+            });
+          }
+
+          return Promise.resolve(null);
+        }),
+      );
+      result = { count: resultLength };
+    }
 
     return result;
   }
