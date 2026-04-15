@@ -8,12 +8,14 @@ import { AnimeFullRelation, AnimeResponse } from '../../types/entity';
 import { CreateAnime, UpdateAnime } from './anime.validation';
 import { Prisma } from '../../generated/prisma/client';
 import { DateFormatterService } from '../../common/date-formatter.service';
+import { ModelSortService } from '../../common/model-sort.service';
 
 @Injectable()
 export class AnimeService {
   constructor(
     private prisma: PrismaService,
     private dateFormatter: DateFormatterService,
+    private modelSort: ModelSortService,
   ) {}
 
   async createAnime(data: CreateAnime): Promise<AnimeResponse> {
@@ -51,6 +53,7 @@ export class AnimeService {
       },
       include: {
         animePlatforms: {
+          orderBy: [{ isMainPlatform: 'desc' }, { platformId: 'asc' }],
           include: {
             platform: true,
             link: true,
@@ -80,20 +83,11 @@ export class AnimeService {
           ),
         }))
         .sort((a, b) => {
-          const animePlatformId = anime.userAnimeList[0].animePlatformId;
-          if (
-            animePlatformId &&
-            (a.id === animePlatformId || b.id === animePlatformId)
-          ) {
-            return (
-              Number(b.id === animePlatformId) -
-              Number(a.id === animePlatformId)
-            );
-          } else if (a.isMainPlatform !== b.isMainPlatform) {
-            return Number(b.isMainPlatform) - Number(a.isMainPlatform);
-          } else {
-            return a.platformId - b.platformId;
-          }
+          return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
+            a,
+            b,
+            anime.userAnimeList[0].animePlatformId,
+          );
         }),
       userAnimeList: {
         ...anime.userAnimeList[0],
