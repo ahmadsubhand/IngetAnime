@@ -25,6 +25,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import cryptoRandomString from 'crypto-random-string';
 import dayjs from 'dayjs';
 import { MailService } from '../../common/mail.service';
+import { ModelSortService } from '../../common/model-sort.service';
 
 @Injectable()
 @SkipThrottle()
@@ -35,6 +36,7 @@ export class UserService {
     private config: ConfigService,
     private mal: MalService,
     private mail: MailService,
+    private modelSort: ModelSortService,
   ) {}
 
   getServerPageLink(link: string, endpoint: string) {
@@ -156,7 +158,7 @@ export class UserService {
         anime: {
           include: {
             animePlatforms: {
-              orderBy: { isMainPlatform: 'desc' },
+              orderBy: [{ isMainPlatform: 'desc' }, { platformId: 'asc' }],
               include: { platform: true, link: true },
             },
           },
@@ -170,21 +172,13 @@ export class UserService {
       ...userAnimeList,
     ].map((list) => {
       // Sort anime platform based on user selected platform, isMainPlatform, or platform id
-      list.anime.animePlatforms.sort((a, b) => {
-        const animePlatformId = list.animePlatformId;
-        if (
-          animePlatformId &&
-          (a.id === animePlatformId || b.id === animePlatformId)
-        ) {
-          return (
-            Number(b.id === animePlatformId) - Number(a.id === animePlatformId)
-          );
-        } else if (a.isMainPlatform !== b.isMainPlatform) {
-          return Number(b.isMainPlatform) - Number(a.isMainPlatform);
-        } else {
-          return a.platformId - b.platformId;
-        }
-      });
+      list.anime.animePlatforms.sort((a, b) =>
+        this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
+          a,
+          b,
+          list.animePlatformId,
+        ),
+      );
 
       const episodeAired = list.anime.animePlatforms[0]
         ? list.anime.animePlatforms[0].episodeAired
