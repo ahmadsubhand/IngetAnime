@@ -23,6 +23,9 @@ import { PrismaService } from './prisma.service';
 import { UtcService } from './utc.service';
 import { ImportAnimeListFromMal } from '../modules/user/user.validation';
 import dayjs from 'dayjs';
+import { AnimeListResponse } from '../types/entity';
+import { ModelSortService } from './model-sort.service';
+import { DateFormatterService } from './date-formatter.service';
 
 @Injectable()
 export class MalService {
@@ -36,6 +39,8 @@ export class MalService {
     @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     private prisma: PrismaService,
     private utc: UtcService,
+    private modelSort: ModelSortService,
+    private dateFormatter: DateFormatterService,
   ) {
     this.CODE_CHALLENGE = cryptoRandomString({
       length: 64,
@@ -185,7 +190,7 @@ export class MalService {
 
   async importMalAnimeToDatabase(
     animeFromMAL: MalListAnime['data'],
-  ): Promise<{ count: number }> {
+  ): Promise<{ count: number; allMalId: number[] }> {
     // Preparing for insert new anime
     const allMalId = animeFromMAL.map((anime) => anime.node.id);
     const existingAnime = await this.prisma.anime.findMany({
@@ -219,10 +224,90 @@ export class MalService {
         skipDuplicates: true,
       });
 
-      return { ...results };
+      return { ...results, allMalId };
     } else {
-      return { count: 0 };
+      return { count: 0, allMalId };
     }
+  }
+
+  async insertAnimePlatformsToAnime(
+    animeFromMAL: MalListAnime['data'],
+    userId?: number,
+  ): Promise<AnimeListResponse['anime']> {
+    const { allMalId } = await this.importMalAnimeToDatabase(animeFromMAL);
+    const animeFromDatabase = await this.prisma.anime.findMany({
+      where: {
+        malId: { in: allMalId },
+      },
+      include: {
+        animePlatforms: {
+          orderBy: [{ isMainPlatform: 'desc' }, { platformId: 'asc' }],
+          include: {
+            link: true,
+            platform: true,
+          },
+        },
+        userAnimeList: {
+          where: {
+            userId,
+          },
+        },
+      },
+    });
+
+    for (const anime of animeFromDatabase) {
+      anime.animePlatforms.sort((a, b) =>
+        this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
+          a,
+          b,
+          anime.userAnimeList[0].animePlatformId,
+        ),
+      );
+    }
+
+    // Merge animeFromDatabase and animeFromMAL
+    const animeMap = new Map(
+      animeFromDatabase.map((anime) => [anime.malId, anime]),
+    );
+    const listAnimeMerge = animeFromMAL.map((anime) => {
+      const malAnime = anime.node;
+      const databaseAnime = animeMap.get(anime.node.id);
+      if (!databaseAnime) {
+        throw new Error(
+          `Anime with malId ${anime.node.id} not found in database`,
+        );
+      }
+      const userAnimeList = databaseAnime.userAnimeList[0];
+
+      return {
+        ...databaseAnime,
+        ...this.dateFormatter.animeResponse(
+          databaseAnime.releaseAt,
+          databaseAnime.updateAt,
+        ),
+        userAnimeList: userAnimeList
+          ? {
+              ...userAnimeList,
+              ...this.dateFormatter.userAnimeListResponse(
+                userAnimeList.startDate,
+                userAnimeList.finishDate,
+                userAnimeList.updatedAt,
+              ),
+            }
+          : null,
+        animePlatforms: [...databaseAnime.animePlatforms].map((platform) => ({
+          ...platform,
+          ...this.dateFormatter.animePlatformResponse(
+            platform.lastEpisodeAiredAt,
+            platform.nextEpisodeAiringAt,
+          ),
+        })),
+        ...malAnime,
+        id: databaseAnime.id,
+      };
+    });
+
+    return listAnimeMerge;
   }
 
   async updateMalStatus(
