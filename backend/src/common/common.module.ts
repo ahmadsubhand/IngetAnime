@@ -17,6 +17,7 @@ import { JwtService } from './jwt.service';
 import { GoogleService } from './google.service';
 import { UtcService } from './utc.service';
 import { DateFormatterService } from './date-formatter.service';
+import { ModelSortService } from './model-sort.service';
 
 @Global()
 @Module({
@@ -82,6 +83,7 @@ import { DateFormatterService } from './date-formatter.service';
     MalService,
     UtcService,
     DateFormatterService,
+    ModelSortService,
   ],
   exports: [
     PrismaService,
@@ -93,6 +95,7 @@ import { DateFormatterService } from './date-formatter.service';
     MalService,
     UtcService,
     DateFormatterService,
+    ModelSortService,
   ],
 })
 export class CommonModule {}
