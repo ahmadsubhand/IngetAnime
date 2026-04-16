@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { DateFormatterService } from '../../common/date-formatter.service';
 import {
   GetUserAnimeList,
   ImportAnimeListFromMal,
@@ -25,52 +24,31 @@ import { SkipThrottle } from '@nestjs/throttler';
 import cryptoRandomString from 'crypto-random-string';
 import dayjs from 'dayjs';
 import { MailService } from '../../common/mail.service';
-import { ModelSortService } from '../../common/model-sort.service';
 import { AllAnime, User } from './user.model';
 import { ModelPaginationService } from '../../common/model-pagination.service';
-import { ModelCountService } from '../../common/model-count.service';
+import { ModelFormatterService } from '../../common/model-formatter.service';
 
 @Injectable()
 @SkipThrottle()
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private dateFormatter: DateFormatterService,
     private mal: MalService,
     private mail: MailService,
-    private modelSort: ModelSortService,
     private modelPagination: ModelPaginationService,
-    private modelCount: ModelCountService,
+    private modelFormatter: ModelFormatterService,
   ) {}
-
-  private userSelect = {
-    id: true,
-    email: true,
-    username: true,
-    picture: true,
-    isVerified: true,
-    role: true,
-    malId: true,
-    googleId: true,
-    updatedAt: true,
-    createdAt: true,
-  };
 
   async getUserDetail(userId: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: this.userSelect,
+      select: this.modelFormatter.userSelect,
     });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return {
-      ...user,
-      malId: user.malId ? parseInt(user.malId) : null,
-      googleId: user.googleId ? parseInt(user.googleId) : null,
-      ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
-    };
+    return this.modelFormatter.userResponse(user);
   }
 
   async updateUserDetail(
@@ -81,7 +59,7 @@ export class UserService {
       let user = await this.prisma.user.update({
         where: { id: userId },
         data,
-        select: this.userSelect,
+        select: this.modelFormatter.userSelect,
       });
 
       // If email change reverified user
@@ -95,7 +73,7 @@ export class UserService {
             otpCode,
             otpExpiration,
           },
-          select: this.userSelect,
+          select: this.modelFormatter.userSelect,
         });
 
         await this.mail.sendEmail(
@@ -106,12 +84,7 @@ export class UserService {
         );
       }
 
-      return {
-        ...user,
-        malId: user.malId ? parseInt(user.malId) : null,
-        googleId: user.googleId ? parseInt(user.googleId) : null,
-        ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
-      };
+      return this.modelFormatter.userResponse(user);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -149,16 +122,7 @@ export class UserService {
       where:
         data.status === 'all' ? { userId } : { userId, status: data.status },
       orderBy: statusMap[data.sort],
-      include: {
-        anime: {
-          include: {
-            animePlatforms: {
-              orderBy: [{ isMainPlatform: 'desc' }, { platformId: 'asc' }],
-              include: { platform: true, link: true },
-            },
-          },
-        },
-      },
+      include: this.modelFormatter.userAnimeListInclude,
       take: data.limit + 1, // for next page check
       skip: data.offset,
     });
@@ -199,41 +163,9 @@ export class UserService {
 
     return {
       ...this.modelPagination.getServerPageLink(endpoint, prevLink, nextLink),
-      anime: [...allAnimeFormat].map((anime) => {
-        return {
-          ...anime,
-          ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
-          animePlatforms: [...anime.animePlatforms]
-            .map((animePlatform) => ({
-              ...animePlatform,
-              ...this.dateFormatter.animePlatformResponse(
-                animePlatform.lastEpisodeAiredAt,
-                animePlatform.nextEpisodeAiringAt,
-              ),
-            }))
-            .sort((a, b) => {
-              return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
-                a,
-                b,
-                anime.userAnimeList[0].animePlatformId,
-              );
-            }),
-          userAnimeList: {
-            ...anime.userAnimeList[0],
-            ...this.dateFormatter.userAnimeListResponse(
-              anime.userAnimeList[0].startDate,
-              anime.userAnimeList[0].finishDate,
-              anime.userAnimeList[0].updatedAt,
-            ),
-            remainingWatchableEpisodes:
-              this.modelCount.countRemainingWatchableEpisodes(
-                anime.userAnimeList[0],
-                anime,
-                anime.animePlatforms,
-              ),
-          },
-        };
-      }),
+      anime: [...allAnimeFormat].map((anime) =>
+        this.modelFormatter.animeResponseWithRelation(anime),
+      ),
     };
 
     // if (data.sort === 'remaining_watchable_episodes') {

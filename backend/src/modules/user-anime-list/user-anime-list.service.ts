@@ -23,19 +23,17 @@ import {
   UserAnimeList,
 } from './user-anime-list.model';
 import { Anime } from '../anime/anime.model';
-import { DateFormatterService } from '../../common/date-formatter.service';
 import { MalService } from '../../common/mal.service';
-import { ModelCountService } from '../../common/model-count.service';
 import { Link } from '../anime-platform/anime-platform.model';
 import { Platform } from '../platform/platform.model';
+import { ModelFormatterService } from '../../common/model-formatter.service';
 
 @Injectable()
 export class UserAnimeListService {
   constructor(
     private prisma: PrismaService,
-    private dateFormatter: DateFormatterService,
     private mal: MalService,
-    private modelCount: ModelCountService,
+    private modelFormatter: ModelFormatterService,
   ) {}
 
   async updateMalStatus(
@@ -67,6 +65,16 @@ export class UserAnimeListService {
     }
   }
 
+  private userAnimeListInclude = {
+    anime: true,
+    animePlatform: {
+      include: {
+        platform: true,
+        link: true,
+      },
+    },
+  };
+
   async createUserAnimeList(
     animeId: number,
     userId: number,
@@ -76,64 +84,21 @@ export class UserAnimeListService {
       const userAnimeList = await this.prisma.userAnimeList.create({
         data: {
           ...data,
-          ...this.dateFormatter.userAnimeListRequest(
+          ...this.modelFormatter.userAnimeListRequest(
             data.startDate,
             data.finishDate,
           ),
           userId,
           animeId,
         },
-        include: {
-          anime: true,
-          animePlatform: {
-            include: {
-              platform: true,
-              link: true,
-            },
-          },
-        },
+        include: this.userAnimeListInclude,
       });
 
       if (data.isSyncedWithMal) {
         await this.updateMalStatus(userId, animeId, data);
       }
 
-      return {
-        ...userAnimeList,
-        ...this.dateFormatter.userAnimeListResponse(
-          userAnimeList.startDate,
-          userAnimeList.finishDate,
-          userAnimeList.updatedAt,
-        ),
-        remainingWatchableEpisodes:
-          this.modelCount.countRemainingWatchableEpisodes(
-            userAnimeList,
-            userAnimeList.anime,
-            userAnimeList.animePlatform
-              ? [{ ...userAnimeList.animePlatform }]
-              : [],
-          ),
-        anime: {
-          ...userAnimeList.anime,
-          ...this.dateFormatter.animeResponse(
-            userAnimeList.anime.releaseAt,
-            userAnimeList.anime.updateAt,
-          ),
-        },
-        ...(userAnimeList.animePlatform
-          ? {
-              animePlatform: {
-                ...userAnimeList.animePlatform,
-                ...this.dateFormatter.animePlatformResponse(
-                  userAnimeList.animePlatform?.lastEpisodeAiredAt,
-                  userAnimeList.animePlatform?.nextEpisodeAiringAt,
-                ),
-              },
-            }
-          : {
-              animePlatform: null,
-            }),
-      };
+      return this.modelFormatter.userAnimeListWithRelation(userAnimeList);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -155,60 +120,13 @@ export class UserAnimeListService {
       where: {
         userId_animeId: { animeId, userId },
       },
-      include: {
-        anime: true,
-        animePlatform: {
-          include: {
-            platform: true,
-            link: true,
-          },
-        },
-      },
+      include: this.userAnimeListInclude,
     });
     if (!userAnimeList) {
       throw new NotFoundException('User anime list not found');
     }
 
-    return {
-      ...userAnimeList,
-      ...this.dateFormatter.userAnimeListResponse(
-        userAnimeList.startDate,
-        userAnimeList.finishDate,
-        userAnimeList.updatedAt,
-      ),
-      remainingWatchableEpisodes:
-        this.modelCount.countRemainingWatchableEpisodes(
-          userAnimeList,
-          userAnimeList.anime,
-          userAnimeList.animePlatform
-            ? [
-                ...Array<{ id: number; episodeAired: number }>(1).fill(
-                  userAnimeList.animePlatform,
-                ),
-              ]
-            : [],
-        ),
-      anime: {
-        ...userAnimeList.anime,
-        ...this.dateFormatter.animeResponse(
-          userAnimeList.anime.releaseAt,
-          userAnimeList.anime.updateAt,
-        ),
-      },
-      ...(userAnimeList.animePlatform
-        ? {
-            animePlatform: {
-              ...userAnimeList.animePlatform,
-              ...this.dateFormatter.animePlatformResponse(
-                userAnimeList.animePlatform?.lastEpisodeAiredAt,
-                userAnimeList.animePlatform?.nextEpisodeAiringAt,
-              ),
-            },
-          }
-        : {
-            animePlatform: null,
-          }),
-    };
+    return this.modelFormatter.userAnimeListWithRelation(userAnimeList);
   }
 
   async updateUserAnimeList(
@@ -223,66 +141,19 @@ export class UserAnimeListService {
         },
         data: {
           ...data,
-          ...this.dateFormatter.userAnimeListRequest(
+          ...this.modelFormatter.userAnimeListRequest(
             data.startDate,
             data.finishDate,
           ),
         },
-        include: {
-          anime: true,
-          animePlatform: {
-            include: {
-              platform: true,
-              link: true,
-            },
-          },
-        },
+        include: this.userAnimeListInclude,
       });
 
       if (data.isSyncedWithMal) {
         await this.updateMalStatus(userId, animeId, data);
       }
 
-      return {
-        ...userAnimeList,
-        ...this.dateFormatter.userAnimeListResponse(
-          userAnimeList.startDate,
-          userAnimeList.finishDate,
-          userAnimeList.updatedAt,
-        ),
-        remainingWatchableEpisodes:
-          this.modelCount.countRemainingWatchableEpisodes(
-            userAnimeList,
-            userAnimeList.anime,
-            userAnimeList.animePlatform
-              ? [
-                  ...Array<{ id: number; episodeAired: number }>(1).fill(
-                    userAnimeList.animePlatform,
-                  ),
-                ]
-              : [],
-          ),
-        anime: {
-          ...userAnimeList.anime,
-          ...this.dateFormatter.animeResponse(
-            userAnimeList.anime.releaseAt,
-            userAnimeList.anime.updateAt,
-          ),
-        },
-        ...(userAnimeList.animePlatform
-          ? {
-              animePlatform: {
-                ...userAnimeList.animePlatform,
-                ...this.dateFormatter.animePlatformResponse(
-                  userAnimeList.animePlatform?.lastEpisodeAiredAt,
-                  userAnimeList.animePlatform?.nextEpisodeAiringAt,
-                ),
-              },
-            }
-          : {
-              animePlatform: null,
-            }),
-      };
+      return this.modelFormatter.userAnimeListWithRelation(userAnimeList);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -320,22 +191,14 @@ export class UserAnimeListService {
           },
           data: {
             ...data,
-            ...this.dateFormatter.userAnimeListRequest(
+            ...this.modelFormatter.userAnimeListRequest(
               data.startDate,
               data.finishDate,
             ),
             userId,
             animeId,
           },
-          include: {
-            anime: true,
-            animePlatform: {
-              include: {
-                platform: true,
-                link: true,
-              },
-            },
-          },
+          include: this.userAnimeListInclude,
         });
       } catch (error) {
         if (
@@ -346,22 +209,14 @@ export class UserAnimeListService {
           userAnimeList = await this.prisma.userAnimeList.create({
             data: {
               ...data,
-              ...this.dateFormatter.userAnimeListRequest(
+              ...this.modelFormatter.userAnimeListRequest(
                 data.startDate,
                 data.finishDate,
               ),
               userId,
               animeId,
             },
-            include: {
-              anime: true,
-              animePlatform: {
-                include: {
-                  platform: true,
-                  link: true,
-                },
-              },
-            },
+            include: this.userAnimeListInclude,
           });
         } else {
           throw error;
@@ -373,44 +228,7 @@ export class UserAnimeListService {
       }
 
       return {
-        ...userAnimeList,
-        ...this.dateFormatter.userAnimeListResponse(
-          userAnimeList.startDate,
-          userAnimeList.finishDate,
-          userAnimeList.updatedAt,
-        ),
-        remainingWatchableEpisodes:
-          this.modelCount.countRemainingWatchableEpisodes(
-            userAnimeList,
-            userAnimeList.anime,
-            userAnimeList.animePlatform
-              ? [
-                  ...Array<{ id: number; episodeAired: number }>(1).fill(
-                    userAnimeList.animePlatform,
-                  ),
-                ]
-              : [],
-          ),
-        anime: {
-          ...userAnimeList.anime,
-          ...this.dateFormatter.animeResponse(
-            userAnimeList.anime.releaseAt,
-            userAnimeList.anime.updateAt,
-          ),
-        },
-        ...(userAnimeList.animePlatform
-          ? {
-              animePlatform: {
-                ...userAnimeList.animePlatform,
-                ...this.dateFormatter.animePlatformResponse(
-                  userAnimeList.animePlatform?.lastEpisodeAiredAt,
-                  userAnimeList.animePlatform?.nextEpisodeAiringAt,
-                ),
-              },
-            }
-          : {
-              animePlatform: null,
-            }),
+        ...this.modelFormatter.userAnimeListWithRelation(userAnimeList),
         statusCode,
       };
     } catch (error) {

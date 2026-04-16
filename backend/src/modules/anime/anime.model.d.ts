@@ -5,7 +5,7 @@ import { UserAnimeList } from '../user-anime-list/user-anime-list.model';
 export type Anime = {
   id: number;
   malId: number;
-  updateAt: string;
+  updatedAt: string;
   picture: string;
   title: string;
   titleEN: string | null;

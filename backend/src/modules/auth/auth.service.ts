@@ -18,7 +18,7 @@ import { MailService } from '../../common/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { Login, Register, ResetPassword } from './auth.validation';
 import { JwtService } from '../../common/jwt.service';
-import { DateFormatterService } from '../../common/date-formatter.service';
+import { ModelFormatterService } from '../../common/model-formatter.service';
 
 dayjs.extend(duration);
 
@@ -30,21 +30,8 @@ export class AuthService {
     private mail: MailService,
     private jwt: JwtService,
     private config: ConfigService,
-    private dateFormatter: DateFormatterService,
+    private modelFormatter: ModelFormatterService,
   ) {}
-
-  private userSelect = {
-    id: true,
-    email: true,
-    username: true,
-    picture: true,
-    isVerified: true,
-    role: true,
-    malId: true,
-    googleId: true,
-    updatedAt: true,
-    createdAt: true,
-  };
 
   maskString(string: string) {
     const length = string.length;
@@ -89,7 +76,7 @@ export class AuthService {
           otpCode,
           otpExpiration,
         },
-        select: this.userSelect,
+        select: this.modelFormatter.userSelect,
       });
 
       await this.mail.sendEmail(
@@ -99,12 +86,7 @@ export class AuthService {
         { otp: otpCode },
       );
 
-      return {
-        ...user,
-        malId: user.malId ? parseInt(user.malId) : null,
-        googleId: user.googleId ? parseInt(user.googleId) : null,
-        ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
-      };
+      return this.modelFormatter.userResponse(user);
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -123,7 +105,7 @@ export class AuthService {
         OR: [{ username: data.identifier }, { email: data.identifier }],
       },
       select: {
-        ...this.userSelect,
+        ...this.modelFormatter.userSelect,
         password: true,
       },
     });
@@ -142,12 +124,7 @@ export class AuthService {
       throw new NotFoundException('Invalid email or password');
     }
 
-    return {
-      ...userWithoutPassword,
-      malId: user.malId ? parseInt(user.malId) : null,
-      googleId: user.googleId ? parseInt(user.googleId) : null,
-      ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
-    };
+    return this.modelFormatter.userResponse(userWithoutPassword);
   }
 
   async verifyEmail(id: number, otpCode: string): Promise<User> {
@@ -177,20 +154,10 @@ export class AuthService {
         data: {
           isVerified: true,
         },
-        select: this.userSelect,
+        select: this.modelFormatter.userSelect,
       });
 
-      return {
-        ...verifiedUser,
-        malId: verifiedUser.malId ? parseInt(verifiedUser.malId) : null,
-        googleId: verifiedUser.googleId
-          ? parseInt(verifiedUser.googleId)
-          : null,
-        ...this.dateFormatter.userResponse(
-          verifiedUser.updatedAt,
-          verifiedUser.createdAt,
-        ),
-      };
+      return this.modelFormatter.userResponse(verifiedUser);
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -302,15 +269,10 @@ export class AuthService {
         data: {
           password: hashedPassword,
         },
-        select: this.userSelect,
+        select: this.modelFormatter.userSelect,
       });
 
-      return {
-        ...user,
-        malId: user.malId ? parseInt(user.malId) : null,
-        googleId: user.googleId ? parseInt(user.googleId) : null,
-        ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
-      };
+      return this.modelFormatter.userResponse(user);
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -332,7 +294,7 @@ export class AuthService {
       where: {
         OR: [{ email }, { googleId }],
       },
-      select: this.userSelect,
+      select: this.modelFormatter.userSelect,
     });
     let statusCode: HttpStatus = HttpStatus.OK;
 
@@ -346,7 +308,7 @@ export class AuthService {
           isVerified: true,
           googleId,
         },
-        select: this.userSelect,
+        select: this.modelFormatter.userSelect,
       });
     } else {
       if (!user.googleId) {
@@ -359,16 +321,13 @@ export class AuthService {
             isVerified: true,
             ...(!user.picture && { picture }),
           },
-          select: this.userSelect,
+          select: this.modelFormatter.userSelect,
         });
       }
     }
 
     return {
-      ...user,
-      malId: user.malId ? parseInt(user.malId) : null,
-      googleId: user.googleId ? parseInt(user.googleId) : null,
-      ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
+      ...this.modelFormatter.userResponse(user),
       statusCode,
     };
   }
@@ -384,7 +343,7 @@ export class AuthService {
       where: {
         malId,
       },
-      select: this.userSelect,
+      select: this.modelFormatter.userSelect,
     });
     let statusCode: HttpStatus = HttpStatus.OK;
 
@@ -399,7 +358,7 @@ export class AuthService {
           malAccessToken: accessToken,
           malRefreshToken: refreshToken,
         },
-        select: this.userSelect,
+        select: this.modelFormatter.userSelect,
       });
     } else {
       user = await this.prisma.user.update({
@@ -413,15 +372,12 @@ export class AuthService {
           malAccessToken: accessToken,
           malRefreshToken: refreshToken,
         },
-        select: this.userSelect,
+        select: this.modelFormatter.userSelect,
       });
     }
 
     return {
-      ...user,
-      malId: user.malId ? parseInt(user.malId) : null,
-      googleId: user.googleId ? parseInt(user.googleId) : null,
-      ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
+      ...this.modelFormatter.userResponse(user),
       statusCode,
     };
   }

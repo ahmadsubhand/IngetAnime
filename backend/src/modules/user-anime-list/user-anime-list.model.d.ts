@@ -14,7 +14,7 @@ export type UserAnimeList = {
   episodesDifference: number;
   status: ListStatus;
   isSyncedWithMal: boolean;
-  updateAt: string;
+  updatedAt: string;
   remainingWatchableEpisodes: number | null;
 };
 

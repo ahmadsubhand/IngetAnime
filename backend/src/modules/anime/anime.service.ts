@@ -7,17 +7,13 @@ import { PrismaService } from '../../common/prisma.service';
 import { AnimeWithRelation, Anime } from './anime.model';
 import { CreateAnime, UpdateAnime } from './anime.validation';
 import { Prisma } from '../../generated/prisma/client';
-import { DateFormatterService } from '../../common/date-formatter.service';
-import { ModelSortService } from '../../common/model-sort.service';
-import { ModelCountService } from '../../common/model-count.service';
+import { ModelFormatterService } from '../../common/model-formatter.service';
 
 @Injectable()
 export class AnimeService {
   constructor(
     private prisma: PrismaService,
-    private dateFormatter: DateFormatterService,
-    private modelSort: ModelSortService,
-    private modelCount: ModelCountService,
+    private modelFormatter: ModelFormatterService,
   ) {}
 
   async createAnime(data: CreateAnime): Promise<Anime> {
@@ -25,14 +21,11 @@ export class AnimeService {
       const anime = await this.prisma.anime.create({
         data: {
           ...data,
-          ...this.dateFormatter.animeRequest(data.releaseAt),
+          ...this.modelFormatter.animeRequest(data.releaseAt),
         },
       });
 
-      return {
-        ...anime,
-        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
-      };
+      return this.modelFormatter.animeResponse(anime);
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -53,59 +46,14 @@ export class AnimeService {
       where: {
         id,
       },
-      include: {
-        animePlatforms: {
-          orderBy: [{ isMainPlatform: 'desc' }, { platformId: 'asc' }],
-          include: {
-            platform: true,
-            link: true,
-          },
-        },
-        userAnimeList: {
-          where: {
-            userId,
-          },
-        },
-      },
+      include: this.modelFormatter.animeInclude(userId),
     });
 
     if (!anime) {
       throw new NotFoundException('Anime not found');
     }
 
-    return {
-      ...anime,
-      ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
-      animePlatforms: [...anime.animePlatforms]
-        .map((animePlatform) => ({
-          ...animePlatform,
-          ...this.dateFormatter.animePlatformResponse(
-            animePlatform.lastEpisodeAiredAt,
-            animePlatform.nextEpisodeAiringAt,
-          ),
-        }))
-        .sort((a, b) => {
-          return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
-            a,
-            b,
-            anime.userAnimeList[0].animePlatformId,
-          );
-        }),
-      userAnimeList: {
-        ...anime.userAnimeList[0],
-        ...this.dateFormatter.userAnimeListResponse(
-          anime.userAnimeList[0].startDate,
-          anime.userAnimeList[0].finishDate,
-          anime.userAnimeList[0].updatedAt,
-        ),
-        remainingWatchableEpisodes:
-          this.modelCount.countRemainingWatchableEpisodes(
-            anime.userAnimeList[0],
-            anime,
-            anime.animePlatforms,
-          ),
-      },
-    };
+    return this.modelFormatter.animeResponseWithRelation(anime);
   }
 
   async updateAnime(animeId: number, data: UpdateAnime): Promise<Anime> {
@@ -116,14 +64,11 @@ export class AnimeService {
         },
         data: {
           ...data,
-          ...this.dateFormatter.animeRequest(data.releaseAt),
+          ...this.modelFormatter.animeRequest(data.releaseAt),
         },
       });
 
-      return {
-        ...anime,
-        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
-      };
+      return this.modelFormatter.animeResponse(anime);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {

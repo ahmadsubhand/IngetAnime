@@ -24,15 +24,15 @@ import {
   Platform as PlatformPrisma,
   Prisma,
 } from '../../generated/prisma/client';
-import { DateFormatterService } from '../../common/date-formatter.service';
 import { Platform } from '../platform/platform.model';
 import { Anime } from '../anime/anime.model';
+import { ModelFormatterService } from '../../common/model-formatter.service';
 
 @Injectable()
 export class AnimePlatformService {
   constructor(
     private prisma: PrismaService,
-    private dateFormatter: DateFormatterService,
+    private modelFormatter: ModelFormatterService,
   ) {}
 
   async setUpMainPlatform(animeId: number) {
@@ -73,52 +73,41 @@ export class AnimePlatformService {
     return linkDatabase;
   }
 
+  private animePlatformInclude = {
+    anime: true,
+    platform: true,
+    link: true,
+  };
+
   async createAnimePlatform(
     param: AnimePlatformId,
     data: CreateAnimePlatform,
   ): Promise<AnimePlatformWithRelation> {
     try {
-      const { link, ...newData } = data;
+      const { link, ...dataWithoutLink } = data;
       const { id: linkId } = await this.createAnimePlatformLink(
         link,
         param.platformId,
       );
 
-      if (newData.isMainPlatform) {
+      if (dataWithoutLink.isMainPlatform) {
         await this.setUpMainPlatform(param.animeId);
       }
 
       const animePlatform = await this.prisma.animePlatform.create({
         data: {
-          ...newData,
-          ...this.dateFormatter.animePlatformRequest(
-            newData.lastEpisodeAiredAt,
-            newData.nextEpisodeAiringAt,
+          ...dataWithoutLink,
+          ...this.modelFormatter.animePlatformRequest(
+            dataWithoutLink.lastEpisodeAiredAt,
+            dataWithoutLink.nextEpisodeAiringAt,
           ),
           ...param,
           linkId,
         },
-        include: {
-          anime: true,
-          platform: true,
-          link: true,
-        },
+        include: this.animePlatformInclude,
       });
 
-      return {
-        ...animePlatform,
-        ...this.dateFormatter.animePlatformResponse(
-          animePlatform.lastEpisodeAiredAt,
-          animePlatform.nextEpisodeAiringAt,
-        ),
-        anime: {
-          ...animePlatform.anime,
-          ...this.dateFormatter.animeResponse(
-            animePlatform.anime.releaseAt,
-            animePlatform.anime.updateAt,
-          ),
-        },
-      };
+      return this.modelFormatter.animePlatformWithRelation(animePlatform);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2003') {
@@ -140,29 +129,12 @@ export class AnimePlatformService {
       where: {
         platformId_animeId: { ...param },
       },
-      include: {
-        platform: true,
-        anime: true,
-        link: true,
-      },
+      include: this.animePlatformInclude,
     });
     if (!animePlatform) {
       throw new NotFoundException('Anime platform not found');
     }
-    return {
-      ...animePlatform,
-      ...this.dateFormatter.animePlatformResponse(
-        animePlatform.lastEpisodeAiredAt,
-        animePlatform.nextEpisodeAiringAt,
-      ),
-      anime: {
-        ...animePlatform.anime,
-        ...this.dateFormatter.animeResponse(
-          animePlatform.anime.releaseAt,
-          animePlatform.anime.updateAt,
-        ),
-      },
-    };
+    return this.modelFormatter.animePlatformWithRelation(animePlatform);
   }
 
   async updateAnimePlatform(
@@ -186,33 +158,16 @@ export class AnimePlatformService {
         },
         data: {
           ...newData,
-          ...this.dateFormatter.animePlatformRequest(
+          ...this.modelFormatter.animePlatformRequest(
             newData.lastEpisodeAiredAt,
             newData.nextEpisodeAiringAt,
           ),
           linkId,
         },
-        include: {
-          anime: true,
-          platform: true,
-          link: true,
-        },
+        include: this.animePlatformInclude,
       });
 
-      return {
-        ...animePlatform,
-        ...this.dateFormatter.animePlatformResponse(
-          animePlatform.lastEpisodeAiredAt,
-          animePlatform.nextEpisodeAiringAt,
-        ),
-        anime: {
-          ...animePlatform.anime,
-          ...this.dateFormatter.animeResponse(
-            animePlatform.anime.releaseAt,
-            animePlatform.anime.updateAt,
-          ),
-        },
-      };
+      return this.modelFormatter.animePlatformWithRelation(animePlatform);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -259,17 +214,13 @@ export class AnimePlatformService {
           },
           data: {
             ...newData,
-            ...this.dateFormatter.animePlatformRequest(
+            ...this.modelFormatter.animePlatformRequest(
               data.lastEpisodeAiredAt,
               data.nextEpisodeAiringAt,
             ),
             linkId,
           },
-          include: {
-            anime: true,
-            platform: true,
-            link: true,
-          },
+          include: this.animePlatformInclude,
         });
       } catch (error) {
         if (
@@ -287,18 +238,14 @@ export class AnimePlatformService {
             data: {
               ...newData,
               ...param,
-              ...this.dateFormatter.animePlatformRequest(
+              ...this.modelFormatter.animePlatformRequest(
                 data.lastEpisodeAiredAt,
                 data.nextEpisodeAiringAt,
               ),
               linkId,
               accessType,
             },
-            include: {
-              anime: true,
-              platform: true,
-              link: true,
-            },
+            include: this.animePlatformInclude,
           });
         } else {
           throw error;
@@ -306,18 +253,7 @@ export class AnimePlatformService {
       }
 
       return {
-        ...animePlatform,
-        ...this.dateFormatter.animePlatformResponse(
-          animePlatform.lastEpisodeAiredAt,
-          animePlatform.nextEpisodeAiringAt,
-        ),
-        anime: {
-          ...animePlatform.anime,
-          ...this.dateFormatter.animeResponse(
-            animePlatform.anime.releaseAt,
-            animePlatform.anime.updateAt,
-          ),
-        },
+        ...this.modelFormatter.animePlatformWithRelation(animePlatform),
         statusCode,
       };
     } catch (error) {

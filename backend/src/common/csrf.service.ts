@@ -21,7 +21,7 @@ export class CsrfService {
         environment === 'production' ? '__Host-x-csrf-token' : 'x-csrf-token',
       getSecret: () => csrfSecret,
       getSessionIdentifier: (req: Request & { user?: JwtPayload }) => {
-        const user = req.user as JwtPayload | undefined;
+        const user = req.user;
         return user?.sub?.toString() ?? 'anonymous';
       },
       cookieOptions: {

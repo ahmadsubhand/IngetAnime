@@ -15,9 +15,7 @@ import { AllAnimeWithMal } from './anime-exploration.model';
 import { ConfigService } from '@nestjs/config';
 import { MalError, AllMalAnime } from '../../types/mal';
 import { ModelPaginationService } from '../../common/model-pagination.service';
-import { ModelSortService } from '../../common/model-sort.service';
-import { ModelCountService } from '../../common/model-count.service';
-import { DateFormatterService } from '../../common/date-formatter.service';
+import { ModelFormatterService } from '../../common/model-formatter.service';
 
 @Injectable()
 export class AnimeExplorationService {
@@ -26,10 +24,8 @@ export class AnimeExplorationService {
   constructor(
     private config: ConfigService,
     private mal: MalService,
-    private dateFormatter: DateFormatterService,
+    private modelFormatter: ModelFormatterService,
     private modelPagination: ModelPaginationService,
-    private modelSort: ModelSortService,
-    private modelCount: ModelCountService,
   ) {
     this.CLIENT_ID = this.config.getOrThrow('MAL_CLIENT_ID');
   }
@@ -77,36 +73,7 @@ export class AnimeExplorationService {
     return {
       anime: [...animeList].map((anime) => ({
         ...anime,
-        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
-        animePlatforms: [...anime.animePlatforms]
-          .map((animePlatform) => ({
-            ...animePlatform,
-            ...this.dateFormatter.animePlatformResponse(
-              animePlatform.lastEpisodeAiredAt,
-              animePlatform.nextEpisodeAiringAt,
-            ),
-          }))
-          .sort((a, b) => {
-            return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
-              a,
-              b,
-              anime.userAnimeList[0].animePlatformId,
-            );
-          }),
-        userAnimeList: {
-          ...anime.userAnimeList[0],
-          ...this.dateFormatter.userAnimeListResponse(
-            anime.userAnimeList[0].startDate,
-            anime.userAnimeList[0].finishDate,
-            anime.userAnimeList[0].updatedAt,
-          ),
-          remainingWatchableEpisodes:
-            this.modelCount.countRemainingWatchableEpisodes(
-              anime.userAnimeList[0],
-              anime,
-              anime.animePlatforms,
-            ),
-        },
+        ...this.modelFormatter.animeResponseWithRelation(anime),
       })),
       ...this.modelPagination.getServerPageLink(
         endpoint,
@@ -151,36 +118,7 @@ export class AnimeExplorationService {
     return {
       anime: [...animeList].map((anime) => ({
         ...anime,
-        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
-        animePlatforms: [...anime.animePlatforms]
-          .map((animePlatform) => ({
-            ...animePlatform,
-            ...this.dateFormatter.animePlatformResponse(
-              animePlatform.lastEpisodeAiredAt,
-              animePlatform.nextEpisodeAiringAt,
-            ),
-          }))
-          .sort((a, b) => {
-            return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
-              a,
-              b,
-              anime.userAnimeList[0].animePlatformId,
-            );
-          }),
-        userAnimeList: {
-          ...anime.userAnimeList[0],
-          ...this.dateFormatter.userAnimeListResponse(
-            anime.userAnimeList[0].startDate,
-            anime.userAnimeList[0].finishDate,
-            anime.userAnimeList[0].updatedAt,
-          ),
-          remainingWatchableEpisodes:
-            this.modelCount.countRemainingWatchableEpisodes(
-              anime.userAnimeList[0],
-              anime,
-              anime.animePlatforms,
-            ),
-        },
+        ...this.modelFormatter.animeResponseWithRelation(anime),
       })),
       ...this.modelPagination.getServerPageLink(
         endpoint,
@@ -226,36 +164,7 @@ export class AnimeExplorationService {
     return {
       anime: [...animeList].map((anime) => ({
         ...anime,
-        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
-        animePlatforms: [...anime.animePlatforms]
-          .map((animePlatform) => ({
-            ...animePlatform,
-            ...this.dateFormatter.animePlatformResponse(
-              animePlatform.lastEpisodeAiredAt,
-              animePlatform.nextEpisodeAiringAt,
-            ),
-          }))
-          .sort((a, b) => {
-            return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
-              a,
-              b,
-              anime.userAnimeList[0].animePlatformId,
-            );
-          }),
-        userAnimeList: {
-          ...anime.userAnimeList[0],
-          ...this.dateFormatter.userAnimeListResponse(
-            anime.userAnimeList[0].startDate,
-            anime.userAnimeList[0].finishDate,
-            anime.userAnimeList[0].updatedAt,
-          ),
-          remainingWatchableEpisodes:
-            this.modelCount.countRemainingWatchableEpisodes(
-              anime.userAnimeList[0],
-              anime,
-              anime.animePlatforms,
-            ),
-        },
+        ...this.modelFormatter.animeResponseWithRelation(anime),
       })),
       ...this.modelPagination.getServerPageLink(
         endpoint,
@@ -300,36 +209,7 @@ export class AnimeExplorationService {
     return {
       anime: [...animeList].map((anime) => ({
         ...anime,
-        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
-        animePlatforms: [...anime.animePlatforms]
-          .map((animePlatform) => ({
-            ...animePlatform,
-            ...this.dateFormatter.animePlatformResponse(
-              animePlatform.lastEpisodeAiredAt,
-              animePlatform.nextEpisodeAiringAt,
-            ),
-          }))
-          .sort((a, b) => {
-            return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
-              a,
-              b,
-              anime.userAnimeList[0].animePlatformId,
-            );
-          }),
-        userAnimeList: {
-          ...anime.userAnimeList[0],
-          ...this.dateFormatter.userAnimeListResponse(
-            anime.userAnimeList[0].startDate,
-            anime.userAnimeList[0].finishDate,
-            anime.userAnimeList[0].updatedAt,
-          ),
-          remainingWatchableEpisodes:
-            this.modelCount.countRemainingWatchableEpisodes(
-              anime.userAnimeList[0],
-              anime,
-              anime.animePlatforms,
-            ),
-        },
+        ...this.modelFormatter.animeResponseWithRelation(anime),
       })),
       ...this.modelPagination.getServerPageLink(
         endpoint,

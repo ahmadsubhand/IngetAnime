@@ -21,11 +21,8 @@ import {
   MalAnime,
 } from '../types/mal';
 import { PrismaService } from './prisma.service';
-import { UtcService } from './utc.service';
 import { ImportAnimeListFromMal } from '../modules/user/user.validation';
 import dayjs from 'dayjs';
-import { ModelSortService } from './model-sort.service';
-import { DateFormatterService } from './date-formatter.service';
 import {
   Anime as AnimePrisma,
   AnimePlatform as AnimePlatformPrisma,
@@ -33,6 +30,7 @@ import {
   Platform as PlatformPrisma,
   Link as LinkPrisma,
 } from '../generated/prisma/client';
+import { ModelFormatterService } from './model-formatter.service';
 
 @Injectable()
 export class MalService {
@@ -45,9 +43,7 @@ export class MalService {
     config: ConfigService,
     @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     private prisma: PrismaService,
-    private utc: UtcService,
-    private modelSort: ModelSortService,
-    private dateFormatter: DateFormatterService,
+    private modelFormatter: ModelFormatterService,
   ) {
     this.CODE_CHALLENGE = cryptoRandomString({
       length: 64,
@@ -223,7 +219,9 @@ export class MalService {
               : 'https://ik.imagekit.io/hq9ajk99t/_Pngtree_no%20image%20vector%20illustration%20isolated_4979075.png?updatedAt=1749865837127',
             title: anime.node.title,
             titleEN: anime.node.alternative_titles?.en,
-            releaseAt: this.utc.dateToISOString(anime.node.start_date),
+            releaseAt: this.modelFormatter.dateToISOString(
+              anime.node.start_date,
+            ),
             episodeTotal: anime.node.num_episodes,
             status: anime.node.status,
           };
@@ -255,20 +253,7 @@ export class MalService {
       where: {
         malId: { in: allMalId },
       },
-      include: {
-        animePlatforms: {
-          orderBy: [{ isMainPlatform: 'desc' }, { platformId: 'asc' }],
-          include: {
-            link: true,
-            platform: true,
-          },
-        },
-        userAnimeList: {
-          where: {
-            userId,
-          },
-        },
-      },
+      include: this.modelFormatter.animeInclude(userId),
     });
 
     const animeMap = new Map(
@@ -445,8 +430,12 @@ export class MalService {
       return {
         userId,
         animeId: anime.id,
-        startDate: this.utc.dateToISOString(myListStatusFromMal.start_date),
-        finishDate: this.utc.dateToISOString(myListStatusFromMal.finish_date),
+        startDate: this.modelFormatter.dateToISOString(
+          myListStatusFromMal.start_date,
+        ),
+        finishDate: this.modelFormatter.dateToISOString(
+          myListStatusFromMal.finish_date,
+        ),
         progress: myListStatusFromMal.num_episodes_watched,
         score: myListStatusFromMal.score,
         status: myListStatusFromMal.status,
