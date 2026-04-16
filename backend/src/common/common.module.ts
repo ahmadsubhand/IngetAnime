@@ -15,11 +15,8 @@ import { MalService } from './mal.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtService } from './jwt.service';
 import { GoogleService } from './google.service';
-import { UtcService } from './utc.service';
-import { DateFormatterService } from './date-formatter.service';
-import { ModelSortService } from './model-sort.service';
-import { ModelCountService } from './model-count.service';
 import { ModelPaginationService } from './model-pagination.service';
+import { ModelFormatterService } from './model-formatter.service';
 
 @Global()
 @Module({
@@ -83,11 +80,8 @@ import { ModelPaginationService } from './model-pagination.service';
     CookieService,
     GoogleService,
     MalService,
-    UtcService,
-    DateFormatterService,
-    ModelSortService,
-    ModelCountService,
     ModelPaginationService,
+    ModelFormatterService,
   ],
   exports: [
     PrismaService,
@@ -97,11 +91,8 @@ import { ModelPaginationService } from './model-pagination.service';
     CookieService,
     GoogleService,
     MalService,
-    UtcService,
-    DateFormatterService,
-    ModelSortService,
-    ModelCountService,
     ModelPaginationService,
+    ModelFormatterService,
   ],
 })
 export class CommonModule {}
