@@ -24,8 +24,9 @@ import type {
   ThirdPartyLogin,
 } from './auth.validation';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
-import type { JwtPayload, StateObject } from '../../types';
-import type { ApiResponse, UserResponse } from '../../types/entity';
+import { JwtPayload, StateObject } from '../../types';
+import type { ApiResponse } from '../../types';
+import type { User } from '../user/user.model';
 import { Throttle } from '@nestjs/throttler';
 import { CookieService } from '../../common/cookie.service';
 import dayjs from 'dayjs';
@@ -68,7 +69,7 @@ export class AuthController {
     this.cookie.setCookie(res, this.JWT_COOKIE_NAME, token, this.JWT_MAX_AGE);
   }
 
-  getAndSetAuthState(mode: StateObject['mode'], res: Response) {
+  getAndSetAuthState(mode: GetAuthUrl['mode'], res: Response) {
     const randomString = cryptoRandomString({
       length: 24,
       type: 'alphanumeric',
@@ -114,7 +115,7 @@ export class AuthController {
   async register(
     @Body(new ZodValidationPipe(AuthValidation.REGISTER)) data: Register,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<UserResponse>> {
+  ): Promise<ApiResponse<User>> {
     const user = await this.service.register(data);
     this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
     return {
@@ -129,7 +130,7 @@ export class AuthController {
   async login(
     @Body(new ZodValidationPipe(AuthValidation.LOGIN)) data: Login,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<UserResponse>> {
+  ): Promise<ApiResponse<User>> {
     const user = await this.service.login(data);
     this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
     return {
@@ -146,7 +147,7 @@ export class AuthController {
     @Body(new ZodValidationPipe(AuthValidation.EMAIL_VERIFICATION))
     data: EmailVerification,
     @Req() req: Request & { user: JwtPayload },
-  ): Promise<ApiResponse<UserResponse>> {
+  ): Promise<ApiResponse<User>> {
     const user = await this.service.verifyEmail(req.user.sub, data.otpCode);
     return {
       message: 'Account verified successfully',
@@ -213,7 +214,7 @@ export class AuthController {
     @Body(new ZodValidationPipe(AuthValidation.RESET_PASSWORD))
     data: ResetPassword,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<UserResponse>> {
+  ): Promise<ApiResponse<User>> {
     const user = await this.service.resetPassword(data);
     this.setAuthCookie({ sub: user.id, type: 'reset_password' }, res);
     return {
@@ -246,7 +247,7 @@ export class AuthController {
     data: ThirdPartyLogin,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Request,
-  ): Promise<ApiResponse<UserResponse>> {
+  ): Promise<ApiResponse<User>> {
     const stateObject = this.getAndCheckAuthState(data.state, req);
     if (stateObject.mode !== 'login') {
       throw new BadRequestException('Invalid state type');
@@ -300,7 +301,7 @@ export class AuthController {
     data: ThirdPartyLogin,
     @Res({ passthrough: true }) res: Response,
     @Req() req: Request,
-  ): Promise<ApiResponse<UserResponse>> {
+  ): Promise<ApiResponse<User>> {
     const stateObject = this.getAndCheckAuthState(data.state, req);
     if (stateObject.mode !== 'login') {
       throw new BadRequestException('Invalid state type');

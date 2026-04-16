@@ -9,7 +9,7 @@ import {
 import { PrismaService } from '../../common/prisma.service';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { UserResponse } from '../../types/entity';
+import { User } from '../user/user.model';
 import { MalProfile } from '../../types/mal';
 import bcrypt from 'bcrypt';
 import cryptoRandomString from 'crypto-random-string';
@@ -18,6 +18,7 @@ import { MailService } from '../../common/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { Login, Register, ResetPassword } from './auth.validation';
 import { JwtService } from '../../common/jwt.service';
+import { DateFormatterService } from '../../common/date-formatter.service';
 
 dayjs.extend(duration);
 
@@ -29,31 +30,21 @@ export class AuthService {
     private mail: MailService,
     private jwt: JwtService,
     private config: ConfigService,
+    private dateFormatter: DateFormatterService,
   ) {}
 
-  // Helper function
-
-  toUserData(user: UserResponse): UserResponse {
-    return {
-      id: user.id,
-      username: user.username,
-      picture: user.picture,
-      role: user.role,
-      email: user.email,
-      isVerified: user.isVerified,
-    };
-  }
-
-  userSelect() {
-    return {
-      id: true,
-      username: true,
-      picture: true,
-      role: true,
-      email: true,
-      isVerified: true,
-    };
-  }
+  private userSelect = {
+    id: true,
+    email: true,
+    username: true,
+    picture: true,
+    isVerified: true,
+    role: true,
+    malId: true,
+    googleId: true,
+    updatedAt: true,
+    createdAt: true,
+  };
 
   maskString(string: string) {
     const length = string.length;
@@ -85,7 +76,7 @@ export class AuthService {
 
   // API function
 
-  async register(data: Register): Promise<UserResponse> {
+  async register(data: Register): Promise<User> {
     try {
       const hashedPassword = await bcrypt.hash(data.password, this.SALT_ROUNDS);
       const otpCode = cryptoRandomString({ length: 6, type: 'numeric' });
@@ -98,7 +89,7 @@ export class AuthService {
           otpCode,
           otpExpiration,
         },
-        select: this.userSelect(),
+        select: this.userSelect,
       });
 
       await this.mail.sendEmail(
@@ -108,7 +99,12 @@ export class AuthService {
         { otp: otpCode },
       );
 
-      return user;
+      return {
+        ...user,
+        malId: user.malId ? parseInt(user.malId) : null,
+        googleId: user.googleId ? parseInt(user.googleId) : null,
+        ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
+      };
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -121,30 +117,40 @@ export class AuthService {
     }
   }
 
-  async login(data: Login): Promise<UserResponse> {
+  async login(data: Login): Promise<User> {
     const user = await this.prisma.user.findFirst({
       where: {
         OR: [{ username: data.identifier }, { email: data.identifier }],
       },
       select: {
-        ...this.userSelect(),
+        ...this.userSelect,
         password: true,
       },
     });
 
-    const isPasswordValid = user?.password
-      ? await bcrypt.compare(data.password, user.password)
-      : false;
-
-    if (!user || !isPasswordValid) {
+    if (!user) {
       throw new NotFoundException('Invalid email or password');
     }
 
-    // Remove password
-    return this.toUserData(user);
+    const { password, ...userWithoutPassword } = user;
+
+    const isPasswordValid = password
+      ? await bcrypt.compare(data.password, password)
+      : false;
+
+    if (!isPasswordValid) {
+      throw new NotFoundException('Invalid email or password');
+    }
+
+    return {
+      ...userWithoutPassword,
+      malId: user.malId ? parseInt(user.malId) : null,
+      googleId: user.googleId ? parseInt(user.googleId) : null,
+      ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
+    };
   }
 
-  async verifyEmail(id: number, otpCode: string): Promise<UserResponse> {
+  async verifyEmail(id: number, otpCode: string): Promise<User> {
     try {
       const user = await this.prisma.user.findUnique({
         where: {
@@ -171,10 +177,20 @@ export class AuthService {
         data: {
           isVerified: true,
         },
-        select: this.userSelect(),
+        select: this.userSelect,
       });
 
-      return verifiedUser;
+      return {
+        ...verifiedUser,
+        malId: verifiedUser.malId ? parseInt(verifiedUser.malId) : null,
+        googleId: verifiedUser.googleId
+          ? parseInt(verifiedUser.googleId)
+          : null,
+        ...this.dateFormatter.userResponse(
+          verifiedUser.updatedAt,
+          verifiedUser.createdAt,
+        ),
+      };
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -271,7 +287,7 @@ export class AuthService {
     };
   }
 
-  async resetPassword(data: ResetPassword): Promise<UserResponse> {
+  async resetPassword(data: ResetPassword): Promise<User> {
     try {
       const payload = await this.jwt.verifyToken(data.token, 'reset_password');
 
@@ -286,10 +302,15 @@ export class AuthService {
         data: {
           password: hashedPassword,
         },
-        select: this.userSelect(),
+        select: this.userSelect,
       });
 
-      return user;
+      return {
+        ...user,
+        malId: user.malId ? parseInt(user.malId) : null,
+        googleId: user.googleId ? parseInt(user.googleId) : null,
+        ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
+      };
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -306,12 +327,12 @@ export class AuthService {
     googleId: string,
     email: string,
     picture?: string | null,
-  ): Promise<UserResponse & { statusCode: HttpStatus }> {
+  ): Promise<User & { statusCode: HttpStatus }> {
     let user = await this.prisma.user.findFirst({
       where: {
         OR: [{ email }, { googleId }],
       },
-      select: { ...this.userSelect(), googleId: true },
+      select: this.userSelect,
     });
     let statusCode: HttpStatus = HttpStatus.OK;
 
@@ -325,7 +346,7 @@ export class AuthService {
           isVerified: true,
           googleId,
         },
-        select: { ...this.userSelect(), googleId: true },
+        select: this.userSelect,
       });
     } else {
       if (!user.googleId) {
@@ -338,13 +359,16 @@ export class AuthService {
             isVerified: true,
             ...(!user.picture && { picture }),
           },
-          select: { ...this.userSelect(), googleId: true },
+          select: this.userSelect,
         });
       }
     }
 
     return {
       ...user,
+      malId: user.malId ? parseInt(user.malId) : null,
+      googleId: user.googleId ? parseInt(user.googleId) : null,
+      ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
       statusCode,
     };
   }
@@ -353,14 +377,14 @@ export class AuthService {
     accessToken: string,
     refreshToken: string,
     malProfile: MalProfile,
-  ): Promise<UserResponse & { statusCode: HttpStatus }> {
+  ): Promise<User & { statusCode: HttpStatus }> {
     const malId = malProfile.id.toString();
 
     let user = await this.prisma.user.findFirst({
       where: {
         malId,
       },
-      select: this.userSelect(),
+      select: this.userSelect,
     });
     let statusCode: HttpStatus = HttpStatus.OK;
 
@@ -375,7 +399,7 @@ export class AuthService {
           malAccessToken: accessToken,
           malRefreshToken: refreshToken,
         },
-        select: this.userSelect(),
+        select: this.userSelect,
       });
     } else {
       user = await this.prisma.user.update({
@@ -389,12 +413,15 @@ export class AuthService {
           malAccessToken: accessToken,
           malRefreshToken: refreshToken,
         },
-        select: this.userSelect(),
+        select: this.userSelect,
       });
     }
 
     return {
       ...user,
+      malId: user.malId ? parseInt(user.malId) : null,
+      googleId: user.googleId ? parseInt(user.googleId) : null,
+      ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
       statusCode,
     };
   }

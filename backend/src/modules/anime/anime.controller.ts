@@ -13,11 +13,8 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AnimeService } from './anime.service';
-import {
-  AnimeFullRelation,
-  AnimeResponse,
-  ApiResponse,
-} from '../../types/entity';
+import { AnimeWithRelation, Anime } from './anime.model';
+import { ApiResponse } from '../../types';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { AnimeValidation } from './anime.validation';
 import type { AnimeId, CreateAnime, UpdateAnime } from './anime.validation';
@@ -37,7 +34,7 @@ export class AnimeController {
   async createAnime(
     @Body(new ZodValidationPipe(AnimeValidation.CREATE_ANIME))
     data: CreateAnime,
-  ): Promise<ApiResponse<AnimeResponse>> {
+  ): Promise<ApiResponse<Anime>> {
     const anime = await this.service.createAnime(data);
     return {
       message: 'Create anime successfully',
@@ -54,7 +51,7 @@ export class AnimeController {
     @Req() req: Request & { user?: JwtPayload },
     @Param(new ZodValidationPipe(AnimeValidation.ANIME_ID))
     data: AnimeId,
-  ): Promise<ApiResponse<AnimeResponse & AnimeFullRelation>> {
+  ): Promise<ApiResponse<AnimeWithRelation>> {
     const anime = await this.service.getAnimeDetail(data.id, req.user?.sub);
     return {
       message: 'Get anime detail successfully',
@@ -72,7 +69,7 @@ export class AnimeController {
     param: AnimeId,
     @Body(new ZodValidationPipe(AnimeValidation.UPDATE_ANIME))
     data: UpdateAnime,
-  ): Promise<ApiResponse<AnimeResponse>> {
+  ): Promise<ApiResponse<Anime>> {
     const anime = await this.service.updateAnime(param.id, data);
     return {
       message: 'Update anime successfully',
@@ -87,9 +84,7 @@ export class AnimeController {
   @Role('admin')
   async deleteAnime(
     @Param(new ZodValidationPipe(AnimeValidation.ANIME_ID)) data: AnimeId,
-  ): Promise<
-    ApiResponse<{ id: AnimeResponse['id']; title: AnimeResponse['title'] }>
-  > {
+  ): Promise<ApiResponse<{ id: Anime['id']; title: Anime['title'] }>> {
     const anime = await this.service.deleteAnime(data.id);
     return {
       message: 'Delete anime successfully',

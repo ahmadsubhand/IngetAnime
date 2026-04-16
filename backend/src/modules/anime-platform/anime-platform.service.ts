@@ -13,12 +13,20 @@ import {
   UpdateAnimePlatform,
 } from './anime-platform.validation';
 import {
-  AnimePlatformFullRelation,
-  AnimePlatformResponse,
-  AnimePlatformShortRelation,
-} from '../../types/entity';
-import { AnimePlatform, Prisma } from '../../generated/prisma/client';
+  AnimePlatformWithRelation,
+  AnimePlatform,
+  Link,
+} from './anime-platform.model';
+import {
+  Anime as AnimePrisma,
+  AnimePlatform as AnimePlatformPrisma,
+  Link as LinkPrisma,
+  Platform as PlatformPrisma,
+  Prisma,
+} from '../../generated/prisma/client';
 import { DateFormatterService } from '../../common/date-formatter.service';
+import { Platform } from '../platform/platform.model';
+import { Anime } from '../anime/anime.model';
 
 @Injectable()
 export class AnimePlatformService {
@@ -65,24 +73,10 @@ export class AnimePlatformService {
     return linkDatabase;
   }
 
-  private selectedRelationQuery:
-    | Prisma.AnimePlatformInclude
-    | Prisma.AnimePlatformSelect = {
-    anime: {
-      select: { title: true },
-    },
-    platform: {
-      select: { name: true },
-    },
-    link: {
-      select: { url: true },
-    },
-  };
-
   async createAnimePlatform(
     param: AnimePlatformId,
     data: CreateAnimePlatform,
-  ): Promise<AnimePlatformResponse & AnimePlatformShortRelation> {
+  ): Promise<AnimePlatformWithRelation> {
     try {
       const { link, ...newData } = data;
       const { id: linkId } = await this.createAnimePlatformLink(
@@ -104,7 +98,11 @@ export class AnimePlatformService {
           ...param,
           linkId,
         },
-        include: this.selectedRelationQuery,
+        include: {
+          anime: true,
+          platform: true,
+          link: true,
+        },
       });
 
       return {
@@ -113,6 +111,13 @@ export class AnimePlatformService {
           animePlatform.lastEpisodeAiredAt,
           animePlatform.nextEpisodeAiringAt,
         ),
+        anime: {
+          ...animePlatform.anime,
+          ...this.dateFormatter.animeResponse(
+            animePlatform.anime.releaseAt,
+            animePlatform.anime.updateAt,
+          ),
+        },
       };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -130,7 +135,7 @@ export class AnimePlatformService {
 
   async getAnimePlatformDetail(
     param: AnimePlatformId,
-  ): Promise<AnimePlatformResponse & AnimePlatformFullRelation> {
+  ): Promise<AnimePlatformWithRelation> {
     const animePlatform = await this.prisma.animePlatform.findUnique({
       where: {
         platformId_animeId: { ...param },
@@ -163,7 +168,7 @@ export class AnimePlatformService {
   async updateAnimePlatform(
     param: AnimePlatformId,
     data: UpdateAnimePlatform,
-  ): Promise<AnimePlatformResponse & AnimePlatformShortRelation> {
+  ): Promise<AnimePlatformWithRelation> {
     try {
       const { link, ...newData } = data;
       const { id: linkId } = await this.createAnimePlatformLink(
@@ -187,7 +192,11 @@ export class AnimePlatformService {
           ),
           linkId,
         },
-        include: this.selectedRelationQuery,
+        include: {
+          anime: true,
+          platform: true,
+          link: true,
+        },
       });
 
       return {
@@ -196,6 +205,13 @@ export class AnimePlatformService {
           animePlatform.lastEpisodeAiredAt,
           animePlatform.nextEpisodeAiringAt,
         ),
+        anime: {
+          ...animePlatform.anime,
+          ...this.dateFormatter.animeResponse(
+            animePlatform.anime.releaseAt,
+            animePlatform.anime.updateAt,
+          ),
+        },
       };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -213,10 +229,7 @@ export class AnimePlatformService {
   async createOrUpdateAnimePlatform(
     param: AnimePlatformId,
     data: CreateOrUpdateAnimePlatform,
-  ): Promise<
-    AnimePlatformResponse &
-      AnimePlatformShortRelation & { statusCode: HttpStatus }
-  > {
+  ): Promise<AnimePlatformWithRelation & { statusCode: HttpStatus }> {
     try {
       const { link, ...newData } = data;
       let linkId: number | undefined;
@@ -232,7 +245,11 @@ export class AnimePlatformService {
         await this.setUpMainPlatform(param.animeId);
       }
 
-      let animePlatform: AnimePlatform & AnimePlatformShortRelation,
+      let animePlatform: AnimePlatformPrisma & {
+          anime: AnimePrisma;
+          platform: PlatformPrisma;
+          link: LinkPrisma;
+        },
         statusCode = 200;
 
       try {
@@ -248,7 +265,11 @@ export class AnimePlatformService {
             ),
             linkId,
           },
-          include: this.selectedRelationQuery,
+          include: {
+            anime: true,
+            platform: true,
+            link: true,
+          },
         });
       } catch (error) {
         if (
@@ -273,7 +294,11 @@ export class AnimePlatformService {
               linkId,
               accessType,
             },
-            include: this.selectedRelationQuery,
+            include: {
+              anime: true,
+              platform: true,
+              link: true,
+            },
           });
         } else {
           throw error;
@@ -286,6 +311,13 @@ export class AnimePlatformService {
           animePlatform.lastEpisodeAiredAt,
           animePlatform.nextEpisodeAiringAt,
         ),
+        anime: {
+          ...animePlatform.anime,
+          ...this.dateFormatter.animeResponse(
+            animePlatform.anime.releaseAt,
+            animePlatform.anime.updateAt,
+          ),
+        },
         statusCode,
       };
     } catch (error) {
@@ -301,9 +333,18 @@ export class AnimePlatformService {
     }
   }
 
-  async deleteAnimePlatform(
-    param: AnimePlatformId,
-  ): Promise<{ id: AnimePlatformResponse['id'] } & AnimePlatformShortRelation> {
+  async deleteAnimePlatform(param: AnimePlatformId): Promise<{
+    id: AnimePlatform['id'];
+    anime: {
+      title: Anime['title'];
+    };
+    platform: {
+      name: Platform['name'];
+    };
+    link: {
+      url: Link['url'];
+    };
+  }> {
     try {
       const animePlatform = await this.prisma.animePlatform.delete({
         where: {
@@ -311,7 +352,15 @@ export class AnimePlatformService {
         },
         select: {
           id: true,
-          ...this.selectedRelationQuery,
+          anime: {
+            select: { title: true },
+          },
+          platform: {
+            select: { name: true },
+          },
+          link: {
+            select: { url: true },
+          },
         },
       });
 

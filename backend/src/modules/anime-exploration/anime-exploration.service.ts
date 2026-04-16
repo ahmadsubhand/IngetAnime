@@ -11,9 +11,13 @@ import {
   GetSeasonalAnime,
   GetSuggestedAnime,
 } from './anime-exploration.validation';
-import { AnimeListResponse } from '../../types/entity';
+import { AllAnimeWithMal } from './anime-exploration.model';
 import { ConfigService } from '@nestjs/config';
-import { MalError, MalListAnime } from '../../types/mal';
+import { MalError, AllMalAnime } from '../../types/mal';
+import { ModelPaginationService } from '../../common/model-pagination.service';
+import { ModelSortService } from '../../common/model-sort.service';
+import { ModelCountService } from '../../common/model-count.service';
+import { DateFormatterService } from '../../common/date-formatter.service';
 
 @Injectable()
 export class AnimeExplorationService {
@@ -22,15 +26,12 @@ export class AnimeExplorationService {
   constructor(
     private config: ConfigService,
     private mal: MalService,
+    private dateFormatter: DateFormatterService,
+    private modelPagination: ModelPaginationService,
+    private modelSort: ModelSortService,
+    private modelCount: ModelCountService,
   ) {
     this.CLIENT_ID = this.config.getOrThrow('MAL_CLIENT_ID');
-  }
-
-  getServerPageLink(link: string, endpoint: string) {
-    const port = this.config.get<number>('PORT', 3000);
-    const baseUrl = this.config.get<string>('BASE_URL', 'http://localhost');
-    const queryLink = link.split('?')[1];
-    return `${baseUrl}:${port}${endpoint}?${queryLink}`;
   }
 
   requiredParams(params: { limit: number; offset: number; fields: string }) {
@@ -44,7 +45,7 @@ export class AnimeExplorationService {
   async getAnimeList(
     data: GetAnimeList,
     userId?: number,
-  ): Promise<AnimeListResponse> {
+  ): Promise<AllAnimeWithMal> {
     const accessToken = await this.mal.getMalConnection(userId);
     const endpoint = '/anime';
     const url = `https://api.myanimelist.net/v2${endpoint}`;
@@ -61,7 +62,7 @@ export class AnimeExplorationService {
           : { 'X-MAL-CLIENT-ID': this.CLIENT_ID }),
       },
     });
-    const animeFromMal = (await response.json()) as MalListAnime | MalError;
+    const animeFromMal = (await response.json()) as AllMalAnime | MalError;
     if ('error' in animeFromMal) {
       throw new BadRequestException(
         animeFromMal.hint || animeFromMal.message || animeFromMal.error,
@@ -72,28 +73,53 @@ export class AnimeExplorationService {
       animeFromMal.data,
       userId,
     );
-    const prevListLink = animeFromMal.paging?.prev
-      ? this.getServerPageLink(animeFromMal.paging?.prev, endpoint)
-      : undefined;
-    const nextListLink = animeFromMal.paging?.next
-      ? this.getServerPageLink(animeFromMal.paging?.next, endpoint)
-      : undefined;
 
     return {
-      anime: animeList,
-      ...((prevListLink || nextListLink) && {
-        paging: {
-          prev: prevListLink,
-          next: nextListLink,
+      anime: [...animeList].map((anime) => ({
+        ...anime,
+        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
+        animePlatforms: [...anime.animePlatforms]
+          .map((animePlatform) => ({
+            ...animePlatform,
+            ...this.dateFormatter.animePlatformResponse(
+              animePlatform.lastEpisodeAiredAt,
+              animePlatform.nextEpisodeAiringAt,
+            ),
+          }))
+          .sort((a, b) => {
+            return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
+              a,
+              b,
+              anime.userAnimeList[0].animePlatformId,
+            );
+          }),
+        userAnimeList: {
+          ...anime.userAnimeList[0],
+          ...this.dateFormatter.userAnimeListResponse(
+            anime.userAnimeList[0].startDate,
+            anime.userAnimeList[0].finishDate,
+            anime.userAnimeList[0].updatedAt,
+          ),
+          remainingWatchableEpisodes:
+            this.modelCount.countRemainingWatchableEpisodes(
+              anime.userAnimeList[0],
+              anime,
+              anime.animePlatforms,
+            ),
         },
-      }),
+      })),
+      ...this.modelPagination.getServerPageLink(
+        endpoint,
+        animeFromMal.paging?.prev,
+        animeFromMal.paging?.next,
+      ),
     };
   }
 
   async getAnimeRanking(
     data: GetAnimeRanking,
     userId?: number,
-  ): Promise<AnimeListResponse> {
+  ): Promise<AllAnimeWithMal> {
     const accessToken = await this.mal.getMalConnection(userId);
     const endpoint = '/anime/ranking';
     const url = `https://api.myanimelist.net/v2${endpoint}`;
@@ -110,7 +136,7 @@ export class AnimeExplorationService {
           : { 'X-MAL-CLIENT-ID': this.CLIENT_ID }),
       },
     });
-    const animeFromMal = (await response.json()) as MalListAnime | MalError;
+    const animeFromMal = (await response.json()) as AllMalAnime | MalError;
     if ('error' in animeFromMal) {
       throw new BadRequestException(
         animeFromMal.hint || animeFromMal.message || animeFromMal.error,
@@ -121,21 +147,46 @@ export class AnimeExplorationService {
       animeFromMal.data,
       userId,
     );
-    const prevListLink = animeFromMal.paging?.prev
-      ? this.getServerPageLink(animeFromMal.paging?.prev, endpoint)
-      : undefined;
-    const nextListLink = animeFromMal.paging?.next
-      ? this.getServerPageLink(animeFromMal.paging?.next, endpoint)
-      : undefined;
 
     return {
-      anime: animeList,
-      ...((prevListLink || nextListLink) && {
-        paging: {
-          prev: prevListLink,
-          next: nextListLink,
+      anime: [...animeList].map((anime) => ({
+        ...anime,
+        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
+        animePlatforms: [...anime.animePlatforms]
+          .map((animePlatform) => ({
+            ...animePlatform,
+            ...this.dateFormatter.animePlatformResponse(
+              animePlatform.lastEpisodeAiredAt,
+              animePlatform.nextEpisodeAiringAt,
+            ),
+          }))
+          .sort((a, b) => {
+            return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
+              a,
+              b,
+              anime.userAnimeList[0].animePlatformId,
+            );
+          }),
+        userAnimeList: {
+          ...anime.userAnimeList[0],
+          ...this.dateFormatter.userAnimeListResponse(
+            anime.userAnimeList[0].startDate,
+            anime.userAnimeList[0].finishDate,
+            anime.userAnimeList[0].updatedAt,
+          ),
+          remainingWatchableEpisodes:
+            this.modelCount.countRemainingWatchableEpisodes(
+              anime.userAnimeList[0],
+              anime,
+              anime.animePlatforms,
+            ),
         },
-      }),
+      })),
+      ...this.modelPagination.getServerPageLink(
+        endpoint,
+        animeFromMal.paging?.prev,
+        animeFromMal.paging?.next,
+      ),
     };
   }
 
@@ -143,7 +194,7 @@ export class AnimeExplorationService {
     data: GetSeasonalAnime,
     param: AnimeSeason,
     userId?: number,
-  ): Promise<AnimeListResponse> {
+  ): Promise<AllAnimeWithMal> {
     const accessToken = await this.mal.getMalConnection(userId);
     const endpoint = `/anime/season/${param.year}/${param.season}`;
     const url = `https://api.myanimelist.net/v2${endpoint}`;
@@ -160,7 +211,7 @@ export class AnimeExplorationService {
           : { 'X-MAL-CLIENT-ID': this.CLIENT_ID }),
       },
     });
-    const animeFromMal = (await response.json()) as MalListAnime | MalError;
+    const animeFromMal = (await response.json()) as AllMalAnime | MalError;
     if ('error' in animeFromMal) {
       throw new BadRequestException(
         animeFromMal.hint || animeFromMal.message || animeFromMal.error,
@@ -171,28 +222,53 @@ export class AnimeExplorationService {
       animeFromMal.data,
       userId,
     );
-    const prevListLink = animeFromMal.paging?.prev
-      ? this.getServerPageLink(animeFromMal.paging?.prev, endpoint)
-      : undefined;
-    const nextListLink = animeFromMal.paging?.next
-      ? this.getServerPageLink(animeFromMal.paging?.next, endpoint)
-      : undefined;
 
     return {
-      anime: animeList,
-      ...((prevListLink || nextListLink) && {
-        paging: {
-          prev: prevListLink,
-          next: nextListLink,
+      anime: [...animeList].map((anime) => ({
+        ...anime,
+        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
+        animePlatforms: [...anime.animePlatforms]
+          .map((animePlatform) => ({
+            ...animePlatform,
+            ...this.dateFormatter.animePlatformResponse(
+              animePlatform.lastEpisodeAiredAt,
+              animePlatform.nextEpisodeAiringAt,
+            ),
+          }))
+          .sort((a, b) => {
+            return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
+              a,
+              b,
+              anime.userAnimeList[0].animePlatformId,
+            );
+          }),
+        userAnimeList: {
+          ...anime.userAnimeList[0],
+          ...this.dateFormatter.userAnimeListResponse(
+            anime.userAnimeList[0].startDate,
+            anime.userAnimeList[0].finishDate,
+            anime.userAnimeList[0].updatedAt,
+          ),
+          remainingWatchableEpisodes:
+            this.modelCount.countRemainingWatchableEpisodes(
+              anime.userAnimeList[0],
+              anime,
+              anime.animePlatforms,
+            ),
         },
-      }),
+      })),
+      ...this.modelPagination.getServerPageLink(
+        endpoint,
+        animeFromMal.paging?.prev,
+        animeFromMal.paging?.next,
+      ),
     };
   }
 
   async getSuggestedAnime(
     data: GetSuggestedAnime,
     userId: number,
-  ): Promise<AnimeListResponse> {
+  ): Promise<AllAnimeWithMal> {
     const accessToken = await this.mal.getMalConnection(userId);
     if (!accessToken) {
       throw new ForbiddenException('Account not connected to MyAnimeList');
@@ -209,7 +285,7 @@ export class AnimeExplorationService {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    const animeFromMal = (await response.json()) as MalListAnime | MalError;
+    const animeFromMal = (await response.json()) as AllMalAnime | MalError;
     if ('error' in animeFromMal) {
       throw new BadRequestException(
         animeFromMal.hint || animeFromMal.message || animeFromMal.error,
@@ -220,21 +296,46 @@ export class AnimeExplorationService {
       animeFromMal.data,
       userId,
     );
-    const prevListLink = animeFromMal.paging?.prev
-      ? this.getServerPageLink(animeFromMal.paging?.prev, endpoint)
-      : undefined;
-    const nextListLink = animeFromMal.paging?.next
-      ? this.getServerPageLink(animeFromMal.paging?.next, endpoint)
-      : undefined;
 
     return {
-      anime: animeList,
-      ...((prevListLink || nextListLink) && {
-        paging: {
-          prev: prevListLink,
-          next: nextListLink,
+      anime: [...animeList].map((anime) => ({
+        ...anime,
+        ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
+        animePlatforms: [...anime.animePlatforms]
+          .map((animePlatform) => ({
+            ...animePlatform,
+            ...this.dateFormatter.animePlatformResponse(
+              animePlatform.lastEpisodeAiredAt,
+              animePlatform.nextEpisodeAiringAt,
+            ),
+          }))
+          .sort((a, b) => {
+            return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
+              a,
+              b,
+              anime.userAnimeList[0].animePlatformId,
+            );
+          }),
+        userAnimeList: {
+          ...anime.userAnimeList[0],
+          ...this.dateFormatter.userAnimeListResponse(
+            anime.userAnimeList[0].startDate,
+            anime.userAnimeList[0].finishDate,
+            anime.userAnimeList[0].updatedAt,
+          ),
+          remainingWatchableEpisodes:
+            this.modelCount.countRemainingWatchableEpisodes(
+              anime.userAnimeList[0],
+              anime,
+              anime.animePlatforms,
+            ),
         },
-      }),
+      })),
+      ...this.modelPagination.getServerPageLink(
+        endpoint,
+        animeFromMal.paging?.prev,
+        animeFromMal.paging?.next,
+      ),
     };
   }
 }

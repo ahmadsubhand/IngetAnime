@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { PlatformResponse } from '../../types/entity';
+import { Platform } from './platform.model';
 import type { PlatformName } from './platform.validation';
 import { Prisma } from '../../generated/prisma/client';
 
@@ -12,7 +12,7 @@ import { Prisma } from '../../generated/prisma/client';
 export class PlatformService {
   constructor(private prisma: PrismaService) {}
 
-  async createPlatform(data: PlatformName): Promise<PlatformResponse> {
+  async createPlatform(data: PlatformName): Promise<Platform> {
     try {
       const platform = await this.prisma.platform.create({
         data,
@@ -30,7 +30,7 @@ export class PlatformService {
     }
   }
 
-  async getPlatformDetail(platformId: number): Promise<PlatformResponse> {
+  async getPlatformDetail(platformId: number): Promise<Platform> {
     const platform = await this.prisma.platform.findUnique({
       where: {
         id: platformId,
@@ -45,7 +45,7 @@ export class PlatformService {
   async updatePlatform(
     platformId: number,
     data: PlatformName,
-  ): Promise<PlatformResponse> {
+  ): Promise<Platform> {
     try {
       const platform = await this.prisma.platform.update({
         where: {
@@ -66,7 +66,7 @@ export class PlatformService {
     }
   }
 
-  async deletePlatform(platformId: number): Promise<PlatformResponse> {
+  async deletePlatform(platformId: number): Promise<Platform> {
     try {
       const platform = await this.prisma.platform.delete({
         where: {

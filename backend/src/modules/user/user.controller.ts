@@ -14,11 +14,8 @@ import { UserService } from './user.service';
 import { AuthGuard, OptionalAuthGuard } from '../auth/guard/auth.guard';
 import { Request } from 'express';
 import { JwtPayload } from '../../types';
-import {
-  ApiResponse,
-  UserAnimeListComputedResponse,
-  UserResponse,
-} from '../../types/entity';
+import { ApiResponse } from '../../types';
+import { AllAnime, User } from './user.model';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type {
   CheckEmail,
@@ -40,7 +37,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   async getUserDetail(
     @Req() req: Request & { user: JwtPayload },
-  ): Promise<ApiResponse<UserResponse>> {
+  ): Promise<ApiResponse<User>> {
     const user = await this.service.getUserDetail(req.user.sub);
     return {
       message: 'Get user detail successfully',
@@ -56,7 +53,7 @@ export class UserController {
     @Req() req: Request & { user: JwtPayload },
     @Body(new ZodValidationPipe(UserValidation.UPDATE_USER_DETAIL))
     data: UpdateUserDetail,
-  ): Promise<ApiResponse<UserResponse>> {
+  ): Promise<ApiResponse<User>> {
     const user = await this.service.updateUserDetail(req.user.sub, data);
     return {
       message: 'Update user detail successfully',
@@ -73,7 +70,7 @@ export class UserController {
     @Req() req: Request & { user: JwtPayload },
     @Query(new ZodValidationPipe(UserValidation.GET_USER_ANIME_LIST))
     data: GetUserAnimeList,
-  ): Promise<ApiResponse<UserAnimeListComputedResponse>> {
+  ): Promise<ApiResponse<AllAnime>> {
     const userAnimeList = await this.service.getUserAnimeList(
       req.user.sub,
       data,

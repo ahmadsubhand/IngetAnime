@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { AnimePlatformResponse } from '../types/entity';
 
 interface AnimePlatform {
-  id: AnimePlatformResponse['id'];
-  isMainPlatform: AnimePlatformResponse['isMainPlatform'];
-  platformId: AnimePlatformResponse['platformId'];
+  id: number;
+  isMainPlatform: boolean;
+  platformId: number;
 }
 
 @Injectable()

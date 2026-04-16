@@ -9,10 +9,10 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { JwtService } from '../../../common/jwt.service';
 import { JwtPayload } from '../../../types';
-import { UserResponse } from '../../../types/entity';
 import { PrismaService } from '../../../common/prisma.service';
 import { Reflector } from '@nestjs/core';
 import { Role } from '../decorator/role.decarator';
+import { Role as RolePrisma } from '../../../generated/prisma/enums';
 
 @Injectable()
 export abstract class BaseGuard implements CanActivate {
@@ -64,10 +64,7 @@ export abstract class BaseGuard implements CanActivate {
     return token;
   }
 
-  private async checkAuthorization(
-    role: UserResponse['role'],
-    user: JwtPayload,
-  ) {
+  private async checkAuthorization(role: RolePrisma, user: JwtPayload) {
     const userFromDB = await this.prisma.user.findUnique({
       where: {
         id: user.sub,

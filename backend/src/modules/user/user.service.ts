@@ -4,12 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import {
-  UserAnimeListComputed,
-  UserAnimeListComputedResponse,
-  UserFullResponse,
-  UserResponse,
-} from '../../types/entity';
 import { DateFormatterService } from '../../common/date-formatter.service';
 import {
   GetUserAnimeList,
@@ -17,15 +11,24 @@ import {
   UpdateUserDetail,
   UserValidation,
 } from './user.validation';
-import { Prisma } from '../../generated/prisma/client';
-import { ConfigService } from '@nestjs/config';
-import { MalStatusWithPagination } from '../../types/mal';
+import {
+  Prisma,
+  Anime as AnimePrisma,
+  AnimePlatform as AnimePlatformPrisma,
+  UserAnimeList as UserAnimeListPrisma,
+  Platform as PlatformPrisma,
+  Link as LinkPrisma,
+} from '../../generated/prisma/client';
+import { AllMalStatus } from '../../types/mal';
 import { MalService } from '../../common/mal.service';
 import { SkipThrottle } from '@nestjs/throttler';
 import cryptoRandomString from 'crypto-random-string';
 import dayjs from 'dayjs';
 import { MailService } from '../../common/mail.service';
 import { ModelSortService } from '../../common/model-sort.service';
+import { AllAnime, User } from './user.model';
+import { ModelPaginationService } from '../../common/model-pagination.service';
+import { ModelCountService } from '../../common/model-count.service';
 
 @Injectable()
 @SkipThrottle()
@@ -33,45 +36,30 @@ export class UserService {
   constructor(
     private prisma: PrismaService,
     private dateFormatter: DateFormatterService,
-    private config: ConfigService,
     private mal: MalService,
     private mail: MailService,
     private modelSort: ModelSortService,
+    private modelPagination: ModelPaginationService,
+    private modelCount: ModelCountService,
   ) {}
 
-  getServerPageLink(link: string, endpoint: string) {
-    const port = this.config.get<number>('PORT', 3000);
-    const baseUrl = this.config.get<string>('BASE_URL', 'http://localhost');
-    const queryLink = link.split('?')[1];
-    return `${baseUrl}:${port}${endpoint}?${queryLink}`;
-  }
+  private userSelect = {
+    id: true,
+    email: true,
+    username: true,
+    picture: true,
+    isVerified: true,
+    role: true,
+    malId: true,
+    googleId: true,
+    updatedAt: true,
+    createdAt: true,
+  };
 
-  toUserData(user: UserResponse): UserResponse {
-    return {
-      id: user.id,
-      username: user.username,
-      picture: user.picture,
-      role: user.role,
-      email: user.email,
-      isVerified: user.isVerified,
-    };
-  }
-
-  async getUserDetail(userId: number): Promise<UserFullResponse> {
+  async getUserDetail(userId: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        picture: true,
-        isVerified: true,
-        role: true,
-        malId: true,
-        googleId: true,
-        updatedAt: true,
-        createdAt: true,
-      },
+      select: this.userSelect,
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -81,18 +69,19 @@ export class UserService {
       ...user,
       malId: user.malId ? parseInt(user.malId) : null,
       googleId: user.googleId ? parseInt(user.googleId) : null,
-      ...this.dateFormatter.userResponse(user?.updatedAt, user?.createdAt),
+      ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
     };
   }
 
   async updateUserDetail(
     userId: number,
     data: UpdateUserDetail,
-  ): Promise<UserResponse> {
+  ): Promise<User> {
     try {
       let user = await this.prisma.user.update({
         where: { id: userId },
         data,
+        select: this.userSelect,
       });
 
       // If email change reverified user
@@ -106,6 +95,7 @@ export class UserService {
             otpCode,
             otpExpiration,
           },
+          select: this.userSelect,
         });
 
         await this.mail.sendEmail(
@@ -116,7 +106,12 @@ export class UserService {
         );
       }
 
-      return this.toUserData(user);
+      return {
+        ...user,
+        malId: user.malId ? parseInt(user.malId) : null,
+        googleId: user.googleId ? parseInt(user.googleId) : null,
+        ...this.dateFormatter.userResponse(user.updatedAt, user.createdAt),
+      };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -132,7 +127,7 @@ export class UserService {
   async getUserAnimeList(
     userId: number,
     data: GetUserAnimeList,
-  ): Promise<UserAnimeListComputedResponse> {
+  ): Promise<AllAnime> {
     type SortKey = keyof typeof UserValidation.Sort;
     type OrderBy = Prisma.UserAnimeListOrderByWithRelationInput;
     const statusMap: Record<SortKey, OrderBy> = {
@@ -168,94 +163,84 @@ export class UserService {
       skip: data.offset,
     });
 
-    const userAnimeListWithComputed: UserAnimeListComputed = [
-      ...userAnimeList,
-    ].map((list) => {
-      // Sort anime platform based on user selected platform, isMainPlatform, or platform id
-      list.anime.animePlatforms.sort((a, b) =>
-        this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
-          a,
-          b,
-          list.animePlatformId,
-        ),
-      );
-
-      const episodeAired = list.anime.animePlatforms[0]
-        ? list.anime.animePlatforms[0].episodeAired
-        : list.anime.status === 'finished_airing'
-          ? list.anime.episodeTotal
-          : 0;
-      const remainingWatchableEpisodes = episodeAired
-        ? episodeAired - list.episodesDifference - list.progress
-        : 0;
-
+    const allAnimeFormat: (AnimePrisma & {
+      animePlatforms: (AnimePlatformPrisma & {
+        platform: PlatformPrisma;
+        link: LinkPrisma;
+      })[];
+      userAnimeList: UserAnimeListPrisma[];
+    })[] = [...userAnimeList].map((list) => {
+      const { anime, ...userAnimeList } = list;
+      const { animePlatforms, ...animeWithoutPlatforms } = anime;
       return {
-        ...list,
-        remainingWatchableEpisodes,
-        ...this.dateFormatter.userAnimeListResponse(
-          list.startDate,
-          list.finishDate,
-          list.updatedAt,
-        ),
-        anime: {
-          ...list.anime,
-          ...this.dateFormatter.animeResponse(
-            list.anime.releaseAt,
-            list.anime.updateAt,
-          ),
-          animePlatforms: [...list.anime.animePlatforms].map(
-            (animePlatform) => ({
+        ...animeWithoutPlatforms,
+        animePlatforms: animePlatforms,
+        userAnimeList: [{ ...userAnimeList }],
+      };
+    });
+
+    const endpoint = '/user/me/my-list-status';
+    const hasPrevPage = data.offset !== 0;
+    const prevLink = hasPrevPage
+      ? `${endpoint}?${new URLSearchParams({
+          ...data,
+          limit: data.limit.toString(),
+          offset: (data.offset - data.limit).toString(),
+        })}`
+      : undefined;
+    const hasNextPage = allAnimeFormat.length > data.limit;
+    const nextLink = hasNextPage
+      ? `${endpoint}?${new URLSearchParams({
+          ...data,
+          limit: data.limit.toString(),
+          offset: (data.offset + data.limit).toString(),
+        })}`
+      : undefined;
+
+    return {
+      ...this.modelPagination.getServerPageLink(endpoint, prevLink, nextLink),
+      anime: [...allAnimeFormat].map((anime) => {
+        return {
+          ...anime,
+          ...this.dateFormatter.animeResponse(anime.releaseAt, anime.updateAt),
+          animePlatforms: [...anime.animePlatforms]
+            .map((animePlatform) => ({
               ...animePlatform,
               ...this.dateFormatter.animePlatformResponse(
                 animePlatform.lastEpisodeAiredAt,
                 animePlatform.nextEpisodeAiringAt,
               ),
+            }))
+            .sort((a, b) => {
+              return this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
+                a,
+                b,
+                anime.userAnimeList[0].animePlatformId,
+              );
             }),
-          ),
-        },
-      };
-    });
+          userAnimeList: {
+            ...anime.userAnimeList[0],
+            ...this.dateFormatter.userAnimeListResponse(
+              anime.userAnimeList[0].startDate,
+              anime.userAnimeList[0].finishDate,
+              anime.userAnimeList[0].updatedAt,
+            ),
+            remainingWatchableEpisodes:
+              this.modelCount.countRemainingWatchableEpisodes(
+                anime.userAnimeList[0],
+                anime,
+                anime.animePlatforms,
+              ),
+          },
+        };
+      }),
+    };
 
     // if (data.sort === 'remaining_watchable_episodes') {
     //   userAnimeListWithComputed.sort(
     //     (a, b) => b.remainingWatchableEpisodes - a.remainingWatchableEpisodes,
     //   );
     // }
-
-    const hasPrevPage = data.offset !== 0;
-    const prevListLink = hasPrevPage
-      ? this.getServerPageLink(
-          `/me/my-list-status?${new URLSearchParams({
-            ...data,
-            limit: data.limit.toString(),
-            offset: (data.offset - data.limit).toString(),
-          })}`,
-          '/me/my-list-status',
-        )
-      : undefined;
-    const hasNextPage = userAnimeListWithComputed.length > data.limit;
-    const nextListLink = hasNextPage
-      ? this.getServerPageLink(
-          `/me/my-list-status?${new URLSearchParams({
-            ...data,
-            limit: data.limit.toString(),
-            offset: (data.offset + data.limit).toString(),
-          })}`,
-          '/me/my-list-status',
-        )
-      : undefined;
-
-    return {
-      userAnimeList: hasNextPage
-        ? userAnimeListWithComputed.slice(0, -1)
-        : userAnimeListWithComputed,
-      ...((hasPrevPage || hasNextPage) && {
-        paging: {
-          prev: prevListLink,
-          next: nextListLink,
-        },
-      }),
-    };
   }
 
   async importAnimeListFromMal(
@@ -264,7 +249,7 @@ export class UserService {
   ): Promise<{ count: number }> {
     const isLeft = true,
       limit = 100,
-      userAnimeList: MalStatusWithPagination['my_list_status'] = [];
+      userAnimeList: AllMalStatus['my_list_status'] = [];
     let offset = 0;
     while (isLeft) {
       const userAnimeListFromMal = await this.mal.getAllMalStatus(

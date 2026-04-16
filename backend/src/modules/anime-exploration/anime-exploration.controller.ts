@@ -20,7 +20,8 @@ import type {
   GetSuggestedAnime,
 } from './anime-exploration.validation';
 import { AnimeExplorationValidation } from './anime-exploration.validation';
-import { AnimeListResponse, ApiResponse } from '../../types/entity';
+import { ApiResponse } from '../../types';
+import { AllAnimeWithMal } from './anime-exploration.model';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { SkipThrottle } from '@nestjs/throttler';
 
@@ -36,7 +37,7 @@ export class AnimeExplorationController {
     @Req() req: Request & { user?: JwtPayload },
     @Query(new ZodValidationPipe(AnimeExplorationValidation.GET_ANIME_LIST))
     data: GetAnimeList,
-  ): Promise<ApiResponse<AnimeListResponse>> {
+  ): Promise<ApiResponse<AllAnimeWithMal>> {
     const animeList = await this.service.getAnimeList(data, req.user?.sub);
     return {
       message: 'Get anime list successfully',
@@ -52,7 +53,7 @@ export class AnimeExplorationController {
     @Req() req: Request & { user?: JwtPayload },
     @Query(new ZodValidationPipe(AnimeExplorationValidation.GET_ANIME_RANKING))
     data: GetAnimeRanking,
-  ): Promise<ApiResponse<AnimeListResponse>> {
+  ): Promise<ApiResponse<AllAnimeWithMal>> {
     const animeList = await this.service.getAnimeRanking(data, req.user?.sub);
     return {
       message: 'Get anime ranking successfully',
@@ -70,7 +71,7 @@ export class AnimeExplorationController {
     param: AnimeSeason,
     @Query(new ZodValidationPipe(AnimeExplorationValidation.GET_SEASONAL_ANIME))
     data: GetSeasonalAnime,
-  ): Promise<ApiResponse<AnimeListResponse>> {
+  ): Promise<ApiResponse<AllAnimeWithMal>> {
     const animeList = await this.service.getSeasonalAnime(
       data,
       param,
@@ -92,7 +93,7 @@ export class AnimeExplorationController {
       new ZodValidationPipe(AnimeExplorationValidation.GET_SUGGESTED_ANIME),
     )
     data: GetSuggestedAnime,
-  ): Promise<ApiResponse<AnimeListResponse>> {
+  ): Promise<ApiResponse<AllAnimeWithMal>> {
     const animeList = await this.service.getSuggestedAnime(data, req.user.sub);
     return {
       message: 'Get suggessted anime successfully',

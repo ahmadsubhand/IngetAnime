@@ -24,15 +24,16 @@ import type {
   UpdateUserAnimeList,
 } from './user-anime-list.validation';
 import { UserAnimeListValidation } from './user-anime-list.validation';
+import { ApiResponse } from '../../types';
 import {
-  AnimeResponse,
-  ApiResponse,
-  UserAnimeListFullRelation,
-  UserAnimeListResponse,
-  UserAnimeListShortRelation,
-} from '../../types/entity';
+  UserAnimeListWithRelation,
+  UserAnimeList,
+} from './user-anime-list.model';
 import { JwtPayload } from '../../types';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Anime } from '../anime/anime.model';
+import { Platform } from '../platform/platform.model';
+import { Link } from '../anime-platform/anime-platform.model';
 
 @Controller('/anime')
 export class UserAnimeListController {
@@ -47,7 +48,7 @@ export class UserAnimeListController {
     param: AnimeId,
     @Body(new ZodValidationPipe(UserAnimeListValidation.CREATE_USER_ANIME_LIST))
     data: CreateUserAnimeList,
-  ): Promise<ApiResponse<UserAnimeListResponse & UserAnimeListShortRelation>> {
+  ): Promise<ApiResponse<UserAnimeListWithRelation>> {
     const userAnimeList = await this.service.createUserAnimeList(
       param.animeId,
       req.user.sub,
@@ -68,7 +69,7 @@ export class UserAnimeListController {
     @Req() req: Request & { user: JwtPayload },
     @Param(new ZodValidationPipe(UserAnimeListValidation.ANIME_ID))
     param: AnimeId,
-  ): Promise<ApiResponse<UserAnimeListResponse & UserAnimeListFullRelation>> {
+  ): Promise<ApiResponse<UserAnimeListWithRelation>> {
     const userAnimeList = await this.service.getUserAnimeListDetail(
       param.animeId,
       req.user.sub,
@@ -89,7 +90,7 @@ export class UserAnimeListController {
     param: AnimeId,
     @Body(new ZodValidationPipe(UserAnimeListValidation.UPDATE_USER_ANIME_LIST))
     data: UpdateUserAnimeList,
-  ): Promise<ApiResponse<UserAnimeListResponse & UserAnimeListShortRelation>> {
+  ): Promise<ApiResponse<UserAnimeListWithRelation>> {
     const userAnimeList = await this.service.updateUserAnimeList(
       param.animeId,
       req.user.sub,
@@ -115,7 +116,7 @@ export class UserAnimeListController {
       ),
     )
     data: CreateOrUpdateUserAnimeList,
-  ): Promise<ApiResponse<UserAnimeListResponse & UserAnimeListShortRelation>> {
+  ): Promise<ApiResponse<UserAnimeListWithRelation>> {
     const { statusCode, ...userAnimeList } =
       await this.service.createOrUpdateUserAnimeList(
         param.animeId,
@@ -143,15 +144,22 @@ export class UserAnimeListController {
   ): Promise<
     ApiResponse<
       {
-        id: UserAnimeListResponse['id'];
-        isSyncedWithMal: UserAnimeListResponse['isSyncedWithMal'];
+        id: UserAnimeList['id'];
+        isSyncedWithMal: UserAnimeList['isSyncedWithMal'];
       } & {
         anime: {
-          title: AnimeResponse['title'];
-          malId: AnimeResponse['malId'];
+          title: Anime['title'];
+          malId: Anime['malId'];
         };
       } & {
-        animePlatform: UserAnimeListShortRelation['animePlatform'];
+        animePlatform: {
+          platform: {
+            name: Platform['name'];
+          };
+          link: {
+            url: Link['url'];
+          };
+        } | null;
       }
     >
   > {

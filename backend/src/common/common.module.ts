@@ -18,6 +18,8 @@ import { GoogleService } from './google.service';
 import { UtcService } from './utc.service';
 import { DateFormatterService } from './date-formatter.service';
 import { ModelSortService } from './model-sort.service';
+import { ModelCountService } from './model-count.service';
+import { ModelPaginationService } from './model-pagination.service';
 
 @Global()
 @Module({
@@ -84,6 +86,8 @@ import { ModelSortService } from './model-sort.service';
     UtcService,
     DateFormatterService,
     ModelSortService,
+    ModelCountService,
+    ModelPaginationService,
   ],
   exports: [
     PrismaService,
@@ -96,6 +100,8 @@ import { ModelSortService } from './model-sort.service';
     UtcService,
     DateFormatterService,
     ModelSortService,
+    ModelCountService,
+    ModelPaginationService,
   ],
 })
 export class CommonModule {}

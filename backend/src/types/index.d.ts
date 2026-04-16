@@ -1,9 +1,23 @@
 import { GetAuthUrl } from '../auth/auth.validation';
+import { HttpStatus } from '@nestjs/common';
 
-interface StateObject {
+export interface ApiResponse<T> {
+  message: string;
+  data: T;
+  statusCode: HttpStatus;
+}
+
+export type ApiPagination = {
+  paging: {
+    prev: string | null;
+    next: string | null;
+  } | null;
+};
+
+export type StateObject = {
   mode: GetAuthUrl['mode'];
   state: string;
-}
+};
 
 interface GoogleError {
   error: string;

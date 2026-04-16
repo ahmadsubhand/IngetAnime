@@ -10,7 +10,8 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiResponse, PlatformResponse } from '../../types/entity';
+import { ApiResponse } from '../../types';
+import { Platform } from './platform.model';
 import type { PlatformId, PlatformName } from './platform.validation';
 import { PlatformValidation } from './platform.validation';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
@@ -30,7 +31,7 @@ export class PlatformController {
   async createPlatform(
     @Body(new ZodValidationPipe(PlatformValidation.PLATFORM_NAME))
     data: PlatformName,
-  ): Promise<ApiResponse<PlatformResponse>> {
+  ): Promise<ApiResponse<Platform>> {
     const platform = await this.service.createPlatform(data);
     return {
       message: 'Create platform successfully',
@@ -45,7 +46,7 @@ export class PlatformController {
   async getPlatformDetail(
     @Param(new ZodValidationPipe(PlatformValidation.PLATFORM_ID))
     data: PlatformId,
-  ): Promise<ApiResponse<PlatformResponse>> {
+  ): Promise<ApiResponse<Platform>> {
     const platform = await this.service.getPlatformDetail(data.id);
     return {
       message: 'Get platform detail successfully',
@@ -63,7 +64,7 @@ export class PlatformController {
     param: PlatformId,
     @Body(new ZodValidationPipe(PlatformValidation.PLATFORM_NAME))
     data: PlatformName,
-  ): Promise<ApiResponse<PlatformResponse>> {
+  ): Promise<ApiResponse<Platform>> {
     const platform = await this.service.updatePlatform(param.id, data);
     return {
       message: 'Update platform successfully',
@@ -79,7 +80,7 @@ export class PlatformController {
   async deletePlatform(
     @Param(new ZodValidationPipe(PlatformValidation.PLATFORM_ID))
     data: PlatformId,
-  ): Promise<ApiResponse<PlatformResponse>> {
+  ): Promise<ApiResponse<Platform>> {
     const platform = await this.service.deletePlatform(data.id);
     return {
       message: 'Delete platform successfully',

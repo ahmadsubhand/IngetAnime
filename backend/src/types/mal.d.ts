@@ -58,7 +58,7 @@ interface Broadcast {
   start_time: string;
 }
 
-interface AnimeNode {
+interface MalAnime {
   id: number;
   title: string;
   main_picture: {
@@ -80,7 +80,7 @@ interface AnimeNode {
   media_type?: 'tv' | 'movie' | 'ova' | 'ona' | 'special';
   status?: AnimeStatus;
   genres?: Genre[];
-  my_list_status?: MalStatusResponse;
+  my_list_status?: MalStatus;
   num_episodes?: number;
   start_season?: StartSeason;
   broadcast?: Broadcast;
@@ -96,9 +96,9 @@ interface AnimeNode {
   // statistics?: AnimeStatistics;
 }
 
-interface MalListAnime {
+interface AllMalAnime {
   data: {
-    node: AnimeNode;
+    node: MalAnime;
   }[];
   paging?: {
     prev?: string;
@@ -114,7 +114,7 @@ interface MalStatusRequest {
   finish_date?: string | null;
 }
 
-interface MalStatusResponse {
+interface MalStatus {
   status: ListStatus;
   score: number;
   num_episodes_watched: number;
@@ -129,8 +129,8 @@ interface MalStatusResponse {
   // comments: '';
 }
 
-interface MalStatusWithPagination {
-  my_list_status: (MalStatusResponse & { malId: AnimeNode['id'] })[];
+interface AllMalStatus {
+  my_list_status: (MalStatus & { malId: MalAnime['id'] })[];
   paging?: {
     prev?: string;
     next?: string;

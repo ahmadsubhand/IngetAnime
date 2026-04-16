@@ -10,15 +10,24 @@ import {
   CreateUserAnimeList,
   UpdateUserAnimeList,
 } from './user-anime-list.validation';
-import { Prisma, UserAnimeList } from '../../generated/prisma/client';
 import {
-  AnimeResponse,
-  UserAnimeListFullRelation,
-  UserAnimeListResponse,
-  UserAnimeListShortRelation,
-} from '../../types/entity';
+  Prisma,
+  UserAnimeList as UserAnimeListPrisma,
+  Anime as AnimePrisma,
+  AnimePlatform as AnimePlatformPrisma,
+  Platform as PlatformPrisma,
+  Link as LinkPrisma,
+} from '../../generated/prisma/client';
+import {
+  UserAnimeListWithRelation,
+  UserAnimeList,
+} from './user-anime-list.model';
+import { Anime } from '../anime/anime.model';
 import { DateFormatterService } from '../../common/date-formatter.service';
 import { MalService } from '../../common/mal.service';
+import { ModelCountService } from '../../common/model-count.service';
+import { Link } from '../anime-platform/anime-platform.model';
+import { Platform } from '../platform/platform.model';
 
 @Injectable()
 export class UserAnimeListService {
@@ -26,6 +35,7 @@ export class UserAnimeListService {
     private prisma: PrismaService,
     private dateFormatter: DateFormatterService,
     private mal: MalService,
+    private modelCount: ModelCountService,
   ) {}
 
   async updateMalStatus(
@@ -57,32 +67,11 @@ export class UserAnimeListService {
     }
   }
 
-  // : Prisma.UserAnimeListInclude | Prisma.UserAnimeListSelect
-  private selectedRelationQuery = {
-    anime: {
-      select: { title: true },
-    },
-    animePlatform: {
-      select: {
-        link: {
-          select: {
-            url: true,
-          },
-        },
-        platform: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    },
-  };
-
   async createUserAnimeList(
     animeId: number,
     userId: number,
     data: CreateUserAnimeList,
-  ): Promise<UserAnimeListResponse & UserAnimeListShortRelation> {
+  ): Promise<UserAnimeListWithRelation> {
     try {
       const userAnimeList = await this.prisma.userAnimeList.create({
         data: {
@@ -94,7 +83,15 @@ export class UserAnimeListService {
           userId,
           animeId,
         },
-        include: this.selectedRelationQuery,
+        include: {
+          anime: true,
+          animePlatform: {
+            include: {
+              platform: true,
+              link: true,
+            },
+          },
+        },
       });
 
       if (data.isSyncedWithMal) {
@@ -108,6 +105,34 @@ export class UserAnimeListService {
           userAnimeList.finishDate,
           userAnimeList.updatedAt,
         ),
+        remainingWatchableEpisodes:
+          this.modelCount.countRemainingWatchableEpisodes(
+            userAnimeList,
+            userAnimeList.anime,
+            userAnimeList.animePlatform
+              ? [{ ...userAnimeList.animePlatform }]
+              : [],
+          ),
+        anime: {
+          ...userAnimeList.anime,
+          ...this.dateFormatter.animeResponse(
+            userAnimeList.anime.releaseAt,
+            userAnimeList.anime.updateAt,
+          ),
+        },
+        ...(userAnimeList.animePlatform
+          ? {
+              animePlatform: {
+                ...userAnimeList.animePlatform,
+                ...this.dateFormatter.animePlatformResponse(
+                  userAnimeList.animePlatform?.lastEpisodeAiredAt,
+                  userAnimeList.animePlatform?.nextEpisodeAiringAt,
+                ),
+              },
+            }
+          : {
+              animePlatform: null,
+            }),
       };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -125,7 +150,7 @@ export class UserAnimeListService {
   async getUserAnimeListDetail(
     animeId: number,
     userId: number,
-  ): Promise<UserAnimeListResponse & UserAnimeListFullRelation> {
+  ): Promise<UserAnimeListWithRelation> {
     const userAnimeList = await this.prisma.userAnimeList.findUnique({
       where: {
         userId_animeId: { animeId, userId },
@@ -134,8 +159,8 @@ export class UserAnimeListService {
         anime: true,
         animePlatform: {
           include: {
-            link: true,
             platform: true,
+            link: true,
           },
         },
       },
@@ -151,6 +176,18 @@ export class UserAnimeListService {
         userAnimeList.finishDate,
         userAnimeList.updatedAt,
       ),
+      remainingWatchableEpisodes:
+        this.modelCount.countRemainingWatchableEpisodes(
+          userAnimeList,
+          userAnimeList.anime,
+          userAnimeList.animePlatform
+            ? [
+                ...Array<{ id: number; episodeAired: number }>(1).fill(
+                  userAnimeList.animePlatform,
+                ),
+              ]
+            : [],
+        ),
       anime: {
         ...userAnimeList.anime,
         ...this.dateFormatter.animeResponse(
@@ -158,15 +195,19 @@ export class UserAnimeListService {
           userAnimeList.anime.updateAt,
         ),
       },
-      animePlatform: userAnimeList.animePlatform
+      ...(userAnimeList.animePlatform
         ? {
-            ...userAnimeList.animePlatform,
-            ...this.dateFormatter.animePlatformResponse(
-              userAnimeList.animePlatform.lastEpisodeAiredAt,
-              userAnimeList.animePlatform.nextEpisodeAiringAt,
-            ),
+            animePlatform: {
+              ...userAnimeList.animePlatform,
+              ...this.dateFormatter.animePlatformResponse(
+                userAnimeList.animePlatform?.lastEpisodeAiredAt,
+                userAnimeList.animePlatform?.nextEpisodeAiringAt,
+              ),
+            },
           }
-        : null,
+        : {
+            animePlatform: null,
+          }),
     };
   }
 
@@ -174,7 +215,7 @@ export class UserAnimeListService {
     animeId: number,
     userId: number,
     data: UpdateUserAnimeList,
-  ): Promise<UserAnimeListResponse & UserAnimeListShortRelation> {
+  ): Promise<UserAnimeListWithRelation> {
     try {
       const userAnimeList = await this.prisma.userAnimeList.update({
         where: {
@@ -187,7 +228,15 @@ export class UserAnimeListService {
             data.finishDate,
           ),
         },
-        include: this.selectedRelationQuery,
+        include: {
+          anime: true,
+          animePlatform: {
+            include: {
+              platform: true,
+              link: true,
+            },
+          },
+        },
       });
 
       if (data.isSyncedWithMal) {
@@ -201,6 +250,38 @@ export class UserAnimeListService {
           userAnimeList.finishDate,
           userAnimeList.updatedAt,
         ),
+        remainingWatchableEpisodes:
+          this.modelCount.countRemainingWatchableEpisodes(
+            userAnimeList,
+            userAnimeList.anime,
+            userAnimeList.animePlatform
+              ? [
+                  ...Array<{ id: number; episodeAired: number }>(1).fill(
+                    userAnimeList.animePlatform,
+                  ),
+                ]
+              : [],
+          ),
+        anime: {
+          ...userAnimeList.anime,
+          ...this.dateFormatter.animeResponse(
+            userAnimeList.anime.releaseAt,
+            userAnimeList.anime.updateAt,
+          ),
+        },
+        ...(userAnimeList.animePlatform
+          ? {
+              animePlatform: {
+                ...userAnimeList.animePlatform,
+                ...this.dateFormatter.animePlatformResponse(
+                  userAnimeList.animePlatform?.lastEpisodeAiredAt,
+                  userAnimeList.animePlatform?.nextEpisodeAiringAt,
+                ),
+              },
+            }
+          : {
+              animePlatform: null,
+            }),
       };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -219,12 +300,17 @@ export class UserAnimeListService {
     animeId: number,
     userId: number,
     data: CreateOrUpdateUserAnimeList,
-  ): Promise<
-    UserAnimeListResponse &
-      UserAnimeListShortRelation & { statusCode: HttpStatus }
-  > {
+  ): Promise<UserAnimeListWithRelation & { statusCode: HttpStatus }> {
     try {
-      let userAnimeList: UserAnimeList & UserAnimeListShortRelation,
+      let userAnimeList: UserAnimeListPrisma & {
+          anime: AnimePrisma;
+          animePlatform:
+            | (AnimePlatformPrisma & {
+                platform: PlatformPrisma;
+                link: LinkPrisma;
+              })
+            | null;
+        },
         statusCode = HttpStatus.OK;
 
       try {
@@ -241,7 +327,15 @@ export class UserAnimeListService {
             userId,
             animeId,
           },
-          include: this.selectedRelationQuery,
+          include: {
+            anime: true,
+            animePlatform: {
+              include: {
+                platform: true,
+                link: true,
+              },
+            },
+          },
         });
       } catch (error) {
         if (
@@ -259,7 +353,15 @@ export class UserAnimeListService {
               userId,
               animeId,
             },
-            include: this.selectedRelationQuery,
+            include: {
+              anime: true,
+              animePlatform: {
+                include: {
+                  platform: true,
+                  link: true,
+                },
+              },
+            },
           });
         } else {
           throw error;
@@ -277,6 +379,38 @@ export class UserAnimeListService {
           userAnimeList.finishDate,
           userAnimeList.updatedAt,
         ),
+        remainingWatchableEpisodes:
+          this.modelCount.countRemainingWatchableEpisodes(
+            userAnimeList,
+            userAnimeList.anime,
+            userAnimeList.animePlatform
+              ? [
+                  ...Array<{ id: number; episodeAired: number }>(1).fill(
+                    userAnimeList.animePlatform,
+                  ),
+                ]
+              : [],
+          ),
+        anime: {
+          ...userAnimeList.anime,
+          ...this.dateFormatter.animeResponse(
+            userAnimeList.anime.releaseAt,
+            userAnimeList.anime.updateAt,
+          ),
+        },
+        ...(userAnimeList.animePlatform
+          ? {
+              animePlatform: {
+                ...userAnimeList.animePlatform,
+                ...this.dateFormatter.animePlatformResponse(
+                  userAnimeList.animePlatform?.lastEpisodeAiredAt,
+                  userAnimeList.animePlatform?.nextEpisodeAiringAt,
+                ),
+              },
+            }
+          : {
+              animePlatform: null,
+            }),
         statusCode,
       };
     } catch (error) {
@@ -297,15 +431,22 @@ export class UserAnimeListService {
     userId: number,
   ): Promise<
     {
-      id: UserAnimeListResponse['id'];
-      isSyncedWithMal: UserAnimeListResponse['isSyncedWithMal'];
+      id: UserAnimeList['id'];
+      isSyncedWithMal: UserAnimeList['isSyncedWithMal'];
     } & {
       anime: {
-        title: AnimeResponse['title'];
-        malId: AnimeResponse['malId'];
+        title: Anime['title'];
+        malId: Anime['malId'];
       };
     } & {
-      animePlatform: UserAnimeListShortRelation['animePlatform'];
+      animePlatform: {
+        platform: {
+          name: Platform['name'];
+        };
+        link: {
+          url: Link['url'];
+        };
+      } | null;
     }
   > {
     try {
@@ -316,12 +457,17 @@ export class UserAnimeListService {
         select: {
           id: true,
           isSyncedWithMal: true,
-          ...this.selectedRelationQuery,
-          // take only anime platform query, rewrite anime query
           anime: {
-            select: {
-              title: true,
-              malId: true,
+            select: { title: true, malId: true },
+          },
+          animePlatform: {
+            include: {
+              platform: {
+                select: { name: true },
+              },
+              link: {
+                select: { url: true },
+              },
             },
           },
         },

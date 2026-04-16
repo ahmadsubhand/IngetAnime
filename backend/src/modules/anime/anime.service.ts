@@ -4,11 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { AnimeFullRelation, AnimeResponse } from '../../types/entity';
+import { AnimeWithRelation, Anime } from './anime.model';
 import { CreateAnime, UpdateAnime } from './anime.validation';
 import { Prisma } from '../../generated/prisma/client';
 import { DateFormatterService } from '../../common/date-formatter.service';
 import { ModelSortService } from '../../common/model-sort.service';
+import { ModelCountService } from '../../common/model-count.service';
 
 @Injectable()
 export class AnimeService {
@@ -16,9 +17,10 @@ export class AnimeService {
     private prisma: PrismaService,
     private dateFormatter: DateFormatterService,
     private modelSort: ModelSortService,
+    private modelCount: ModelCountService,
   ) {}
 
-  async createAnime(data: CreateAnime): Promise<AnimeResponse> {
+  async createAnime(data: CreateAnime): Promise<Anime> {
     try {
       const anime = await this.prisma.anime.create({
         data: {
@@ -46,7 +48,7 @@ export class AnimeService {
   async getAnimeDetail(
     id: number,
     userId?: number,
-  ): Promise<AnimeResponse & AnimeFullRelation> {
+  ): Promise<AnimeWithRelation> {
     const anime = await this.prisma.anime.findUnique({
       where: {
         id,
@@ -96,14 +98,17 @@ export class AnimeService {
           anime.userAnimeList[0].finishDate,
           anime.userAnimeList[0].updatedAt,
         ),
+        remainingWatchableEpisodes:
+          this.modelCount.countRemainingWatchableEpisodes(
+            anime.userAnimeList[0],
+            anime,
+            anime.animePlatforms,
+          ),
       },
     };
   }
 
-  async updateAnime(
-    animeId: number,
-    data: UpdateAnime,
-  ): Promise<AnimeResponse> {
+  async updateAnime(animeId: number, data: UpdateAnime): Promise<Anime> {
     try {
       const anime = await this.prisma.anime.update({
         where: {
@@ -134,7 +139,7 @@ export class AnimeService {
 
   async deleteAnime(
     animeId: number,
-  ): Promise<{ id: AnimeResponse['id']; title: AnimeResponse['title'] }> {
+  ): Promise<{ id: Anime['id']; title: Anime['title'] }> {
     try {
       const anime = await this.prisma.anime.delete({
         where: {

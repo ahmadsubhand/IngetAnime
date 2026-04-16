@@ -15,17 +15,24 @@ import {
   MalProfile,
   MalToken,
   MalStatusRequest,
-  MalStatusResponse,
-  MalListAnime,
-  MalStatusWithPagination,
+  MalStatus,
+  AllMalAnime,
+  AllMalStatus,
+  MalAnime,
 } from '../types/mal';
 import { PrismaService } from './prisma.service';
 import { UtcService } from './utc.service';
 import { ImportAnimeListFromMal } from '../modules/user/user.validation';
 import dayjs from 'dayjs';
-import { AnimeListResponse } from '../types/entity';
 import { ModelSortService } from './model-sort.service';
 import { DateFormatterService } from './date-formatter.service';
+import {
+  Anime as AnimePrisma,
+  AnimePlatform as AnimePlatformPrisma,
+  UserAnimeList as UserAnimeListPrisma,
+  Platform as PlatformPrisma,
+  Link as LinkPrisma,
+} from '../generated/prisma/client';
 
 @Injectable()
 export class MalService {
@@ -189,7 +196,7 @@ export class MalService {
   }
 
   async importMalAnimeToDatabase(
-    animeFromMAL: MalListAnime['data'],
+    animeFromMAL: AllMalAnime['data'],
   ): Promise<{ count: number; allMalId: number[] }> {
     // Preparing for insert new anime
     const allMalId = animeFromMAL.map((anime) => anime.node.id);
@@ -231,9 +238,18 @@ export class MalService {
   }
 
   async insertAnimePlatformsToAnime(
-    animeFromMAL: MalListAnime['data'],
+    animeFromMAL: AllMalAnime['data'],
     userId?: number,
-  ): Promise<AnimeListResponse['anime']> {
+  ): Promise<
+    (AnimePrisma &
+      MalAnime & {
+        animePlatforms: (AnimePlatformPrisma & {
+          platform: PlatformPrisma;
+          link: LinkPrisma;
+        })[];
+        userAnimeList: UserAnimeListPrisma[];
+      })[]
+  > {
     const { allMalId } = await this.importMalAnimeToDatabase(animeFromMAL);
     const animeFromDatabase = await this.prisma.anime.findMany({
       where: {
@@ -255,21 +271,11 @@ export class MalService {
       },
     });
 
-    for (const anime of animeFromDatabase) {
-      anime.animePlatforms.sort((a, b) =>
-        this.modelSort.animePlatformsBasedOnUserSelectedPlatform(
-          a,
-          b,
-          anime.userAnimeList[0].animePlatformId,
-        ),
-      );
-    }
-
-    // Merge animeFromDatabase and animeFromMAL
     const animeMap = new Map(
       animeFromDatabase.map((anime) => [anime.malId, anime]),
     );
-    const listAnimeMerge = animeFromMAL.map((anime) => {
+
+    return [...animeFromMAL].map((anime) => {
       const malAnime = anime.node;
       const databaseAnime = animeMap.get(anime.node.id);
       if (!databaseAnime) {
@@ -277,44 +283,19 @@ export class MalService {
           `Anime with malId ${anime.node.id} not found in database`,
         );
       }
-      const userAnimeList = databaseAnime.userAnimeList[0];
-
       return {
         ...databaseAnime,
-        ...this.dateFormatter.animeResponse(
-          databaseAnime.releaseAt,
-          databaseAnime.updateAt,
-        ),
-        userAnimeList: userAnimeList
-          ? {
-              ...userAnimeList,
-              ...this.dateFormatter.userAnimeListResponse(
-                userAnimeList.startDate,
-                userAnimeList.finishDate,
-                userAnimeList.updatedAt,
-              ),
-            }
-          : null,
-        animePlatforms: [...databaseAnime.animePlatforms].map((platform) => ({
-          ...platform,
-          ...this.dateFormatter.animePlatformResponse(
-            platform.lastEpisodeAiredAt,
-            platform.nextEpisodeAiringAt,
-          ),
-        })),
         ...malAnime,
         id: databaseAnime.id,
       };
     });
-
-    return listAnimeMerge;
   }
 
   async updateMalStatus(
     userId: number,
     malId: number,
     data: MalStatusRequest,
-  ): Promise<MalStatusResponse> {
+  ): Promise<MalStatus> {
     const accessToken = await this.getMalConnection(userId);
     if (!accessToken) {
       throw new ForbiddenException('Account not connected to MyAnimeList');
@@ -348,7 +329,7 @@ export class MalService {
       },
       body: params.toString(),
     });
-    const result = (await response.json()) as MalStatusResponse | MalError;
+    const result = (await response.json()) as MalStatus | MalError;
     if ('error' in result) {
       throw new BadRequestException(
         result.hint || result.message || result.error,
@@ -362,7 +343,7 @@ export class MalService {
     userId: number,
     limit: number,
     offset: number,
-  ): Promise<MalStatusWithPagination> {
+  ): Promise<AllMalStatus> {
     const accessToken = await this.getMalConnection(userId);
     if (!accessToken) {
       throw new ForbiddenException('Account not connected to MyAnimeList');
@@ -382,7 +363,7 @@ export class MalService {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    const listFromMal = (await response.json()) as MalListAnime | MalError;
+    const listFromMal = (await response.json()) as AllMalAnime | MalError;
     if ('error' in listFromMal) {
       throw new BadRequestException(
         listFromMal.hint || listFromMal.message || listFromMal.error,
@@ -393,10 +374,11 @@ export class MalService {
 
     return {
       my_list_status: [...listFromMal.data].map((anime) => {
-        if (!anime.node.my_list_status)
+        if (!anime.node.my_list_status) {
           throw new NotFoundException(
             'User anime list from MyAnimeList not found',
           );
+        }
         return {
           ...anime.node.my_list_status,
           malId: anime.node.id,
@@ -411,10 +393,7 @@ export class MalService {
     };
   }
 
-  async deleteMalStatus(
-    userId: number,
-    malId: number,
-  ): Promise<MalStatusResponse> {
+  async deleteMalStatus(userId: number, malId: number): Promise<MalStatus> {
     const accessToken = await this.getMalConnection(userId);
     if (!accessToken) {
       throw new ForbiddenException('Account not connected to MyAnimeList');
@@ -428,7 +407,7 @@ export class MalService {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    const result = (await response.json()) as MalStatusResponse | MalError;
+    const result = (await response.json()) as MalStatus | MalError;
     if ('error' in result) {
       throw new BadRequestException(
         result.hint || result.message || result.error,
@@ -439,7 +418,7 @@ export class MalService {
   }
 
   async importAllMalStatusToDatabase(
-    userAnimeListFromMal: MalStatusWithPagination['my_list_status'],
+    userAnimeListFromMal: AllMalStatus['my_list_status'],
     userId: number,
     data: ImportAnimeListFromMal,
   ): Promise<{ count: number }> {
@@ -460,7 +439,7 @@ export class MalService {
     );
 
     const createFormattedData = (
-      myListStatusFromMal: MalStatusResponse,
+      myListStatusFromMal: MalStatus,
       anime: { id: number },
     ) => {
       return {
