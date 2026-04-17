@@ -44,8 +44,11 @@ export class AuthService {
     }
   }
 
-  async findUniqueUsername(email: string) {
+  async findUniqueUsername(email: string): Promise<string> {
     const base = email.split('@')[0];
+    if (!base) {
+      throw new BadRequestException('Invalid email address or username');
+    }
     let suffix = 0;
     while (true) {
       const candidateUsername = suffix === 0 ? base : `${base}${suffix}`;
@@ -55,6 +58,7 @@ export class AuthService {
         },
       });
       if (!isUsernameExists) {
+        console.log(suffix);
         return candidateUsername;
       }
       suffix++;
@@ -197,6 +201,8 @@ export class AuthService {
     );
 
     const [local, domain] = user.email.split('@');
+    if (!local || !domain)
+      throw new BadRequestException('Invalid email address');
     const maksedEmail = `${this.maskString(local)}@${domain}`;
 
     return {
@@ -245,6 +251,8 @@ export class AuthService {
     );
 
     const [local, domain] = user.email.split('@');
+    if (!local || !domain)
+      throw new BadRequestException('Invalid email address');
     const maksedEmail = `${this.maskString(local)}@${domain}`;
     const maskedUsername = this.maskString(user.username);
 

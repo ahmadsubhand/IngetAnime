@@ -12,13 +12,13 @@ import { UserModule } from './modules/user/user.module';
 @Module({
   imports: [
     CommonModule,
-    AuthModule,
-    AnimeExplorationModule,
-    AnimeModule,
-    PlatformModule,
-    AnimePlatformModule,
-    UserAnimeListModule,
-    UserModule,
+    AuthModule, // /auth
+    AnimeExplorationModule, // /anime/ranking
+    AnimeModule, // /anime/:id
+    PlatformModule, // /platform/:id
+    AnimePlatformModule, // /anime/:animeId/platform/:platformId
+    UserAnimeListModule, // /anime/:animeId/my-list-status
+    UserModule, // /user
   ],
   controllers: [AppController],
 })

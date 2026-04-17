@@ -479,7 +479,7 @@ export class MalService {
             });
           } else if (data.importType === 'latest_updated') {
             const isShouldUpdate =
-              !anime.userAnimeList[0].updatedAt ||
+              !anime.userAnimeList[0]?.updatedAt ||
               dayjs(myListStatusFromMal.updated_at).isAfter(
                 dayjs(anime.userAnimeList[0].updatedAt),
               );

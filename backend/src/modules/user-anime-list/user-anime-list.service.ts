@@ -158,6 +158,8 @@ export class UserAnimeListService {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException('User anime list already exists');
+        } else if (error.code === 'P2003') {
+          throw new NotFoundException('Platform not found');
         } else if (error.code === 'P2025') {
           throw new NotFoundException('User anime list not found');
         }
@@ -279,7 +281,7 @@ export class UserAnimeListService {
             select: { title: true, malId: true },
           },
           animePlatform: {
-            include: {
+            select: {
               platform: {
                 select: { name: true },
               },

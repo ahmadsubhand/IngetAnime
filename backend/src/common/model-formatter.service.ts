@@ -201,15 +201,16 @@ export class ModelFormatterService {
       animePlatform: AnimePlatformPrisma | null;
     },
   ): UserAnimeList {
+    const { anime, animePlatform, ...pureUserAnimeList } = userAnimeList;
     return {
-      ...userAnimeList,
-      startDate: this.ISOStringToYYYMMDD(userAnimeList.startDate),
-      finishDate: this.ISOStringToYYYMMDD(userAnimeList.finishDate),
-      updatedAt: dayjs(userAnimeList.updatedAt).toISOString(),
+      ...pureUserAnimeList,
+      startDate: this.ISOStringToYYYMMDD(pureUserAnimeList.startDate),
+      finishDate: this.ISOStringToYYYMMDD(pureUserAnimeList.finishDate),
+      updatedAt: dayjs(pureUserAnimeList.updatedAt).toISOString(),
       remainingWatchableEpisodes: this.countRemainingWatchableEpisodes(
-        userAnimeList,
-        userAnimeList.anime,
-        userAnimeList.animePlatform ? [{ ...userAnimeList.animePlatform }] : [],
+        pureUserAnimeList,
+        anime,
+        animePlatform ? [{ ...animePlatform }] : [],
       ),
     };
   }
@@ -231,14 +232,16 @@ export class ModelFormatterService {
           return this.animePlatformsBasedOnUserSelectedPlatform(
             a,
             b,
-            anime.userAnimeList[0].animePlatformId,
+            anime.userAnimeList[0]?.animePlatformId ?? null,
           );
         }),
-      userAnimeList: this.userAnimeListResponse({
-        ...anime.userAnimeList[0],
-        anime: anime,
-        animePlatform: anime.animePlatforms[0],
-      }),
+      userAnimeList: anime.userAnimeList[0]
+        ? this.userAnimeListResponse({
+            ...anime.userAnimeList[0],
+            anime: anime,
+            animePlatform: anime.animePlatforms[0] ?? null,
+          })
+        : null,
     };
   }
 
