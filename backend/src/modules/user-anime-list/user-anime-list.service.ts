@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   HttpStatus,
   Injectable,
@@ -75,12 +76,32 @@ export class UserAnimeListService {
     },
   };
 
+  async checkAnimeSimilaritiesBetweenPlatformAndList(
+    animeId: number,
+    animePlatformId: number,
+  ) {
+    const animePlatform = await this.prisma.animePlatform.findUnique({
+      where: { id: animePlatformId },
+      select: { animeId: true },
+    });
+    if (!animePlatform) throw new NotFoundException('Platform not found');
+    if (animePlatform.animeId !== animeId)
+      throw new BadRequestException('Anime platform does not belong to anime');
+  }
+
   async createUserAnimeList(
     animeId: number,
     userId: number,
     data: CreateUserAnimeList,
   ): Promise<UserAnimeListWithRelation> {
     try {
+      if (data.animePlatformId) {
+        await this.checkAnimeSimilaritiesBetweenPlatformAndList(
+          animeId,
+          data.animePlatformId,
+        );
+      }
+
       const userAnimeList = await this.prisma.userAnimeList.create({
         data: {
           ...data,
@@ -135,6 +156,13 @@ export class UserAnimeListService {
     data: UpdateUserAnimeList,
   ): Promise<UserAnimeListWithRelation> {
     try {
+      if (data.animePlatformId) {
+        await this.checkAnimeSimilaritiesBetweenPlatformAndList(
+          animeId,
+          data.animePlatformId,
+        );
+      }
+
       const userAnimeList = await this.prisma.userAnimeList.update({
         where: {
           userId_animeId: { userId, animeId },
@@ -175,6 +203,13 @@ export class UserAnimeListService {
     data: CreateOrUpdateUserAnimeList,
   ): Promise<UserAnimeListWithRelation & { statusCode: HttpStatus }> {
     try {
+      if (data.animePlatformId) {
+        await this.checkAnimeSimilaritiesBetweenPlatformAndList(
+          animeId,
+          data.animePlatformId,
+        );
+      }
+
       let userAnimeList: UserAnimeListPrisma & {
           anime: AnimePrisma;
           animePlatform:
