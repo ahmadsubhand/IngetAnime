@@ -58,7 +58,6 @@ export class AuthService {
         },
       });
       if (!isUsernameExists) {
-        console.log(suffix);
         return candidateUsername;
       }
       suffix++;

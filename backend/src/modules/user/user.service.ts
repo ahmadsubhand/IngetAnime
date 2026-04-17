@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -56,14 +57,30 @@ export class UserService {
     data: UpdateUserDetail,
   ): Promise<User> {
     try {
+      const oldUser = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, malId: true, googleId: true },
+      });
+      if (!oldUser) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (!data.email && oldUser.email) {
+        throw new BadRequestException('Cannot delete email address');
+      }
+
       let user = await this.prisma.user.update({
         where: { id: userId },
         data,
         select: this.modelFormatter.userSelect,
       });
 
-      // If email change reverified user
-      if (!user.googleId && !user.malId) {
+      if (
+        !user.googleId &&
+        !user.malId &&
+        data.email &&
+        oldUser.email !== data.email
+      ) {
         const otpCode = cryptoRandomString({ length: 6, type: 'numeric' });
         const otpExpiration = dayjs().add(10, 'minute').toISOString();
         user = await this.prisma.user.update({
