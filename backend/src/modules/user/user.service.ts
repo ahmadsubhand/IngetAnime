@@ -136,8 +136,18 @@ export class UserService {
     };
 
     const userAnimeList = await this.prisma.userAnimeList.findMany({
-      where:
-        data.status === 'all' ? { userId } : { userId, status: data.status },
+      where: {
+        userId,
+        ...(data.status !== 'all' && { status: data.status }),
+        ...(data.platformId && {
+          anime: {
+            animePlatforms: {
+              some: { platformId: data.platformId },
+            },
+          },
+        }),
+      },
+      // data.status === 'all' ? { userId } : { userId, status: data.status },
       orderBy: statusMap[data.sort],
       include: this.modelFormatter.userAnimeListInclude,
       take: data.limit + 1, // for next page check
@@ -160,21 +170,24 @@ export class UserService {
       };
     });
 
+    const { platformId, ...dataWithoutPlatformId } = data;
     const endpoint = '/user/me/my-list-status';
     const hasPrevPage = data.offset !== 0;
     const prevLink = hasPrevPage
       ? `${endpoint}?${new URLSearchParams({
-          ...data,
+          ...dataWithoutPlatformId,
           limit: data.limit.toString(),
           offset: (data.offset - data.limit).toString(),
+          ...(platformId && { platformId: platformId.toString() }),
         })}`
       : undefined;
     const hasNextPage = allAnimeFormat.length > data.limit;
     const nextLink = hasNextPage
       ? `${endpoint}?${new URLSearchParams({
-          ...data,
+          ...dataWithoutPlatformId,
           limit: data.limit.toString(),
           offset: (data.offset + data.limit).toString(),
+          ...(platformId && { platformId: platformId.toString() }),
         })}`
       : undefined;
 

@@ -34,6 +34,7 @@ export class UserValidation {
         error: `Sort must be one of: ${Object.values(this.Sort).join(', ')}`,
       })
       .default(this.Sort.anime_id),
+    platformId: z.coerce.number().int().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(100),
     offset: z.coerce.number().int().nonnegative().default(0),
   });
