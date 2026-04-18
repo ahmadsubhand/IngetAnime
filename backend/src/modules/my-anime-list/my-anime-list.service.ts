@@ -38,7 +38,7 @@ export class MyAnimeListService {
   private CLIENT_ID: string;
   private CLIENT_SECRET: string;
   private REDIRECT_URI: string;
-  private MIN_FIELDS: string =
+  public MIN_FIELDS: string =
     'id,title,main_picture,alternative_titles,start_date,num_episodes,status,my_list_status,';
 
   constructor(
