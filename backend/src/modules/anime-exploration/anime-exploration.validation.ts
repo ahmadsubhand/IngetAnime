@@ -26,63 +26,68 @@ watching, completed, on_hold, dropped, plan_to_watch
 */
 
 export class AnimeExplorationValidation {
-  private static defaultFields =
-    'id,title,main_picture,alternative_titles,start_date,num_episodes,status';
+  private static RankingType = {
+    all: 'all',
+    airing: 'airing',
+    upcoming: 'upcoming',
+    tv: 'tv',
+    ova: 'ova',
+    movie: 'movie',
+    special: 'special',
+    bypopularity: 'bypopularity',
+    favorite: 'favorite',
+  } as const;
 
-  private static rankingType = [
-    'all',
-    'airing',
-    'upcoming',
-    'tv',
-    'ova',
-    'movie',
-    'special',
-    'bypopularity',
-    'favorite',
-  ];
+  private static Sort = {
+    anime_score: 'anime_score',
+    anime_num_list_users: 'anime_num_list_users',
+  } as const;
 
-  private static sort = ['anime_score', 'anime_num_list_users'];
-
-  private static season = ['winter', 'spring', 'summer', 'fall'];
+  private static Season = {
+    winter: 'winter',
+    spring: 'spring',
+    summer: 'summer',
+    fall: 'fall',
+  } as const;
 
   static readonly GET_ANIME_LIST = z.object({
     q: z.string().min(3),
     limit: z.coerce.number().int().min(1).max(100).default(100),
     offset: z.coerce.number().int().nonnegative().default(0),
-    fields: IndexValidation.FIELDS.default(this.defaultFields),
+    fields: IndexValidation.FIELDS.default(''),
   });
 
   static readonly GET_ANIME_RANKING = z.object({
-    ranking_type: z.enum(this.rankingType, {
-      error: `Ranking type must be one of: ${this.rankingType.join(', ')}`,
+    ranking_type: z.enum(this.RankingType, {
+      error: `Ranking type must be one of: ${Object.values(this.RankingType).join(', ')}`,
     }),
     limit: z.coerce.number().int().min(1).max(500).default(100),
     offset: z.coerce.number().int().nonnegative().default(0),
-    fields: IndexValidation.FIELDS.default(this.defaultFields),
+    fields: IndexValidation.FIELDS.default(''),
   });
 
   static readonly ANIME_SEASON = z.object({
     year: z.coerce.number().int().min(1917),
-    season: z.enum(this.season, {
-      error: `Season must be one of: ${this.sort.join(', ')}`,
+    season: z.enum(this.Season, {
+      error: `Season must be one of: ${Object.values(this.Season).join(', ')}`,
     }),
   });
 
   static readonly GET_SEASONAL_ANIME = z.object({
     sort: z
-      .enum(this.sort, {
-        error: `Sort must be one of: ${this.sort.join(', ')}`,
+      .enum(this.Sort, {
+        error: `Sort must be one of: ${Object.values(this.Sort).join(', ')}`,
       })
       .optional(),
     limit: z.coerce.number().int().min(1).max(500).default(100),
     offset: z.coerce.number().int().nonnegative().default(0),
-    fields: IndexValidation.FIELDS.default(this.defaultFields),
+    fields: IndexValidation.FIELDS.default(''),
   });
 
   static readonly GET_SUGGESTED_ANIME = z.object({
     limit: z.coerce.number().int().min(1).max(100).default(100),
     offset: z.coerce.number().int().nonnegative().default(0),
-    fields: IndexValidation.FIELDS.default(this.defaultFields),
+    fields: IndexValidation.FIELDS.default(''),
   });
 }
 

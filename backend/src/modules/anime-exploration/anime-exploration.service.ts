@@ -34,7 +34,7 @@ export class AnimeExplorationService {
     return {
       limit: params.limit.toString(),
       offset: params.offset.toString(),
-      fields: params.fields,
+      fields: `${this.mal.MIN_FIELDS}${params.fields}`,
     };
   }
 
