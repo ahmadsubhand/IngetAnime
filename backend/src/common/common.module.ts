@@ -11,7 +11,6 @@ import { join } from 'path';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter.js';
 import { MailService } from './mail.service';
 import { CookieService } from './cookie.service';
-import { MalService } from './mal.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtService } from './jwt.service';
 import { GoogleService } from './google.service';
@@ -79,7 +78,6 @@ import { ModelFormatterService } from './model-formatter.service';
     MailService,
     CookieService,
     GoogleService,
-    MalService,
     ModelPaginationService,
     ModelFormatterService,
   ],
@@ -90,7 +88,6 @@ import { ModelFormatterService } from './model-formatter.service';
     MailService,
     CookieService,
     GoogleService,
-    MalService,
     ModelPaginationService,
     ModelFormatterService,
   ],

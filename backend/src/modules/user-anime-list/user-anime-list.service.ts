@@ -24,16 +24,16 @@ import {
   UserAnimeList,
 } from './user-anime-list.model';
 import { Anime } from '../anime/anime.model';
-import { MalService } from '../../common/mal.service';
 import { Link } from '../anime-platform/anime-platform.model';
 import { Platform } from '../platform/platform.model';
 import { ModelFormatterService } from '../../common/model-formatter.service';
+import { MyAnimeListService } from '../my-anime-list/my-anime-list.service';
 
 @Injectable()
 export class UserAnimeListService {
   constructor(
     private prisma: PrismaService,
-    private mal: MalService,
+    private mal: MyAnimeListService,
     private modelFormatter: ModelFormatterService,
   ) {}
 

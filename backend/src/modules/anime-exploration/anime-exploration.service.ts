@@ -3,7 +3,6 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { MalService } from '../../common/mal.service';
 import {
   AnimeSeason,
   GetAnimeList,
@@ -13,9 +12,10 @@ import {
 } from './anime-exploration.validation';
 import { AllAnimeWithMal } from './anime-exploration.model';
 import { ConfigService } from '@nestjs/config';
-import { MalError, AllMalAnime } from '../../types/mal';
+import { MalError, AllMalAnime } from '../my-anime-list/my-anime-list.model';
 import { ModelPaginationService } from '../../common/model-pagination.service';
 import { ModelFormatterService } from '../../common/model-formatter.service';
+import { MyAnimeListService } from '../my-anime-list/my-anime-list.service';
 
 @Injectable()
 export class AnimeExplorationService {
@@ -23,7 +23,7 @@ export class AnimeExplorationService {
 
   constructor(
     private config: ConfigService,
-    private mal: MalService,
+    private mal: MyAnimeListService,
     private modelFormatter: ModelFormatterService,
     private modelPagination: ModelPaginationService,
   ) {

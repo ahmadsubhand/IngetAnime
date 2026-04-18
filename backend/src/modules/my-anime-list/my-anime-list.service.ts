@@ -19,9 +19,9 @@ import {
   AllMalAnime,
   AllMalStatus,
   MalAnime,
-} from '../types/mal';
-import { PrismaService } from './prisma.service';
-import { ImportAnimeListFromMal } from '../modules/user/user.validation';
+} from './my-anime-list.model';
+import { PrismaService } from '../../common/prisma.service';
+import { ImportAnimeListFromMal } from '../user/user.validation';
 import dayjs from 'dayjs';
 import {
   Anime as AnimePrisma,
@@ -29,15 +29,17 @@ import {
   UserAnimeList as UserAnimeListPrisma,
   Platform as PlatformPrisma,
   Link as LinkPrisma,
-} from '../generated/prisma/client';
-import { ModelFormatterService } from './model-formatter.service';
+} from '../../generated/prisma/client';
+import { ModelFormatterService } from '../../common/model-formatter.service';
 
 @Injectable()
-export class MalService {
+export class MyAnimeListService {
   private CODE_CHALLENGE: string;
   private CLIENT_ID: string;
   private CLIENT_SECRET: string;
   private REDIRECT_URI: string;
+  private MIN_FIELDS: string =
+    'id,title,main_picture,alternative_titles,start_date,num_episodes,status,my_list_status,';
 
   constructor(
     config: ConfigService,
@@ -338,8 +340,7 @@ export class MalService {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
-      fields:
-        'id,title,main_picture,alternative_titles,start_date,num_episodes,status,my_list_status',
+      fields: this.MIN_FIELDS,
     });
 
     const response = await fetch(`${url}?${params.toString()}`, {
@@ -502,5 +503,34 @@ export class MalService {
     }
 
     return result;
+  }
+
+  async getMalAnimeDetails(
+    malId: number,
+    fields: string,
+    userId?: number,
+  ): Promise<MalAnime> {
+    const accessToken = await this.getMalConnection(userId);
+    const url = `https://api.myanimelist.net/v2/anime/${malId}`;
+    const params = new URLSearchParams({
+      fields: `${this.MIN_FIELDS}${fields}`,
+    });
+    const response = await fetch(`${url}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        ...(accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : { 'X-MAL-CLIENT-ID': this.CLIENT_ID }),
+      },
+    });
+
+    const animeFromMal = (await response.json()) as MalAnime | MalError;
+    if ('error' in animeFromMal) {
+      throw new BadRequestException(
+        animeFromMal.hint || animeFromMal.message || animeFromMal.error,
+      );
+    }
+
+    return animeFromMal;
   }
 }

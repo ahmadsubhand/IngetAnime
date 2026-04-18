@@ -19,8 +19,7 @@ import {
   Platform as PlatformPrisma,
   Link as LinkPrisma,
 } from '../../generated/prisma/client';
-import { AllMalStatus } from '../../types/mal';
-import { MalService } from '../../common/mal.service';
+import { AllMalStatus } from '../my-anime-list/my-anime-list.model';
 import { SkipThrottle } from '@nestjs/throttler';
 import cryptoRandomString from 'crypto-random-string';
 import dayjs from 'dayjs';
@@ -28,13 +27,14 @@ import { MailService } from '../../common/mail.service';
 import { AllAnime, User } from './user.model';
 import { ModelPaginationService } from '../../common/model-pagination.service';
 import { ModelFormatterService } from '../../common/model-formatter.service';
+import { MyAnimeListService } from '../my-anime-list/my-anime-list.service';
 
 @Injectable()
 @SkipThrottle()
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private mal: MalService,
+    private mal: MyAnimeListService,
     private mail: MailService,
     private modelPagination: ModelPaginationService,
     private modelFormatter: ModelFormatterService,

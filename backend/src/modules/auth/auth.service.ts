@@ -10,7 +10,7 @@ import { PrismaService } from '../../common/prisma.service';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { User } from '../user/user.model';
-import { MalProfile } from '../../types/mal';
+import { MalProfile } from '../my-anime-list/my-anime-list.model';
 import bcrypt from 'bcrypt';
 import cryptoRandomString from 'crypto-random-string';
 import { Prisma } from '../../generated/prisma/client';

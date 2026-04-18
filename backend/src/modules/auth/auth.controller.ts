@@ -32,11 +32,11 @@ import { CookieService } from '../../common/cookie.service';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { ConfigService } from '@nestjs/config';
-import { MalService } from '../../common/mal.service';
 import { AuthGuard } from './guard/auth.guard';
 import { JwtService } from '../../common/jwt.service';
 import { GoogleService } from '../../common/google.service';
 import cryptoRandomString from 'crypto-random-string';
+import { MyAnimeListService } from '../my-anime-list/my-anime-list.service';
 
 dayjs.extend(duration);
 
@@ -51,7 +51,7 @@ export class AuthController {
     private jwt: JwtService,
     private cookie: CookieService,
     private google: GoogleService,
-    private mal: MalService,
+    private mal: MyAnimeListService,
     config: ConfigService,
   ) {
     const environment = config.get<'production' | 'development'>(

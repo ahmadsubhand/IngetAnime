@@ -1,4 +1,4 @@
-import { AnimeStatus, ListStatus } from '../generated/prisma/enums';
+import { AnimeStatus, ListStatus } from '../../generated/prisma/enums';
 
 // MAL Auth Types
 
