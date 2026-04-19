@@ -1,8 +1,7 @@
 {
-  "javascript.preferences.quoteStyle": "single",
-  "typescript.preferences.quoteStyle": "single",
-  "typescript.preferences.importModuleSpecifier": "relative",
-  // "typescript.preferences.importModuleSpecifierEnding": "js",
+  "js/ts.preferences.quoteStyle": "single",
+  "js/ts.preferences.importModuleSpecifier": "relative",
+  // "js/ts.preferences.importModuleSpecifierEnding": "js",
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
