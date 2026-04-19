@@ -18,10 +18,11 @@ import type {
   AnimeSeason,
   GetSeasonalAnime,
   GetSuggestedAnime,
+  GetAnimeTimeline,
 } from './anime-exploration.validation';
 import { AnimeExplorationValidation } from './anime-exploration.validation';
 import { ApiResponse } from '../../types';
-import { AllAnimeWithMal } from './anime-exploration.model';
+import { AnimeDailyTimeline, AllAnimeWithMal } from './anime-exploration.model';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { SkipThrottle } from '@nestjs/throttler';
 
@@ -98,6 +99,22 @@ export class AnimeExplorationController {
     return {
       message: 'Get suggessted anime successfully',
       data: animeList,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @Get('timeline')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalAuthGuard)
+  async getAnimeTimeline(
+    @Req() req: Request & { user?: JwtPayload },
+    @Query(new ZodValidationPipe(AnimeExplorationValidation.GET_ANIME_TIMELINE))
+    data: GetAnimeTimeline,
+  ): Promise<ApiResponse<AnimeDailyTimeline[]>> {
+    const timelines = await this.service.getAnimeTimeline(data, req.user?.sub);
+    return {
+      message: 'Get anime timeline successfully',
+      data: timelines,
       statusCode: HttpStatus.OK,
     };
   }

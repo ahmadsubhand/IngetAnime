@@ -1,5 +1,8 @@
 import z from 'zod';
 import { IndexValidation } from '../../validator/index.validation';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(timezone);
 
 /* 
 Parameter explanation:
@@ -89,6 +92,23 @@ export class AnimeExplorationValidation {
     offset: z.coerce.number().int().nonnegative().default(0),
     fields: IndexValidation.FIELDS.default(''),
   });
+
+  static readonly GET_ANIME_TIMELINE = z.object({
+    week_count: z.coerce.number().int().min(1).max(2).default(1),
+    time_zone: z
+      .string()
+      .min(1, 'Invalid time zone')
+      .refine((timeZone) => {
+        try {
+          return dayjs().tz(timeZone).isValid();
+        } catch {
+          return false;
+        }
+      }, 'Invalid time zone')
+      .default('Asia/Jakarta'),
+    my_list_only: IndexValidation.BOOLEAN_QUERY.default(false),
+    original_schedule: IndexValidation.BOOLEAN_QUERY.default(false),
+  });
 }
 
 export type GetAnimeList = z.infer<
@@ -105,4 +125,7 @@ export type GetSeasonalAnime = z.infer<
 >;
 export type GetSuggestedAnime = z.infer<
   typeof AnimeExplorationValidation.GET_SUGGESTED_ANIME
+>;
+export type GetAnimeTimeline = z.infer<
+  typeof AnimeExplorationValidation.GET_ANIME_TIMELINE
 >;

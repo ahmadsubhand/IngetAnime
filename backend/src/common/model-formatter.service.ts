@@ -223,18 +223,25 @@ export class ModelFormatterService {
       })[];
       userAnimeList: UserAnimeListPrisma[];
     },
+    sortBasedOnUserSelectedPlatform: boolean = true,
   ): AnimeWithRelation {
+    let animePlatforms = [...anime.animePlatforms].map((animePlatform) =>
+      this.animePlatformResponse(animePlatform),
+    );
+
+    if (sortBasedOnUserSelectedPlatform) {
+      animePlatforms = animePlatforms.sort((a, b) => {
+        return this.animePlatformsBasedOnUserSelectedPlatform(
+          a,
+          b,
+          anime.userAnimeList[0]?.animePlatformId ?? null,
+        );
+      });
+    }
+
     return {
       ...this.animeResponse(anime),
-      animePlatforms: [...anime.animePlatforms]
-        .map((animePlatform) => this.animePlatformResponse(animePlatform))
-        .sort((a, b) => {
-          return this.animePlatformsBasedOnUserSelectedPlatform(
-            a,
-            b,
-            anime.userAnimeList[0]?.animePlatformId ?? null,
-          );
-        }),
+      animePlatforms,
       userAnimeList: anime.userAnimeList[0]
         ? this.userAnimeListResponse({
             ...anime.userAnimeList[0],

@@ -33,4 +33,8 @@ export class IndexValidation {
       /^(?!_)(?!.*__)[a-zA-Z0-9_]+(?<!_)$/,
       'Username can only contain letters, numbers, and underscores, but cannot start or end with an underscore',
     );
+
+  static readonly BOOLEAN_QUERY = z
+    .enum(['true', 'false'], 'Value must be one of true or false')
+    .transform((val) => val === 'true');
 }
