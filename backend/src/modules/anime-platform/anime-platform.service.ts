@@ -17,16 +17,11 @@ import {
   AnimePlatform,
   Link,
 } from './anime-platform.model';
-import {
-  Anime as AnimePrisma,
-  AnimePlatform as AnimePlatformPrisma,
-  Link as LinkPrisma,
-  Platform as PlatformPrisma,
-  Prisma,
-} from '../../generated/prisma/client';
+import { Prisma } from '../../generated/prisma/client';
 import { Platform } from '../platform/platform.model';
 import { Anime } from '../anime/anime.model';
 import { ModelFormatterService } from '../../common/model-formatter.service';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class AnimePlatformService {
@@ -79,6 +74,20 @@ export class AnimePlatformService {
     link: true,
   };
 
+  checkEpisodeAirOrder(
+    lastEpisodeAiredAt: Date | string | null,
+    nextEpisodeAiringAt: Date | string | null,
+  ) {
+    if (
+      lastEpisodeAiredAt &&
+      nextEpisodeAiringAt &&
+      !dayjs(lastEpisodeAiredAt).isBefore(dayjs(nextEpisodeAiringAt))
+    )
+      throw new BadRequestException(
+        'lastEpisodeAiredAt must be before nextEpisodeAiringAt',
+      );
+  }
+
   async createAnimePlatform(
     param: AnimePlatformId,
     data: CreateAnimePlatform,
@@ -93,6 +102,10 @@ export class AnimePlatformService {
       if (dataWithoutLink.isMainPlatform) {
         await this.setUpMainPlatform(param.animeId);
       }
+      this.checkEpisodeAirOrder(
+        data.lastEpisodeAiredAt,
+        data.nextEpisodeAiringAt,
+      );
 
       const animePlatform = await this.prisma.animePlatform.create({
         data: {
@@ -151,6 +164,10 @@ export class AnimePlatformService {
       if (newData.isMainPlatform) {
         await this.setUpMainPlatform(param.animeId);
       }
+      this.checkEpisodeAirOrder(
+        data.lastEpisodeAiredAt,
+        data.nextEpisodeAiringAt,
+      );
 
       const animePlatform = await this.prisma.animePlatform.update({
         where: {
@@ -200,18 +217,21 @@ export class AnimePlatformService {
         await this.setUpMainPlatform(param.animeId);
       }
 
-      let animePlatform: AnimePlatformPrisma & {
-          anime: AnimePrisma;
-          platform: PlatformPrisma;
-          link: LinkPrisma;
+      let animePlatform = await this.prisma.animePlatform.findUnique({
+        where: {
+          platformId_animeId: { ...param },
         },
-        statusCode = 200;
+        include: this.animePlatformInclude,
+      });
+      let statusCode = HttpStatus.OK;
 
-      try {
+      if (animePlatform) {
+        this.checkEpisodeAirOrder(
+          data.lastEpisodeAiredAt || animePlatform.lastEpisodeAiredAt,
+          data.nextEpisodeAiringAt || animePlatform.nextEpisodeAiringAt,
+        );
         animePlatform = await this.prisma.animePlatform.update({
-          where: {
-            platformId_animeId: { ...param },
-          },
+          where: { id: animePlatform.id },
           data: {
             ...newData,
             ...this.modelFormatter.animePlatformRequest(
@@ -222,34 +242,31 @@ export class AnimePlatformService {
           },
           include: this.animePlatformInclude,
         });
-      } catch (error) {
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2025'
-        ) {
-          statusCode = 201;
-          const { accessType } = newData;
-          if (!linkId || !accessType) {
-            throw new BadRequestException(
-              'Creating a new anime platform requires link and access type',
-            );
-          }
-          animePlatform = await this.prisma.animePlatform.create({
-            data: {
-              ...newData,
-              ...param,
-              ...this.modelFormatter.animePlatformRequest(
-                data.lastEpisodeAiredAt,
-                data.nextEpisodeAiringAt,
-              ),
-              linkId,
-              accessType,
-            },
-            include: this.animePlatformInclude,
-          });
-        } else {
-          throw error;
+      } else {
+        statusCode = HttpStatus.CREATED;
+        this.checkEpisodeAirOrder(
+          data.lastEpisodeAiredAt || null,
+          data.nextEpisodeAiringAt || null,
+        );
+        const { accessType } = newData;
+        if (!linkId || !accessType) {
+          throw new BadRequestException(
+            'Creating a new anime platform requires link and access type',
+          );
         }
+        animePlatform = await this.prisma.animePlatform.create({
+          data: {
+            ...newData,
+            ...param,
+            ...this.modelFormatter.animePlatformRequest(
+              data.lastEpisodeAiredAt,
+              data.nextEpisodeAiringAt,
+            ),
+            linkId,
+            accessType,
+          },
+          include: this.animePlatformInclude,
+        });
       }
 
       return {
