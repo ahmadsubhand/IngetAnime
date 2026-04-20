@@ -9,6 +9,7 @@ import { UserAnimeListModule } from './modules/user-anime-list/user-anime-list.m
 import { AnimeExplorationModule } from './modules/anime-exploration/anime-exploration.module';
 import { UserModule } from './modules/user/user.module';
 import { MyAnimeListModule } from './modules/my-anime-list/my-anime-list.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MyAnimeListModule } from './modules/my-anime-list/my-anime-list.module'
     UserAnimeListModule, // /anime/:animeId/my-list-status
     UserModule, // /user
     MyAnimeListModule, // /mal
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
 })
