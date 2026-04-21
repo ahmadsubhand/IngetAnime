@@ -15,7 +15,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtService } from './jwt.service';
 import { GoogleService } from './google.service';
 import { ModelPaginationService } from './model-pagination.service';
-import { ModelFormatterService } from './model-formatter.service';
 
 @Global()
 @Module({
@@ -79,7 +78,6 @@ import { ModelFormatterService } from './model-formatter.service';
     CookieService,
     GoogleService,
     ModelPaginationService,
-    ModelFormatterService,
   ],
   exports: [
     PrismaService,
@@ -89,7 +87,6 @@ import { ModelFormatterService } from './model-formatter.service';
     CookieService,
     GoogleService,
     ModelPaginationService,
-    ModelFormatterService,
   ],
 })
 export class CommonModule {}

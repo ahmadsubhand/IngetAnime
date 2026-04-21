@@ -18,7 +18,7 @@ import { MailService } from '../../common/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { Login, Register, ResetPassword } from './auth.validation';
 import { JwtService } from '../../common/jwt.service';
-import { ModelFormatterService } from '../../common/model-formatter.service';
+import { userResponse, userSelect } from '../../utils/model-formatter';
 
 dayjs.extend(duration);
 
@@ -30,7 +30,6 @@ export class AuthService {
     private mail: MailService,
     private jwt: JwtService,
     private config: ConfigService,
-    private modelFormatter: ModelFormatterService,
   ) {}
 
   maskString(string: string) {
@@ -79,7 +78,7 @@ export class AuthService {
           otpCode,
           otpExpiration,
         },
-        select: this.modelFormatter.userSelect,
+        select: userSelect,
       });
 
       await this.mail.sendEmail(
@@ -89,7 +88,7 @@ export class AuthService {
         { otp: otpCode },
       );
 
-      return this.modelFormatter.userResponse(user);
+      return userResponse(user);
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -108,7 +107,7 @@ export class AuthService {
         OR: [{ username: data.identifier }, { email: data.identifier }],
       },
       select: {
-        ...this.modelFormatter.userSelect,
+        ...userSelect,
         password: true,
       },
     });
@@ -127,7 +126,7 @@ export class AuthService {
       throw new NotFoundException('Invalid email or password');
     }
 
-    return this.modelFormatter.userResponse(userWithoutPassword);
+    return userResponse(userWithoutPassword);
   }
 
   async verifyEmail(id: number, otpCode: string): Promise<User> {
@@ -157,10 +156,10 @@ export class AuthService {
         data: {
           isVerified: true,
         },
-        select: this.modelFormatter.userSelect,
+        select: userSelect,
       });
 
-      return this.modelFormatter.userResponse(verifiedUser);
+      return userResponse(verifiedUser);
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -276,10 +275,10 @@ export class AuthService {
         data: {
           password: hashedPassword,
         },
-        select: this.modelFormatter.userSelect,
+        select: userSelect,
       });
 
-      return this.modelFormatter.userResponse(user);
+      return userResponse(user);
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
@@ -301,7 +300,7 @@ export class AuthService {
       where: {
         OR: [{ email }, { googleId }],
       },
-      select: this.modelFormatter.userSelect,
+      select: userSelect,
     });
     let statusCode: HttpStatus = HttpStatus.OK;
 
@@ -315,7 +314,7 @@ export class AuthService {
           isVerified: true,
           googleId,
         },
-        select: this.modelFormatter.userSelect,
+        select: userSelect,
       });
     } else {
       if (!user.googleId) {
@@ -328,13 +327,13 @@ export class AuthService {
             isVerified: true,
             ...(!user.picture && { picture }),
           },
-          select: this.modelFormatter.userSelect,
+          select: userSelect,
         });
       }
     }
 
     return {
-      ...this.modelFormatter.userResponse(user),
+      ...userResponse(user),
       statusCode,
     };
   }
@@ -350,7 +349,7 @@ export class AuthService {
       where: {
         malId,
       },
-      select: this.modelFormatter.userSelect,
+      select: userSelect,
     });
     let statusCode: HttpStatus = HttpStatus.OK;
 
@@ -365,7 +364,7 @@ export class AuthService {
           malAccessToken: accessToken,
           malRefreshToken: refreshToken,
         },
-        select: this.modelFormatter.userSelect,
+        select: userSelect,
       });
     } else {
       user = await this.prisma.user.update({
@@ -379,12 +378,12 @@ export class AuthService {
           malAccessToken: accessToken,
           malRefreshToken: refreshToken,
         },
-        select: this.modelFormatter.userSelect,
+        select: userSelect,
       });
     }
 
     return {
-      ...this.modelFormatter.userResponse(user),
+      ...userResponse(user),
       statusCode,
     };
   }

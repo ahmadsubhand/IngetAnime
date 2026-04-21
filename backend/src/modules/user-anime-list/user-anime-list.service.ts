@@ -26,15 +26,17 @@ import {
 import { Anime } from '../anime/anime.model';
 import { Link } from '../anime-platform/anime-platform.model';
 import { Platform } from '../platform/platform.model';
-import { ModelFormatterService } from '../../common/model-formatter.service';
 import { MyAnimeListService } from '../my-anime-list/my-anime-list.service';
+import {
+  userAnimeListRequest,
+  userAnimeListWithRelation,
+} from '../../utils/model-formatter';
 
 @Injectable()
 export class UserAnimeListService {
   constructor(
     private prisma: PrismaService,
     private mal: MyAnimeListService,
-    private modelFormatter: ModelFormatterService,
   ) {}
 
   async updateMalStatus(
@@ -105,10 +107,7 @@ export class UserAnimeListService {
       const userAnimeList = await this.prisma.userAnimeList.create({
         data: {
           ...data,
-          ...this.modelFormatter.userAnimeListRequest(
-            data.startDate,
-            data.finishDate,
-          ),
+          ...userAnimeListRequest(data.startDate, data.finishDate),
           userId,
           animeId,
         },
@@ -119,7 +118,7 @@ export class UserAnimeListService {
         await this.updateMalStatus(userId, animeId, data);
       }
 
-      return this.modelFormatter.userAnimeListWithRelation(userAnimeList);
+      return userAnimeListWithRelation(userAnimeList);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -147,7 +146,7 @@ export class UserAnimeListService {
       throw new NotFoundException('User anime list not found');
     }
 
-    return this.modelFormatter.userAnimeListWithRelation(userAnimeList);
+    return userAnimeListWithRelation(userAnimeList);
   }
 
   async updateUserAnimeList(
@@ -169,10 +168,7 @@ export class UserAnimeListService {
         },
         data: {
           ...data,
-          ...this.modelFormatter.userAnimeListRequest(
-            data.startDate,
-            data.finishDate,
-          ),
+          ...userAnimeListRequest(data.startDate, data.finishDate),
         },
         include: this.userAnimeListInclude,
       });
@@ -181,7 +177,7 @@ export class UserAnimeListService {
         await this.updateMalStatus(userId, animeId, data);
       }
 
-      return this.modelFormatter.userAnimeListWithRelation(userAnimeList);
+      return userAnimeListWithRelation(userAnimeList);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -228,10 +224,7 @@ export class UserAnimeListService {
           },
           data: {
             ...data,
-            ...this.modelFormatter.userAnimeListRequest(
-              data.startDate,
-              data.finishDate,
-            ),
+            ...userAnimeListRequest(data.startDate, data.finishDate),
             userId,
             animeId,
           },
@@ -246,10 +239,7 @@ export class UserAnimeListService {
           userAnimeList = await this.prisma.userAnimeList.create({
             data: {
               ...data,
-              ...this.modelFormatter.userAnimeListRequest(
-                data.startDate,
-                data.finishDate,
-              ),
+              ...userAnimeListRequest(data.startDate, data.finishDate),
               userId,
               animeId,
             },
@@ -265,7 +255,7 @@ export class UserAnimeListService {
       }
 
       return {
-        ...this.modelFormatter.userAnimeListWithRelation(userAnimeList),
+        ...userAnimeListWithRelation(userAnimeList),
         statusCode,
       };
     } catch (error) {

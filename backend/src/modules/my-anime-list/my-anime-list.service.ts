@@ -1,15 +1,12 @@
 import {
   BadRequestException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cryptoRandomString from 'crypto-random-string';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import {
   MalError,
   MalProfile,
@@ -30,7 +27,7 @@ import {
   Platform as PlatformPrisma,
   Link as LinkPrisma,
 } from '../../generated/prisma/client';
-import { ModelFormatterService } from '../../common/model-formatter.service';
+import { animeInclude, dateToISOString } from '../../utils/model-formatter';
 
 @Injectable()
 export class MyAnimeListService {
@@ -43,9 +40,7 @@ export class MyAnimeListService {
 
   constructor(
     config: ConfigService,
-    @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     private prisma: PrismaService,
-    private modelFormatter: ModelFormatterService,
   ) {
     this.CODE_CHALLENGE = cryptoRandomString({
       length: 64,
@@ -221,9 +216,7 @@ export class MyAnimeListService {
               : 'https://ik.imagekit.io/hq9ajk99t/_Pngtree_no%20image%20vector%20illustration%20isolated_4979075.png?updatedAt=1749865837127',
             title: anime.node.title,
             titleEN: anime.node.alternative_titles?.en,
-            releaseAt: this.modelFormatter.dateToISOString(
-              anime.node.start_date,
-            ),
+            releaseAt: dateToISOString(anime.node.start_date),
             episodeTotal: anime.node.num_episodes,
             status: anime.node.status,
           };
@@ -255,7 +248,7 @@ export class MyAnimeListService {
       where: {
         malId: { in: allMalId },
       },
-      include: this.modelFormatter.animeInclude(userId),
+      include: animeInclude(userId),
     });
 
     const animeMap = new Map(
@@ -431,12 +424,8 @@ export class MyAnimeListService {
       return {
         userId,
         animeId: anime.id,
-        startDate: this.modelFormatter.dateToISOString(
-          myListStatusFromMal.start_date,
-        ),
-        finishDate: this.modelFormatter.dateToISOString(
-          myListStatusFromMal.finish_date,
-        ),
+        startDate: dateToISOString(myListStatusFromMal.start_date),
+        finishDate: dateToISOString(myListStatusFromMal.finish_date),
         progress: myListStatusFromMal.num_episodes_watched,
         score: myListStatusFromMal.score,
         status: myListStatusFromMal.status,

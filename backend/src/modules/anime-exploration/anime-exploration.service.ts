@@ -20,7 +20,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { MalError, AllMalAnime } from '../my-anime-list/my-anime-list.model';
 import { ModelPaginationService } from '../../common/model-pagination.service';
-import { ModelFormatterService } from '../../common/model-formatter.service';
+import {
+  animeInclude,
+  animeResponseWithRelation,
+} from '../../utils/model-formatter';
 import { MyAnimeListService } from '../my-anime-list/my-anime-list.service';
 import { PrismaService } from '../../common/prisma.service';
 import dayjs from 'dayjs';
@@ -39,7 +42,6 @@ export class AnimeExplorationService {
   constructor(
     private config: ConfigService,
     private mal: MyAnimeListService,
-    private modelFormatter: ModelFormatterService,
     private modelPagination: ModelPaginationService,
     private prisma: PrismaService,
   ) {
@@ -89,7 +91,7 @@ export class AnimeExplorationService {
     return {
       anime: [...animeList].map((anime) => ({
         ...anime,
-        ...this.modelFormatter.animeResponseWithRelation(anime),
+        ...animeResponseWithRelation(anime),
       })),
       ...this.modelPagination.getServerPageLink(
         endpoint,
@@ -134,7 +136,7 @@ export class AnimeExplorationService {
     return {
       anime: [...animeList].map((anime) => ({
         ...anime,
-        ...this.modelFormatter.animeResponseWithRelation(anime),
+        ...animeResponseWithRelation(anime),
       })),
       ...this.modelPagination.getServerPageLink(
         endpoint,
@@ -180,7 +182,7 @@ export class AnimeExplorationService {
     return {
       anime: [...animeList].map((anime) => ({
         ...anime,
-        ...this.modelFormatter.animeResponseWithRelation(anime),
+        ...animeResponseWithRelation(anime),
       })),
       ...this.modelPagination.getServerPageLink(
         endpoint,
@@ -225,7 +227,7 @@ export class AnimeExplorationService {
     return {
       anime: [...animeList].map((anime) => ({
         ...anime,
-        ...this.modelFormatter.animeResponseWithRelation(anime),
+        ...animeResponseWithRelation(anime),
       })),
       ...this.modelPagination.getServerPageLink(
         endpoint,
@@ -275,10 +277,10 @@ export class AnimeExplorationService {
             },
           }),
       },
-      include: this.modelFormatter.animeInclude(userId),
+      include: animeInclude(userId),
     });
     const anime = [...animeFromDatabase].map((anime) =>
-      this.modelFormatter.animeResponseWithRelation(
+      animeResponseWithRelation(
         anime,
         Boolean(!data.original_schedule && userId),
       ),

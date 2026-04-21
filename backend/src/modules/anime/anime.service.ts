@@ -7,25 +7,27 @@ import { PrismaService } from '../../common/prisma.service';
 import { AnimeWithRelation, Anime } from './anime.model';
 import { CreateAnime, UpdateAnime } from './anime.validation';
 import { Prisma } from '../../generated/prisma/client';
-import { ModelFormatterService } from '../../common/model-formatter.service';
+import {
+  animeInclude,
+  animeRequest,
+  animeResponse,
+  animeResponseWithRelation,
+} from '../../utils/model-formatter';
 
 @Injectable()
 export class AnimeService {
-  constructor(
-    private prisma: PrismaService,
-    private modelFormatter: ModelFormatterService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async createAnime(data: CreateAnime): Promise<Anime> {
     try {
       const anime = await this.prisma.anime.create({
         data: {
           ...data,
-          ...this.modelFormatter.animeRequest(data.releaseAt),
+          ...animeRequest(data.releaseAt),
         },
       });
 
-      return this.modelFormatter.animeResponse(anime);
+      return animeResponse(anime);
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -46,14 +48,14 @@ export class AnimeService {
       where: {
         id,
       },
-      include: this.modelFormatter.animeInclude(userId),
+      include: animeInclude(userId),
     });
 
     if (!anime) {
       throw new NotFoundException('Anime not found');
     }
 
-    return this.modelFormatter.animeResponseWithRelation(anime);
+    return animeResponseWithRelation(anime);
   }
 
   async updateAnime(animeId: number, data: UpdateAnime): Promise<Anime> {
@@ -64,11 +66,11 @@ export class AnimeService {
         },
         data: {
           ...data,
-          ...this.modelFormatter.animeRequest(data.releaseAt),
+          ...animeRequest(data.releaseAt),
         },
       });
 
-      return this.modelFormatter.animeResponse(anime);
+      return animeResponse(anime);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {

@@ -26,8 +26,13 @@ import dayjs from 'dayjs';
 import { MailService } from '../../common/mail.service';
 import { AllAnime, User } from './user.model';
 import { ModelPaginationService } from '../../common/model-pagination.service';
-import { ModelFormatterService } from '../../common/model-formatter.service';
 import { MyAnimeListService } from '../my-anime-list/my-anime-list.service';
+import {
+  animeResponseWithRelation,
+  userAnimeListInclude,
+  userResponse,
+  userSelect,
+} from '../../utils/model-formatter';
 
 @Injectable()
 @SkipThrottle()
@@ -37,19 +42,18 @@ export class UserService {
     private mal: MyAnimeListService,
     private mail: MailService,
     private modelPagination: ModelPaginationService,
-    private modelFormatter: ModelFormatterService,
   ) {}
 
   async getUserDetail(userId: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: this.modelFormatter.userSelect,
+      select: userSelect,
     });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.modelFormatter.userResponse(user);
+    return userResponse(user);
   }
 
   async updateUserDetail(
@@ -72,7 +76,7 @@ export class UserService {
       let user = await this.prisma.user.update({
         where: { id: userId },
         data,
-        select: this.modelFormatter.userSelect,
+        select: userSelect,
       });
 
       if (
@@ -90,7 +94,7 @@ export class UserService {
             otpCode,
             otpExpiration,
           },
-          select: this.modelFormatter.userSelect,
+          select: userSelect,
         });
 
         await this.mail.sendEmail(
@@ -101,7 +105,7 @@ export class UserService {
         );
       }
 
-      return this.modelFormatter.userResponse(user);
+      return userResponse(user);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -149,7 +153,7 @@ export class UserService {
       },
       // data.status === 'all' ? { userId } : { userId, status: data.status },
       orderBy: statusMap[data.sort],
-      include: this.modelFormatter.userAnimeListInclude,
+      include: userAnimeListInclude,
       take: data.limit + 1, // for next page check
       skip: data.offset,
     });
@@ -194,7 +198,7 @@ export class UserService {
     return {
       ...this.modelPagination.getServerPageLink(endpoint, prevLink, nextLink),
       anime: [...allAnimeFormat].map((anime) =>
-        this.modelFormatter.animeResponseWithRelation(anime),
+        animeResponseWithRelation(anime),
       ),
     };
 

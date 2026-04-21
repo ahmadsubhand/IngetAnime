@@ -20,15 +20,15 @@ import {
 import { Prisma } from '../../generated/prisma/client';
 import { Platform } from '../platform/platform.model';
 import { Anime } from '../anime/anime.model';
-import { ModelFormatterService } from '../../common/model-formatter.service';
+import {
+  animePlatformRequest,
+  animePlatformWithRelation,
+} from '../../utils/model-formatter';
 import dayjs from 'dayjs';
 
 @Injectable()
 export class AnimePlatformService {
-  constructor(
-    private prisma: PrismaService,
-    private modelFormatter: ModelFormatterService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async setUpMainPlatform(animeId: number) {
     await this.prisma.animePlatform.updateMany({
@@ -110,7 +110,7 @@ export class AnimePlatformService {
       const animePlatform = await this.prisma.animePlatform.create({
         data: {
           ...dataWithoutLink,
-          ...this.modelFormatter.animePlatformRequest(
+          ...animePlatformRequest(
             dataWithoutLink.lastEpisodeAiredAt,
             dataWithoutLink.nextEpisodeAiringAt,
           ),
@@ -120,7 +120,7 @@ export class AnimePlatformService {
         include: this.animePlatformInclude,
       });
 
-      return this.modelFormatter.animePlatformWithRelation(animePlatform);
+      return animePlatformWithRelation(animePlatform);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2003') {
@@ -147,7 +147,7 @@ export class AnimePlatformService {
     if (!animePlatform) {
       throw new NotFoundException('Anime platform not found');
     }
-    return this.modelFormatter.animePlatformWithRelation(animePlatform);
+    return animePlatformWithRelation(animePlatform);
   }
 
   async updateAnimePlatform(
@@ -175,7 +175,7 @@ export class AnimePlatformService {
         },
         data: {
           ...newData,
-          ...this.modelFormatter.animePlatformRequest(
+          ...animePlatformRequest(
             newData.lastEpisodeAiredAt,
             newData.nextEpisodeAiringAt,
           ),
@@ -184,7 +184,7 @@ export class AnimePlatformService {
         include: this.animePlatformInclude,
       });
 
-      return this.modelFormatter.animePlatformWithRelation(animePlatform);
+      return animePlatformWithRelation(animePlatform);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -234,7 +234,7 @@ export class AnimePlatformService {
           where: { id: animePlatform.id },
           data: {
             ...newData,
-            ...this.modelFormatter.animePlatformRequest(
+            ...animePlatformRequest(
               data.lastEpisodeAiredAt,
               data.nextEpisodeAiringAt,
             ),
@@ -258,7 +258,7 @@ export class AnimePlatformService {
           data: {
             ...newData,
             ...param,
-            ...this.modelFormatter.animePlatformRequest(
+            ...animePlatformRequest(
               data.lastEpisodeAiredAt,
               data.nextEpisodeAiringAt,
             ),
@@ -270,7 +270,7 @@ export class AnimePlatformService {
       }
 
       return {
-        ...this.modelFormatter.animePlatformWithRelation(animePlatform),
+        ...animePlatformWithRelation(animePlatform),
         statusCode,
       };
     } catch (error) {
