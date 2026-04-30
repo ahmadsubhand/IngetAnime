@@ -197,8 +197,8 @@ export class UserService {
 
     return {
       ...this.modelPagination.getServerPageLink(endpoint, prevLink, nextLink),
-      anime: [...allAnimeFormat].map((anime) =>
-        animeResponseWithRelation(anime),
+      anime: (hasNextPage ? allAnimeFormat.slice(0, -1) : allAnimeFormat).map(
+        (anime) => animeResponseWithRelation(anime),
       ),
     };
 
