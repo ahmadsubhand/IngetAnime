@@ -70,14 +70,15 @@ model UserAnimeList {
   animeId         Int  @map("anime_id")
   animePlatformId Int? @map("anime_platform_id") // User selected platform
 
-  startDate          DateTime?  @map("start_date")
-  finishDate         DateTime?  @map("finish_date")
-  progress           Int        @default(0)
-  score              Int        @default(0)
-  episodesDifference Int        @default(0) @map("episodes_difference") // Example: Bstation free user
-  status             ListStatus @default(plan_to_watch)
-  isSyncedWithMal    Boolean    @default(false)
-  updatedAt          DateTime   @updatedAt @map("updated_at")
+  startDate                  DateTime?  @map("start_date")
+  finishDate                 DateTime?  @map("finish_date")
+  progress                   Int        @default(0)
+  score                      Int        @default(0)
+  episodesDifference         Int        @default(0) @map("episodes_difference") // Example: Bstation free user
+  status                     ListStatus @default(plan_to_watch)
+  isSyncedWithMal            Boolean    @default(false)
+  updatedAt                  DateTime   @updatedAt @map("updated_at")
+  remainingWatchableEpisodes Int?       @map("remaining_watchable_episodes") // auto fill by db trigger
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   anime         Anime          @relation(fields: [animeId], references: [id], onDelete: Cascade)

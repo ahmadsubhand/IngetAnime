@@ -6,6 +6,7 @@ export type AnimePlatform = {
   id: number;
   animeId: number;
   platformId: number;
+  linkId: number;
   accessType: AccessType;
   nextEpisodeAiringAt: string | null;
   lastEpisodeAiredAt: string | null;

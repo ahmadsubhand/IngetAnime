@@ -1,4 +1,4 @@
-import { AnimeStatus, Role } from '../generated/prisma/client';
+import { Role } from '../generated/prisma/client';
 import {
   Anime as AnimePrisma,
   AnimePlatform as AnimePlatformPrisma,
@@ -45,27 +45,6 @@ export function animePlatformsBasedOnUserSelectedPlatform(
       Number(animePlatformA.id === animePlatformId)
     );
   } else return 0;
-}
-
-export function countRemainingWatchableEpisodes(
-  userAnimeList: {
-    episodesDifference: number;
-    progress: number;
-    animePlatformId: number | null;
-  },
-  anime: { status: AnimeStatus; episodeTotal: number },
-  animePlatforms: { id: number; episodeAired: number }[],
-): number | null {
-  const episodeAired =
-    animePlatforms[0] && animePlatforms[0].id === userAnimeList.animePlatformId
-      ? animePlatforms[0].episodeAired
-      : anime.status === 'finished_airing'
-        ? anime.episodeTotal
-        : -1;
-  if (episodeAired === -1) return null;
-  return (
-    episodeAired - userAnimeList.episodesDifference - userAnimeList.progress
-  );
 }
 
 export const userSelect = {
@@ -192,22 +171,13 @@ export function animePlatformResponse(
 }
 
 export function userAnimeListResponse(
-  userAnimeList: UserAnimeListPrisma & {
-    anime: AnimePrisma;
-    animePlatform: AnimePlatformPrisma | null;
-  },
+  userAnimeList: UserAnimeListPrisma,
 ): UserAnimeList {
-  const { anime, animePlatform, ...pureUserAnimeList } = userAnimeList;
   return {
-    ...pureUserAnimeList,
-    startDate: ISOStringToYYYMMDD(pureUserAnimeList.startDate),
-    finishDate: ISOStringToYYYMMDD(pureUserAnimeList.finishDate),
-    updatedAt: dayjs(pureUserAnimeList.updatedAt).toISOString(),
-    remainingWatchableEpisodes: countRemainingWatchableEpisodes(
-      pureUserAnimeList,
-      anime,
-      animePlatform ? [{ ...animePlatform }] : [],
-    ),
+    ...userAnimeList,
+    startDate: ISOStringToYYYMMDD(userAnimeList.startDate),
+    finishDate: ISOStringToYYYMMDD(userAnimeList.finishDate),
+    updatedAt: dayjs(userAnimeList.updatedAt).toISOString(),
   };
 }
 
@@ -221,10 +191,7 @@ export function animeResponseWithRelation(
   },
   sortBasedOnUserSelectedPlatform: boolean = true,
 ): AnimeWithRelation {
-  let animePlatforms = [...anime.animePlatforms].map((animePlatform) =>
-    animePlatformResponse(animePlatform),
-  );
-
+  let animePlatforms = [...anime.animePlatforms];
   if (sortBasedOnUserSelectedPlatform) {
     animePlatforms = animePlatforms.sort((a, b) => {
       return animePlatformsBasedOnUserSelectedPlatform(
@@ -237,13 +204,11 @@ export function animeResponseWithRelation(
 
   return {
     ...animeResponse(anime),
-    animePlatforms,
+    animePlatforms: animePlatforms.map((animePlatform) =>
+      animePlatformResponse(animePlatform),
+    ),
     userAnimeList: anime.userAnimeList[0]
-      ? userAnimeListResponse({
-          ...anime.userAnimeList[0],
-          anime: anime,
-          animePlatform: anime.animePlatforms[0] ?? null,
-        })
+      ? userAnimeListResponse({ ...anime.userAnimeList[0] })
       : null,
   };
 }
