@@ -4,9 +4,9 @@ const nukuFont = localFont({
   src: '../fonts/nuku1.ttf',
 })
 
-export default function AppLogo() {
+export default function AppLogo({ className = '' }: { className?: string; }) {
   return (
-    <div className={`${nukuFont.className} text-xl`}>
+    <div className={`${nukuFont.className} text-2xl ${className}`}>
       IngetAnime
     </div>
   )

@@ -35,6 +35,11 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-app-green: var(--app-green);
+  --color-app-gray: var(--app-gray);
+  --color-app-yellow: var(--app-yellow);
+  --color-app-red: var(--app-red);
+  --color-app-blue: var(--app-blue);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -55,8 +60,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #00BC7D;
-  --primary-foreground: #fff;
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -64,6 +69,11 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  --app-green: #00BC7D;
+  --app-gray: #90A1B9;
+  --app-yellow: #F0B100;
+  --app-red: #FB2C36;
+  --app-blue: #2E51A2;
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -126,7 +136,6 @@
   }
   html {
     @apply font-sans;
-    font-size: 16px;
   }
 
   button:not(:disabled),
