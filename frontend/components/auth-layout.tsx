@@ -15,7 +15,7 @@ export default function AuthLayout({
   return (
     <div className="w-full h-full flex">
       <div className="w-full md:w-1/2 xl:justify-end h-full flex items-center justify-center">
-        <div className="w-full flex flex-col justify-center gap-5 sm:px-10 px-5 py-8 md:w-105 xl:mr-30">
+        <div className="w-full flex flex-col justify-center gap-5 sm:px-10 px-5 py-3 md:w-105 xl:mr-30">
           <div className="flex flex-col gap-2 text-center">
             <h1 className="text-2xl font-bold">{title}</h1>
             <p>{subtitle}</p>

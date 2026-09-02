@@ -1,31 +1,28 @@
 import { ReactNode, useId } from "react";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 import { Field, FieldError, FieldLabel } from "./ui/field";
-import { Input } from './ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "./ui/input-otp";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 
-interface InputFieldProps<T extends FieldValues> {
+interface OtpFieldProps<T extends FieldValues> {
   form: {
     control: Control<T>;
   };
   inputName: Path<T>;
   inputId?: string;
   inputLabel?: ReactNode;
-  inputPlaceholder?: string;
-  inputType?: "text" | "number";
   className?: string;
   isRequired?: boolean;
 }
 
-export default function InputField<T extends FieldValues>({
+export default function OtpField<T extends FieldValues>({
   form,
   inputName,
   inputId,
   inputLabel,
-  inputPlaceholder,
-  inputType = "text",
   className = "",
   isRequired = false,
-}: InputFieldProps<T>) {
+}: OtpFieldProps<T>) {
   const id = useId();
   return (
     <Controller
@@ -37,19 +34,23 @@ export default function InputField<T extends FieldValues>({
             {inputLabel}{" "}
             <span className="text-red-500">{isRequired ? "*" : ""}</span>
           </FieldLabel>
-          <Input 
+          <InputOTP
+            maxLength={6}
             {...field}
             id={inputId ?? id}
-            type={inputType}
-            placeholder={inputPlaceholder}
-            aria-invalid={fieldState.invalid}
-            {...(inputType === "number" && {
-              onChange: (e) => field.onChange(parseInt(e.target.value)),
-            })}
-          />
-          {fieldState.invalid && (
-            <FieldError errors={[fieldState.error]} />
-          )}
+            pattern={REGEXP_ONLY_DIGITS}
+          >
+            <InputOTPGroup>
+              {Array.from({ length: 6 }, (_, index) => (
+                <InputOTPSlot
+                  aria-invalid={fieldState.invalid}
+                  key={index}
+                  index={index}
+                />
+              ))}
+            </InputOTPGroup>
+          </InputOTP>
+          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>
       )}
     />

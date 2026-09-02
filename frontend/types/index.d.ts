@@ -1,18 +1,20 @@
-interface ApiResponse<T> {
+import { HttpStatusCode } from 'axios';
+
+export interface ApiResponse<T> {
   message: string;
   data: T;
-  statusCode: number;
+  statusCode: HttpStatusCode;
 }
 
 export interface User {
   id: number;
-  email: string;
+  email: string | null;
   username: string;
   picture: string | null;
   isVerified: boolean;
-  role: string;
+  role: Role;
   malId: number | null;
-  googleId: string | null;
+  googleId: number | null;
   updatedAt: string;
   createdAt: string;
 }

@@ -11,6 +11,7 @@ import { Spinner } from './ui/spinner';
 
 export default function AppProfile({ size }: { size: 'sm' | 'lg' }) {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
+
   return isAuthenticated ? (
     <div className='flex justify-between items-center'>
       <div className="flex flex-col gap-2 md:hidden items-start">
@@ -46,7 +47,7 @@ export default function AppProfile({ size }: { size: 'sm' | 'lg' }) {
   ) : isLoading ? (
     <Button size={'icon'} disabled variant={'outline'}><Spinner /></Button>
   ) : (
-    <Link href={'/auth/login'} className={cn(buttonVariants({ variant: 'default', size: 'default' }))}>
+    <Link href={`/auth`} className={cn(buttonVariants({ variant: 'default', size: 'default' }))}>
       <LogIn data-icon="inline-start" />
       Masuk
     </Link>

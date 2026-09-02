@@ -1,4 +1,5 @@
 import localFont from 'next/font/local'
+import Link from 'next/link';
 
 const nukuFont = localFont({
   src: '../fonts/nuku1.ttf',
@@ -6,8 +7,8 @@ const nukuFont = localFont({
 
 export default function AppLogo({ className = '' }: { className?: string; }) {
   return (
-    <div className={`${nukuFont.className} text-2xl ${className}`}>
+    <Link className={`${nukuFont.className} text-2xl ${className}`} href={'/'}>
       IngetAnime
-    </div>
+    </Link>
   )
 }

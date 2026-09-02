@@ -9,19 +9,22 @@ import {
 import { User } from '../types';
 import userService from '../services/user.service';
 import authService from '../services/auth.service';
-
-interface LoginPayload {
-  identifier: string;
-  password: string;
-}
+import { Role } from '../enums/user.enum';
+import { EmailVerification, ForgotPassword, Login, Register, ResetPassword } from '../validator/auth.validation';
 
 interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   isVerified: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
+  isAdmin: boolean;
+  login: (payload: Login) => Promise<void>;
   logout: () => Promise<void>;
+  register: (payload: Register) => Promise<void>;
+  verifyEmail: (payload: EmailVerification) => Promise<void>;
+  resendVerification: () => Promise<void>;
+  forgotPassword: (payload: ForgotPassword) => Promise<void>;
+  resetPassword: (payload: ResetPassword) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -33,20 +36,18 @@ export function AuthProvider({
 }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isVerified, setIsVerified] = useState(false);
 
   const isAuthenticated = user !== null;
+  const isVerified = user ? user.isVerified : false;
+  const isAdmin = user ? (user.role === Role.admin) : false;
 
   useEffect(() => {
     async function initializeAuth() {
       try {
         const response = await userService.me();
-
         setUser(response.data);
-        setIsVerified(response.data.isVerified);
       } catch {
         setUser(null);
-        setIsVerified(false);
       } finally {
         setIsLoading(false);
       }
@@ -55,11 +56,9 @@ export function AuthProvider({
     initializeAuth();
   }, []);
 
-  async function login(payload: LoginPayload) {
+  async function login(payload: Login) {
     const response = await authService.login(payload);
-
     setUser(response.data);
-    setIsVerified(response.data.isVerified);
   }
 
   async function logout() {
@@ -67,8 +66,30 @@ export function AuthProvider({
       await authService.logout();
     } finally {
       setUser(null);
-      setIsVerified(false);
     }
+  }
+
+  async function register(payload: Register) {
+    const response = await authService.register(payload);
+    setUser(response.data);
+  }
+
+  async function verifyEmail(payload: EmailVerification) {
+    const response = await authService.verifyEmail(payload);
+    setUser(response.data);
+  }
+
+  async function resendVerification() {
+    await authService.resendVerification();
+  }
+
+  async function forgotPassword(payload: ForgotPassword) {
+    await authService.forgotPassword(payload);
+  }
+
+  async function resetPassword(payload: ResetPassword) {
+    const response = await authService.resetPassword(payload);
+    setUser(response.data);
   }
 
   return (
@@ -78,8 +99,14 @@ export function AuthProvider({
         isLoading,
         isAuthenticated,
         isVerified,
+        isAdmin,
         login,
         logout,
+        register,
+        verifyEmail,
+        resendVerification,
+        forgotPassword,
+        resetPassword,
       }}
     >
       {children}

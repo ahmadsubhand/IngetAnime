@@ -1,10 +1,9 @@
-import { BookText, CalendarDays, ChevronDown, Compass, Lightbulb, LogIn, LucideIcon, Search, Trophy } from 'lucide-react';
+import { BookText, CalendarDays, ChevronDown, Compass, Lightbulb, LucideIcon, Search, Trophy } from 'lucide-react';
 import AppLogo from './app-logo';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './ui/input-group';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from './ui/sidebar';
 import Link from 'next/link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from './ui/navigation-menu';
 import AppProfile from './app-profile';
@@ -20,7 +19,7 @@ export function AppSidebar() {
   const menuItems: MenuItem[] = [
     {
       title: 'Timeline',
-      href: '/auth/login',
+      href: '/auth',
       icon: CalendarDays,
     },
     {
@@ -29,24 +28,24 @@ export function AppSidebar() {
       children: [
         {
           title: 'Terbaik',
-          href: '/auth/login',
+          href: '/auth',
           icon: Trophy,
         },
         {
           title: 'Musiman',
-          href: '/auth/login',
+          href: '/auth',
           icon: CalendarDays,
         },
         {
           title: 'Rekomendasi',
-          href: '/auth/login',
+          href: '/auth',
           icon: Lightbulb,
         },
       ],
     },
     {
       title: 'List',
-      href: '/auth/login',
+      href: '/auth',
       icon: BookText,
     },
   ];
