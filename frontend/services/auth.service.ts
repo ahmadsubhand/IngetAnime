@@ -1,6 +1,6 @@
 import api from '../lib/axios';
 import { ApiResponse, User } from '../types';
-import { EmailVerification, ForgotPassword, Login, Register, ResetPassword } from '../validator/auth.validation';
+import { EmailVerification, ForgotPassword, GetAuthUrl, Login, Register, ResetPassword, ThirdPartyLogin } from '../validator/auth.validation';
 
 const prefix = '/auth';
 
@@ -56,6 +56,38 @@ const authService = {
       `${prefix}/reset-password`,
       payload,
     );
+    return data;
+  },
+
+  async getGoogleAuthUrl(payload: GetAuthUrl) {
+    const { data } = await api.get<ApiResponse<{ url: string }>>(
+      `${prefix}/google`,
+      { params: payload },
+    )
+    return data;
+  },
+
+  async loginWithGoogle(payload: ThirdPartyLogin) {
+    const { data } = await api.post<ApiResponse<User>>(
+      `${prefix}/google`,
+      payload
+    )
+    return data;
+  },
+
+  async getMalAuthUrl(payload: GetAuthUrl) {
+    const { data } = await api.get<ApiResponse<{ url: string }>>(
+      `${prefix}/mal`,
+      { params: payload },
+    )
+    return data;
+  },
+
+  async loginWithMal(payload: ThirdPartyLogin) {
+    const { data } = await api.post<ApiResponse<User>>(
+      `${prefix}/mal`,
+      payload
+    )
     return data;
   },
 }

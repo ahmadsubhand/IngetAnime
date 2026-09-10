@@ -10,7 +10,7 @@ import { User } from '../types';
 import userService from '../services/user.service';
 import authService from '../services/auth.service';
 import { Role } from '../enums/user.enum';
-import { EmailVerification, ForgotPassword, Login, Register, ResetPassword } from '../validator/auth.validation';
+import { EmailVerification, ForgotPassword, Login, Register, ResetPassword, ThirdPartyLogin } from '../validator/auth.validation';
 
 interface AuthContextValue {
   user: User | null;
@@ -25,6 +25,8 @@ interface AuthContextValue {
   resendVerification: () => Promise<void>;
   forgotPassword: (payload: ForgotPassword) => Promise<void>;
   resetPassword: (payload: ResetPassword) => Promise<void>;
+  loginWithGoogle: (payload: ThirdPartyLogin) => Promise<void>;
+  loginWithMal: (payload: ThirdPartyLogin) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -92,6 +94,16 @@ export function AuthProvider({
     setUser(response.data);
   }
 
+  async function loginWithGoogle(payload: ThirdPartyLogin) {
+    const response = await authService.loginWithGoogle(payload);
+    setUser(response.data);
+  }
+
+  async function loginWithMal(payload: ThirdPartyLogin) {
+    const response = await authService.loginWithMal(payload);
+    setUser(response.data);
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -107,6 +119,8 @@ export function AuthProvider({
         resendVerification,
         forgotPassword,
         resetPassword,
+        loginWithGoogle,
+        loginWithMal,
       }}
     >
       {children}

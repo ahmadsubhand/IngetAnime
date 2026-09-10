@@ -10,9 +10,9 @@ import { LogIn } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import { Button, buttonVariants } from '../../../components/ui/button';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAuth } from '../../../providers/auth-provider';
 import { Spinner } from '../../../components/ui/spinner';
+import ThirdPartyAuth from '../../../components/third-party-auth';
 
 export default function RegisterPage() {
   const form = useForm<Register>({
@@ -86,15 +86,6 @@ export default function RegisterPage() {
       </Link>
     </p>
 
-    <div className="flex gap-5 w-full">
-      <Button variant={'outline'} className={'flex-1'}>
-        <Image src={'/google.png'} alt='google logo' width={16} height={16} />
-        Google
-      </Button>
-      <Button variant={'ghost'} className={`flex-1 bg-app-blue hover:text-white hover:bg-app-blue text-white [&_svg:not([class*='size-'])]:size-6`}>
-        <Image src={'/mal.png'} alt='google logo' width={24} height={24} />
-        MyAnimeList
-      </Button>
-    </div>
+    <ThirdPartyAuth />
   </AuthLayout>
 }
