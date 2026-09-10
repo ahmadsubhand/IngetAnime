@@ -11,6 +11,10 @@ import { Spinner } from '../../../components/ui/spinner';
 import InputField from '../../../components/input-field';
 import { useSearchParams } from 'next/navigation';
 import PasswordField from '../../../components/password-field';
+import axios, { HttpStatusCode } from 'axios';
+import { ApiValidationError } from '../../../types';
+import { toast } from '../../../components/ui/toast';
+import { useResendCountdown } from '../../../hooks/use-resend-countdown';
 
 export default function ForgotPasswordPage() {
   const { forgotPassword, resetPassword } = useAuth();
@@ -23,8 +27,46 @@ export default function ForgotPasswordPage() {
       identifier: '',
     }
   });
+
+  const { seconds, canResend, start } = useResendCountdown(90, 'canRequestForgotPasswordIn');
+
   async function onSubmitForgotPassword(data: ForgotPassword) {
-    await forgotPassword(data);
+    try {
+      if (!canResend) return;
+      const response = await forgotPassword(data);
+      start();
+      toast.add({
+        type: 'success',
+        description: `Tautan reset password telah dikirim ke ${response.data.email}`,
+      })
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        if (error.status === HttpStatusCode.BadRequest) {
+          const zodErrors = error.response.data as ApiValidationError;
+          zodErrors.error.forEach((issue) => {
+            const field = issue.path[0] as keyof ForgotPassword;
+            formForgotPassword.setError(field, {
+              message: issue.message,
+            });
+          });
+          return;
+        } else if (error.status === HttpStatusCode.NotFound) {
+          formForgotPassword.setValues({ identifier: '' });
+          formForgotPassword.setError('identifier', { message: 'Username atau email tidak ditemukan' });
+          return;
+        } else if (error.status === HttpStatusCode.TooManyRequests) {
+          toast.add({
+            type: 'error',
+            description: 'Terlalu banyak percobaan. Silakan coba lagi beberapa saat lagi.',
+          })
+          return;
+        }
+      }
+      toast.add({
+        type: 'error',
+        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+      })
+    }
   }
 
   // Reset Password
@@ -39,9 +81,29 @@ export default function ForgotPasswordPage() {
       confirmPassword: '',
     }
   })
+
   async function onSubmitResetPassword(data: ResetPassword) {
     if (!token) return;
-    await resetPassword(data)
+    try {
+      await resetPassword(data)
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        if (error.status === HttpStatusCode.BadRequest) {
+          const zodErrors = error.response.data as ApiValidationError;
+          zodErrors.error.forEach((issue) => {
+            const field = issue.path[0] as keyof ResetPassword;
+            formResetPassword.setError(field, {
+              message: issue.message,
+            });
+          });
+          return;
+        }
+      }
+      toast.add({
+        type: 'error',
+        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+      })
+    }
   }
 
   return <AuthLayout title={token ? 'Reset Password' : 'Lupa Password'} subtitle={<>
@@ -86,9 +148,9 @@ export default function ForgotPasswordPage() {
           />
         </div>
 
-        <Button type={'submit'} disabled={formForgotPassword.formState.isSubmitting}>
+        <Button type={'submit'} disabled={!canResend || formForgotPassword.formState.isSubmitting}>
           {formForgotPassword.formState.isSubmitting ? <Spinner data-icon="inline-start" /> : <Send data-icon="inline-start" />} 
-          Kirim Tautan
+          Kirim tautan {!canResend ? ` ulang dalam ${seconds} detik` : ''}
         </Button>
       </form>
     )}

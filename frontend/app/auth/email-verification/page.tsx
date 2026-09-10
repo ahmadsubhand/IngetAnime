@@ -11,6 +11,9 @@ import { Spinner } from '../../../components/ui/spinner';
 import OtpField from '../../../components/otp-field';
 import { useResendCountdown } from '../../../hooks/use-resend-countdown';
 import { useState } from 'react';
+import axios, { HttpStatusCode } from 'axios';
+import { ApiValidationError } from '../../../types';
+import { toast } from '../../../components/ui/toast';
 
 export default function EmailVerificationPage() {
   const form = useForm<EmailVerification>({
@@ -22,17 +25,69 @@ export default function EmailVerificationPage() {
   })
   const { verifyEmail, resendVerification } = useAuth();
   async function onSubmit(data: EmailVerification) {
-    await verifyEmail(data)
+    try {
+      await verifyEmail(data)
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        if (error.status === HttpStatusCode.BadRequest) {
+          const zodErrors = error.response.data as ApiValidationError;
+          zodErrors.error.forEach((issue) => {
+            const field = issue.path[0] as keyof EmailVerification;
+            form.setError(field, {
+              message: issue.message,
+            });
+          });
+          return;
+        } else if (error.status === HttpStatusCode.NotFound) {
+          form.setValues({
+            otpCode: '',
+          })
+          form.setError('otpCode', { message: 'Kode OTP salah' });
+          return;
+        } else if (error.status === HttpStatusCode.Gone) {
+          form.setValues({
+            otpCode: '',
+          })
+          form.setError('otpCode', { message: 'Kode OTP sudah kedaluwarsa' });
+          return;
+        }
+      }
+      toast.add({
+        type: 'error',
+        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+      })
+    }
   }
 
   const { seconds, canResend, start } = useResendCountdown(90);
   const [isLoading, setIsLoading] = useState(false);
   async function resend() {
-    setIsLoading(true);
-    if (!canResend) return;
-    await resendVerification();
-    start();
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      if (!canResend) return;
+      const response = await resendVerification();
+      start();
+      toast.add({
+        type: 'success',
+        description: `Tautan verifikasi akun telah dikirim ke ${response.data.email}`,
+      })
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        if (error.status === HttpStatusCode.TooManyRequests) {
+          toast.add({
+            type: 'error',
+            description: 'Terlalu banyak percobaan. Silakan coba lagi beberapa saat lagi.',
+          })
+          return;
+        }
+      }
+      toast.add({
+        type: 'error',
+        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+      })
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return <AuthLayout title='Verifikasi Email' subtitle={<>

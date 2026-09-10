@@ -1,6 +1,6 @@
 import { ReactNode, useId } from "react";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
-import { Field, FieldError, FieldLabel } from "./ui/field";
+import { Field, FieldDescription, FieldLabel } from "./ui/field";
 import { Input } from './ui/input';
 
 interface InputFieldProps<T extends FieldValues> {
@@ -10,6 +10,7 @@ interface InputFieldProps<T extends FieldValues> {
   inputName: Path<T>;
   inputId?: string;
   inputLabel?: ReactNode;
+  inputDescription?: string;
   inputPlaceholder?: string;
   inputType?: "text" | "number";
   className?: string;
@@ -21,6 +22,7 @@ export default function InputField<T extends FieldValues>({
   inputName,
   inputId,
   inputLabel,
+  inputDescription,
   inputPlaceholder,
   inputType = "text",
   className = "",
@@ -47,8 +49,10 @@ export default function InputField<T extends FieldValues>({
               onChange: (e) => field.onChange(parseInt(e.target.value)),
             })}
           />
-          {fieldState.invalid && (
-            <FieldError errors={[fieldState.error]} />
+          {(fieldState.invalid || inputDescription) && (
+            <FieldDescription className={fieldState.invalid ? 'text-destructive' : ''}>
+              {fieldState.error?.message || inputDescription}
+            </FieldDescription>
           )}
         </Field>
       )}

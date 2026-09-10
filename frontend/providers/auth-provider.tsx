@@ -6,7 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { User } from '../types';
+import { ApiResponse, User } from '../types';
 import userService from '../services/user.service';
 import authService from '../services/auth.service';
 import { Role } from '../enums/user.enum';
@@ -22,8 +22,8 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   register: (payload: Register) => Promise<void>;
   verifyEmail: (payload: EmailVerification) => Promise<void>;
-  resendVerification: () => Promise<void>;
-  forgotPassword: (payload: ForgotPassword) => Promise<void>;
+  resendVerification: () => Promise<ApiResponse<{ email: string }>>;
+  forgotPassword: (payload: ForgotPassword) => Promise<ApiResponse<{ email: string; username: string }>>;
   resetPassword: (payload: ResetPassword) => Promise<void>;
   loginWithGoogle: (payload: ThirdPartyLogin) => Promise<void>;
   loginWithMal: (payload: ThirdPartyLogin) => Promise<void>;
@@ -82,11 +82,11 @@ export function AuthProvider({
   }
 
   async function resendVerification() {
-    await authService.resendVerification();
+    return await authService.resendVerification();
   }
 
   async function forgotPassword(payload: ForgotPassword) {
-    await authService.forgotPassword(payload);
+    return await authService.forgotPassword(payload);;
   }
 
   async function resetPassword(payload: ResetPassword) {

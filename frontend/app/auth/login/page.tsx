@@ -13,6 +13,9 @@ import Link from 'next/link';
 import { useAuth } from '../../../providers/auth-provider';
 import { Spinner } from '../../../components/ui/spinner';
 import ThirdPartyAuth from '../../../components/third-party-auth';
+import axios, { HttpStatusCode } from 'axios';
+import { ApiValidationError } from '../../../types';
+import { toast } from '../../../components/ui/toast';
 
 export default function LoginPage() {
   const form = useForm<Login>({
@@ -27,7 +30,34 @@ export default function LoginPage() {
   const { login } = useAuth();
 
   async function onSubmit(data: Login) {
-    await login(data)
+    try {
+      await login(data)
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        if (error.status === HttpStatusCode.BadRequest) {
+          const zodErrors = error.response.data as ApiValidationError;
+          zodErrors.error.forEach((issue) => {
+            const field = issue.path[0] as keyof Login;
+            form.setError(field, {
+              message: issue.message,
+            });
+          });
+          return;
+        } else if (error.status === HttpStatusCode.NotFound) {
+          form.setValues({
+            identifier: '',
+            password: '',
+          })
+          form.setError('identifier', { message: 'Username, email, atau password salah' });
+          form.setError('password', { message: 'Username, email, atau password salah' });
+          return;
+        }
+      }
+      toast.add({
+        type: 'error',
+        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+      })
+    }
   }
 
   return <AuthLayout title='Masuk' subtitle={<>

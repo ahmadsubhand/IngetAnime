@@ -9,6 +9,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '
 import { Search } from 'lucide-react';
 import { AuthProvider } from '../providers/auth-provider';
 import AppProfile from '../components/app-profile';
+import { Toaster } from '../components/ui/toast';
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <main className='w-full h-full'>
                 {children}
               </main>
+              <Toaster />
             </div>
           </SidebarProvider>
         </AuthProvider>
