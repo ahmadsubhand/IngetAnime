@@ -1,7 +1,6 @@
 "use client"
 
 import { useForm, useWatch } from 'react-hook-form';
-import AuthLayout from '../../../components/auth-layout';
 import { AuthValidation, Register } from '../../../validator/auth.validation';
 import { zodResolver } from "@hookform/resolvers/zod"
 import InputField from '../../../components/input-field';
@@ -18,6 +17,7 @@ import { ApiValidationError } from '../../../types';
 import { toast } from '../../../components/ui/toast';
 import { useEffect, useState } from 'react';
 import userService from '../../../services/user.service';
+import AppTitle from '../../../components/app-title';
 
 export default function RegisterPage() {
   const form = useForm<Register>({
@@ -125,11 +125,13 @@ export default function RegisterPage() {
     return () => clearTimeout(delayDebounceFn);
   }, [emailVal, form]);
 
-  return <AuthLayout title='Daftar' subtitle={<>
-    Cari tempat nonton anime terbaik?
-    <br />
-    Yuk eksplor disini!
-  </>}>
+  return <>
+    <AppTitle title='Daftar' subtitle={<>
+      Cari tempat nonton anime terbaik?
+      <br />
+      Yuk eksplor disini!
+    </>} />
+
     <form onSubmit={form.handleSubmit(onSubmit)} className='w-full flex flex-col gap-5'>
       <div className="flex flex-col gap-3 w-full">
         <InputField
@@ -182,5 +184,5 @@ export default function RegisterPage() {
     </p>
 
     <ThirdPartyAuth />
-  </AuthLayout>
+  </>
 }

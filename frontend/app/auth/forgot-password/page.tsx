@@ -1,7 +1,6 @@
 "use client"
 
 import { useForm } from 'react-hook-form';
-import AuthLayout from '../../../components/auth-layout';
 import { AuthValidation, ForgotPassword, ResetPassword } from '../../../validator/auth.validation';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Key, Send } from 'lucide-react';
@@ -15,6 +14,7 @@ import axios, { HttpStatusCode } from 'axios';
 import { ApiValidationError } from '../../../types';
 import { toast } from '../../../components/ui/toast';
 import { useResendCountdown } from '../../../hooks/use-resend-countdown';
+import AppTitle from '../../../components/app-title';
 
 export default function ForgotPasswordPage() {
   const { forgotPassword, resetPassword } = useAuth();
@@ -106,9 +106,11 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  return <AuthLayout title={token ? 'Reset Password' : 'Lupa Password'} subtitle={<>
-    Jangan takut akunmu hilang, kami akan bantu!
-  </>}>
+  return <>
+    <AppTitle title={token ? 'Reset Password' : 'Lupa Password'} subtitle={<>
+      Jangan takut akunmu hilang, kami akan bantu!
+    </>} />
+
     {token ? (
       <form onSubmit={formResetPassword.handleSubmit(onSubmitResetPassword)} className='w-full flex flex-col gap-5'>
         <div className="flex flex-col gap-3 w-full">
@@ -154,5 +156,5 @@ export default function ForgotPasswordPage() {
         </Button>
       </form>
     )}
-  </AuthLayout>
+  </>
 }

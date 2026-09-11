@@ -1,7 +1,6 @@
 "use client"
 
 import { useForm } from 'react-hook-form';
-import AuthLayout from '../../../components/auth-layout';
 import { AuthValidation, EmailVerification } from '../../../validator/auth.validation';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { BadgeCheck } from 'lucide-react';
@@ -14,6 +13,7 @@ import { useState } from 'react';
 import axios, { HttpStatusCode } from 'axios';
 import { ApiValidationError } from '../../../types';
 import { toast } from '../../../components/ui/toast';
+import AppTitle from '../../../components/app-title';
 
 export default function EmailVerificationPage() {
   const form = useForm<EmailVerification>({
@@ -90,9 +90,11 @@ export default function EmailVerificationPage() {
     }
   }
 
-  return <AuthLayout title='Verifikasi Email' subtitle={<>
-    Verifikasi akunmu untuk menikmati lebih banyak fitur!
-  </>}>
+  return <>
+    <AppTitle title='Verifikasi Email' subtitle={<>
+      Verifikasi akunmu untuk menikmati lebih banyak fitur!
+    </>} />
+
     <form onSubmit={form.handleSubmit(onSubmit)} className='w-full flex flex-col gap-5'>
       <div className="flex flex-col gap-3 w-fit self-center">
         <OtpField
@@ -115,5 +117,5 @@ export default function EmailVerificationPage() {
         Verifikasi
       </Button>
     </form>
-  </AuthLayout>
+  </>
 }

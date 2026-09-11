@@ -28,17 +28,17 @@ export function AppSidebar() {
       children: [
         {
           title: 'Terbaik',
-          href: '/auth',
+          href: '/exploration/best',
           icon: Trophy,
         },
         {
           title: 'Musiman',
-          href: '/auth',
+          href: '/exploration/seasonal',
           icon: CalendarDays,
         },
         {
           title: 'Rekomendasi',
-          href: '/auth',
+          href: '/exploration/recommendation',
           icon: Lightbulb,
         },
       ],

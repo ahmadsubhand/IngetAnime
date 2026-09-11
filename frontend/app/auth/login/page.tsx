@@ -1,7 +1,6 @@
 "use client"
 
 import { useForm } from 'react-hook-form';
-import AuthLayout from '../../../components/auth-layout';
 import { AuthValidation, Login } from '../../../validator/auth.validation';
 import { zodResolver } from "@hookform/resolvers/zod"
 import InputField from '../../../components/input-field';
@@ -16,6 +15,7 @@ import ThirdPartyAuth from '../../../components/third-party-auth';
 import axios, { HttpStatusCode } from 'axios';
 import { ApiValidationError } from '../../../types';
 import { toast } from '../../../components/ui/toast';
+import AppTitle from '../../../components/app-title';
 
 export default function LoginPage() {
   const form = useForm<Login>({
@@ -60,11 +60,13 @@ export default function LoginPage() {
     }
   }
 
-  return <AuthLayout title='Masuk' subtitle={<>
-    Tempat nonton anime makin banyak nih.
-    <br />
-    Yuk eksplor lagi!
-  </>}>
+  return <>
+    <AppTitle title='Masuk' subtitle={<>
+      Tempat nonton anime makin banyak nih.
+      <br />
+      Yuk eksplor lagi!
+    </>} />
+
     <form onSubmit={form.handleSubmit(onSubmit)} className='w-full flex flex-col gap-5'>
       <div className="flex flex-col gap-3 w-full">
         <InputField
@@ -103,5 +105,5 @@ export default function LoginPage() {
     </p>
 
     <ThirdPartyAuth />
-  </AuthLayout>
+  </>
 }
