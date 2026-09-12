@@ -48,7 +48,7 @@ export class MyAnimeListService {
     });
     this.CLIENT_ID = config.getOrThrow('MAL_CLIENT_ID');
     this.CLIENT_SECRET = config.getOrThrow('MAL_CLIENT_SECRET');
-    this.REDIRECT_URI = `${config.getOrThrow('CLIENT_URL')}/auth/mal/callback`;
+    this.REDIRECT_URI = `${config.getOrThrow('CLIENT_URL')}/auth/third-party-login`;
   }
 
   generateAuthUrl(state: string): string {

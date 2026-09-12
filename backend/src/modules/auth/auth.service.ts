@@ -141,7 +141,7 @@ export class AuthService {
         },
       });
       if (!user) {
-        throw new BadRequestException('Invalid otp code or account');
+        throw new NotFoundException('Invalid otp code or account');
       }
 
       const isOTPExpired = dayjs().isAfter(dayjs(user.otpExpiration));

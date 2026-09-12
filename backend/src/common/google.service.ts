@@ -12,7 +12,7 @@ export class GoogleService {
       client_id: config.getOrThrow('GOOGLE_CLIENT_ID'),
       client_secret: config.getOrThrow('GOOGLE_CLIENT_SECRET'),
       redirect_uris: [
-        `${config.getOrThrow('CLIENT_URL')}/auth/google/callback`,
+        `${config.getOrThrow('CLIENT_URL')}/auth/third-party-login`,
       ],
     });
   }
