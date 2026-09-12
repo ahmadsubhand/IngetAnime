@@ -3,7 +3,7 @@ import z from 'zod';
 export class UserValidation {
 
   public static readonly CHECK_EMAIL = z.object({
-    email: z.string().email(),
+    email: z.email(),
   });
 
   public static readonly CHECK_USERNAME = z.object({

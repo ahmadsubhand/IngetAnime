@@ -19,15 +19,9 @@ export interface ApiValidationError {
   statusCode: HttpStatusCode;
 }
 
-export interface User {
-  id: number;
-  email: string | null;
-  username: string;
-  picture: string | null;
-  isVerified: boolean;
-  role: Role;
-  malId: number | null;
-  googleId: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
+export type ApiPagination = {
+  paging: {
+    prev: string | null;
+    next: string | null;
+  } | null;
+};

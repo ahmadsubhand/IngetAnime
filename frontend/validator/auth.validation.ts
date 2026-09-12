@@ -28,7 +28,6 @@ export class AuthValidation {
   static readonly REGISTER = z
     .object({
       email: z
-        .string()
         .email('Format email tidak valid')
         .nonempty('Wajib diisi'),
 

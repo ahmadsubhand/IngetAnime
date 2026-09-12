@@ -6,11 +6,12 @@ import {
   useEffect,
   useState,
 } from "react";
-import { ApiResponse, User } from '../types';
+import { ApiResponse } from '../types';
 import userService from '../services/user.service';
 import authService from '../services/auth.service';
-import { Role } from '../enums/user.enum';
 import { EmailVerification, ForgotPassword, Login, Register, ResetPassword, ThirdPartyLogin } from '../validator/auth.validation';
+import { User } from '../types/user.model';
+import { Role } from '../enums';
 
 interface AuthContextValue {
   user: User | null;

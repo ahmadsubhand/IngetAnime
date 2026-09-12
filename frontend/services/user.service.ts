@@ -1,5 +1,6 @@
 import api from '../lib/axios';
-import { ApiResponse, User } from '../types';
+import { ApiResponse } from '../types';
+import { User } from '../types/user.model';
 import { CheckEmail, CheckUsername } from '../validator/user.validation';
 
 const prefix = '/user';
