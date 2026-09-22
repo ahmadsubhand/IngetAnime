@@ -33,3 +33,36 @@ export const AccessType = {
 } as const
 
 export type AccessType = (typeof AccessType)[keyof typeof AccessType]
+
+
+export const RankingType = {
+  all: 'all',
+  airing: 'airing',
+  upcoming: 'upcoming',
+  tv: 'tv',
+  ova: 'ova',
+  movie: 'movie',
+  special: 'special',
+  bypopularity: 'bypopularity',
+  favorite: 'favorite',
+} as const;
+
+export type RankingType = (typeof RankingType)[keyof typeof RankingType]
+
+
+export const Sort = {
+  anime_score: 'anime_score',
+  anime_num_list_users: 'anime_num_list_users',
+} as const;
+
+export type Sort = (typeof Sort)[keyof typeof Sort]
+
+
+export const Season = {
+  winter: 'winter',
+  spring: 'spring',
+  summer: 'summer',
+  fall: 'fall',
+} as const;
+
+export type Season = (typeof Season)[keyof typeof Season]

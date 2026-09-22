@@ -10,6 +10,7 @@ import { Search } from 'lucide-react';
 import { AuthProvider } from '../providers/auth-provider';
 import AppProfile from '../components/app-profile';
 import { Toaster } from '../components/ui/toast';
+import { TooltipProvider } from '../components/ui/tooltip';
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -37,29 +38,31 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <AuthProvider>
           <SidebarProvider defaultOpen={false}>
-            <div className='w-full flex flex-col'>
-              <header className='pr-4 py-4 w-full flex justify-between'>
-                <SidebarTrigger className={'md:hidden'}/>
-                <AppLogo className='pl-2' />
-                <InputGroup className='ml-5 md:max-w-100'>
-                  <InputGroupInput placeholder='Cari anime ...' />
-                  <InputGroupAddon align={'inline-end'}>
-                    <InputGroupButton><Search /></InputGroupButton>
-                  </InputGroupAddon>
-                </InputGroup>
+            <TooltipProvider>
+              <div className='w-full flex flex-col'>
+                <header className='pr-4 py-4 w-full flex justify-between'>
+                  <SidebarTrigger className={'md:hidden'}/>
+                  <AppLogo className='pl-2' />
+                  <InputGroup className='ml-5 md:max-w-100'>
+                    <InputGroupInput placeholder='Cari anime ...' />
+                    <InputGroupAddon align={'inline-end'}>
+                      <InputGroupButton><Search /></InputGroupButton>
+                    </InputGroupAddon>
+                  </InputGroup>
 
-                <div className="flex gap-6">
-                  <AppSidebar />
-                  <div className="hidden md:block">
-                    <AppProfile size='sm' />
+                  <div className="flex gap-6">
+                    <AppSidebar />
+                    <div className="hidden md:block">
+                      <AppProfile size='sm' />
+                    </div>
                   </div>
-                </div>
-              </header>
-              <main className='w-full h-full'>
-                {children}
-              </main>
-              <Toaster />
-            </div>
+                </header>
+                <main className='w-full h-full'>
+                  {children}
+                </main>
+                <Toaster />
+              </div>
+            </TooltipProvider>
           </SidebarProvider>
         </AuthProvider>
       </body>
