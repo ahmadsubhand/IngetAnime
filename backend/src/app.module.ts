@@ -10,6 +10,8 @@ import { AnimeExplorationModule } from './modules/anime-exploration/anime-explor
 import { UserModule } from './modules/user/user.module';
 import { MyAnimeListModule } from './modules/my-anime-list/my-anime-list.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -23,6 +25,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     UserModule, // /user
     MyAnimeListModule, // /mal
     ScheduleModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
   ],
   controllers: [AppController],
 })

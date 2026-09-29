@@ -144,8 +144,12 @@ model Link {
 }
 
 model Platform {
-  id   Int    @id @default(autoincrement())
-  name String @unique
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  icon   String
+  width  Int
+  height Int
+  ratio  Float
 
   animePlatforms AnimePlatform[]
   links          Link[]

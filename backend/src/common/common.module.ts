@@ -60,7 +60,7 @@ import { ModelPaginationService } from './model-pagination.service';
           from: config.getOrThrow('MAILER_USER'),
         },
         template: {
-          dir: join(__dirname, '..', '..', 'templates'),
+          dir: join(__dirname, '..', '..', '..', 'templates'),
           adapter: new EjsAdapter(),
         },
       }),

@@ -8,7 +8,9 @@ import {
   Param,
   Post,
   Put,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiResponse } from '../../types';
 import { Platform } from './platform.model';
@@ -19,6 +21,7 @@ import { PlatformService } from './platform.service';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
 import { SkipThrottle } from '@nestjs/throttler';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller()
 export class PlatformController {
@@ -28,11 +31,13 @@ export class PlatformController {
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard)
   @Role('admin')
+  @UseInterceptors(FileInterceptor('icon'))
   async createPlatform(
     @Body(new ZodValidationPipe(PlatformValidation.PLATFORM_NAME))
     data: PlatformName,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<ApiResponse<Platform>> {
-    const platform = await this.service.createPlatform(data);
+    const platform = await this.service.createPlatform(data, file);
     return {
       message: 'Create platform successfully',
       data: platform,
@@ -59,13 +64,15 @@ export class PlatformController {
   @UseGuards(AuthGuard)
   @Role('admin')
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('icon'))
   async updatePlatform(
     @Param(new ZodValidationPipe(PlatformValidation.PLATFORM_ID))
     param: PlatformId,
     @Body(new ZodValidationPipe(PlatformValidation.PLATFORM_NAME))
     data: PlatformName,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<ApiResponse<Platform>> {
-    const platform = await this.service.updatePlatform(param.id, data);
+    const platform = await this.service.updatePlatform(param.id, data, file);
     return {
       message: 'Update platform successfully',
       data: platform,
@@ -80,7 +87,7 @@ export class PlatformController {
   async deletePlatform(
     @Param(new ZodValidationPipe(PlatformValidation.PLATFORM_ID))
     data: PlatformId,
-  ): Promise<ApiResponse<Platform>> {
+  ): Promise<ApiResponse<{ id: number; name: string }>> {
     const platform = await this.service.deletePlatform(data.id);
     return {
       message: 'Delete platform successfully',

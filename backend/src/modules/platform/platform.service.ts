@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -7,15 +8,44 @@ import { PrismaService } from '../../common/prisma.service';
 import { Platform } from './platform.model';
 import type { PlatformName } from './platform.validation';
 import { Prisma } from '../../generated/prisma/client';
+import sizeOf from 'image-size';
+import { deleteLocalFile, saveLocalFile } from '../../utils/local-file-storage';
 
 @Injectable()
 export class PlatformService {
+  private ICON_FOLDER_PATH = 'platforms';
+
   constructor(private prisma: PrismaService) {}
 
-  async createPlatform(data: PlatformName): Promise<Platform> {
+  async createPlatform(
+    data: PlatformName,
+    file?: Express.Multer.File,
+  ): Promise<Platform> {
     try {
+      if (!file) {
+        throw new BadRequestException('Platform icon is required');
+      }
+      if (!file.mimetype.startsWith('image/')) {
+        throw new BadRequestException('Only image files are allowed');
+      }
+
+      const dimensions = sizeOf(file.buffer);
+      const width = dimensions.width;
+      const height = dimensions.height;
+      if (!width || !height) {
+        throw new BadRequestException('Failed to calculate image dimensions');
+      }
+      const ratio = width / height;
+      const iconUrl = saveLocalFile(this.ICON_FOLDER_PATH, data.name, file);
+
       const platform = await this.prisma.platform.create({
-        data,
+        data: {
+          name: data.name,
+          icon: iconUrl,
+          width,
+          height,
+          ratio,
+        },
       });
       return platform;
     } catch (error) {
@@ -45,15 +75,65 @@ export class PlatformService {
   async updatePlatform(
     platformId: number,
     data: PlatformName,
+    file?: Express.Multer.File,
   ): Promise<Platform> {
     try {
-      const platform = await this.prisma.platform.update({
-        where: {
-          id: platformId,
-        },
-        data,
-      });
-      return platform;
+      if (file) {
+        const existingPlatform = await this.prisma.platform.findUnique({
+          where: {
+            id: platformId,
+          },
+          select: {
+            id: true,
+            icon: true,
+          },
+        });
+        if (!existingPlatform) {
+          throw new NotFoundException('Platform not found');
+        }
+
+        if (!file.mimetype.startsWith('image/')) {
+          throw new BadRequestException('Only image files are allowed');
+        }
+        const dimensions = sizeOf(file.buffer);
+        const width = dimensions.width;
+        const height = dimensions.height;
+        if (!width || !height) {
+          throw new BadRequestException('Failed to calculate image dimensions');
+        }
+        const ratio = width / height;
+
+        const newIconUrl = saveLocalFile(
+          this.ICON_FOLDER_PATH,
+          data.name,
+          file,
+        );
+
+        const platform = await this.prisma.platform.update({
+          where: {
+            id: platformId,
+          },
+          data: {
+            name: data.name,
+            icon: newIconUrl,
+            width,
+            height,
+            ratio,
+          },
+        });
+
+        deleteLocalFile(existingPlatform.icon);
+
+        return platform;
+      } else {
+        const platform = await this.prisma.platform.update({
+          where: {
+            id: platformId,
+          },
+          data: data,
+        });
+        return platform;
+      }
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError)
         if (error.code === 'P2002') {
@@ -66,13 +146,16 @@ export class PlatformService {
     }
   }
 
-  async deletePlatform(platformId: number): Promise<Platform> {
+  async deletePlatform(
+    platformId: number,
+  ): Promise<{ id: number; name: string }> {
     try {
       const platform = await this.prisma.platform.delete({
         where: {
           id: platformId,
         },
       });
+      deleteLocalFile(platform.icon);
       return platform;
     } catch (error) {
       if (

@@ -85,6 +85,6 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger on AnimePlatform
 CREATE TRIGGER trg_ap_remaining
-AFTER UPDATE OF episode_aired, is_main_platform, platform_id
+AFTER INSERT OR UPDATE OF episode_aired, is_main_platform, platform_id
 ON anime_platform
 FOR EACH ROW EXECUTE FUNCTION compute_remaining_watchable_from_platform();
