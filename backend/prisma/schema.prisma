@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  user
+}
+
+enum ListStatus {
+  watching
+  completed
+  plan_to_watch
+  on_hold
+  dropped
+}
+
+enum AnimeStatus {
+  currently_airing
+  finished_airing
+  not_yet_aired
+}
+
+enum AccessType {
+  limited_time
+  subscription
+  free
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  username  String   @unique
+  picture   String?
+  role      Role     @default(user)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  email         String?   @unique // MyAnimeList OAuth doesn't have email
+  password      String? // OAuth doesn't need password
+  otpCode       String?   @map("otp_code")
+  otpExpiration DateTime? @map("otp_expiration")
+  isVerified    Boolean   @default(false) @map("is_verified")
+
+  googleId        String? @unique @map("google_id")
+  malId           String? @unique @map("mal_id")
+  malAccessToken  String? @unique @map("mal_access_token")
+  malRefreshToken String? @unique @map("mal_refresh_token")
+
+  userAnimeList UserAnimeList[]
+
+  @@map("users")
+}
+
+model UserAnimeList {
+  id              Int  @id @default(autoincrement())
+  userId          Int  @map("user_id")
+  animeId         Int  @map("anime_id")
+  animePlatformId Int? @map("anime_platform_id") // User selected platform
+
+  startDate                  DateTime?  @map("start_date")
+  finishDate                 DateTime?  @map("finish_date")
+  progress                   Int        @default(0)
+  score                      Int        @default(0)
+  episodesDifference         Int        @default(0) @map("episodes_difference") // Example: Bstation free user
+  status                     ListStatus @default(plan_to_watch)
+  isSyncedWithMal            Boolean    @default(false)
+  updatedAt                  DateTime   @updatedAt @map("updated_at")
+  remainingWatchableEpisodes Int?       @map("remaining_watchable_episodes") // auto fill by db trigger
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anime         Anime          @relation(fields: [animeId], references: [id], onDelete: Cascade)
+  animePlatform AnimePlatform? @relation(fields: [animePlatformId], references: [id])
+
+  @@unique([userId, animeId])
+  @@map("user_anime_list")
+}
+
+model Anime {
+  id Int @id @default(autoincrement())
+
+  malId        Int         @unique @map("mal_id")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  picture      String
+  title        String
+  titleID      String?     @map("title_id")
+  titleEN      String?     @map("title_en")
+  releaseAt    DateTime?   @map("release_at")
+  episodeTotal Int         @default(0) @map("episode_total")
+  status       AnimeStatus @default(not_yet_aired)
+
+  animePlatforms AnimePlatform[]
+  userAnimeList  UserAnimeList[]
+
+  @@map("anime")
+}
+
+model AnimePlatform {
+  id         Int @id @default(autoincrement())
+  animeId    Int @map("anime_id")
+  platformId Int @map("platform_id")
+  // each anime only have one link in every platform
+  linkId     Int @map("link_id")
+  // MyAnimeList seperate each anime part to different entity while some platform merge all part to one entity
+
+  accessType          AccessType @map("access_type")
+  nextEpisodeAiringAt DateTime?  @map("next_episode_airing_at")
+  lastEpisodeAiredAt  DateTime?  @map("last_episode_aired_at")
+  intervalInDays      Int        @default(7) @map("interval_in_days")
+  episodeAired        Int        @default(0) @map("episode_aired")
+  isMainPlatform      Boolean    @default(false) @map("is_main_platform")
+  isHiatus            Boolean    @default(false) @map("is_hiatus")
+
+  anime         Anime           @relation(fields: [animeId], references: [id], onDelete: Cascade)
+  platform      Platform        @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  link          Link            @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  userAnimeList UserAnimeList[]
+
+  @@unique([platformId, animeId])
+  @@map("anime_platform")
+}
+
+model Link {
+  id         Int    @id @default(autoincrement())
+  platformId Int    @map("platform_id")
+  url        String @unique
+
+  platform       Platform        @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  animePlatforms AnimePlatform[]
+
+  @@map("links")
+}
+
+model Platform {
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  icon   String
+  width  Int
+  height Int
+  ratio  Float
+
+  animePlatforms AnimePlatform[]
+  links          Link[]
+
+  @@map("platforms")
+}
