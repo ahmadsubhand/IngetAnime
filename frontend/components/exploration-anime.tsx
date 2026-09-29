@@ -12,8 +12,10 @@ import { UserAnimeList } from '../types/user-anime-list.model';
 import dayjs from 'dayjs';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Skeleton } from './ui/skeleton';
+import { AnimeStatus } from '../enums';
+import { useIsMobile } from '../hooks/use-mobile';
 
-export function ExplorationAnime({ 
+export function ExplorationAnime({
   anime
 }: { 
   anime: (MalAnime & Anime & {
@@ -23,6 +25,8 @@ export function ExplorationAnime({
 }) {
   const episodeAired = anime.animePlatforms[0]?.episodeAired ?? 
     (anime.status === 'finished_airing' ? anime.episodeTotal : null);
+
+  const isMobile = useIsMobile();
 
   return (
     <Card className="flex flex-row p-0 gap-0 rounded-lg">
@@ -36,11 +40,11 @@ export function ExplorationAnime({
           fill
         />
         {anime.mean && 
-          <div className="hidden sm:block absolute bottom-0">
+          <div className="hidden sm:block absolute -bottom-px -left-px">
             <AnimeScore malId={anime.malId} score={anime.mean} />
           </div>
         }
-        <div className="sm:block absolute top-0">
+        <div className="sm:block absolute -top-px -left-px">
           <AnimeList userAnimeList={anime.userAnimeList} />
         </div>
       </div>
@@ -60,7 +64,7 @@ export function ExplorationAnime({
           <p>{anime.synopsis}</p>
         </ScrollArea>
         <ScrollArea>
-          <p className="text-xs flex items-center">
+          <p className={`text-xs flex items-center flex-wrap${(isNaN(episodeAired) || anime.animePlatforms[0]?.id) ? ` ${isMobile ? 'max-h-5' : 'max-h-9'}` : ' max-h-14'}`}>
             <span className="mr-1">Genre:</span>
             {anime.genres?.map((genre, i) => (
               <span key={genre.id} className='flex mr-1'>
@@ -85,21 +89,27 @@ export function ExplorationAnime({
         </ScrollArea>
 
         {/* Mobile */}
-        <ScrollArea className="sm:hidden">
-          <AnimePlatform />
-        </ScrollArea>
+        {anime.animePlatforms[0]?.id && (
+          <ScrollArea className="sm:hidden">
+            <AnimePlatform platforms={anime.animePlatforms} />
+          </ScrollArea>
+        )}
         <div className="flex justify-between sm:hidden">
           {anime.mean && <AnimeScore malId={anime.malId} score={anime.mean} />}
-          {episodeAired && <AnimeEpisodeAired episodeAired={episodeAired} />}
+          {episodeAired && <AnimeEpisodeAired episodeAired={episodeAired} status={anime.status} />}
         </div>
 
         {/* Dekstop */}
-        <div className="hidden sm:flex justify-between items-end">
-          <ScrollArea className={`hidden sm:flex${episodeAired ? ' max-w-40' : ''}`}>
-            <AnimePlatform />
-          </ScrollArea>
-          {episodeAired && <AnimeEpisodeAired episodeAired={episodeAired} />}
-        </div>
+        {(anime.animePlatforms[0]?.id || episodeAired) && (
+          <div className="hidden sm:flex justify-between items-end">
+            {episodeAired && <AnimeEpisodeAired episodeAired={episodeAired} status={anime.status} />}
+            {anime.animePlatforms[0]?.id && (
+              <ScrollArea className={`hidden sm:flex${episodeAired ? ' max-w-40' : ''}`}>
+                <AnimePlatform platforms={anime.animePlatforms} />
+              </ScrollArea>
+            )}
+          </div>
+        )}
       </div>
     </Card>
   );
@@ -129,21 +139,26 @@ export function SkeletonAnime() {
   )
 }
 
-function AnimePlatform() {
+function AnimePlatform({ platforms }: { platforms: AnimePlatform[] }) {
   return (
-    <ul className="flex w-max gap-2">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <li className="h-5 w-5 relative" key={i}>
-          <Image
-            src={"/platform.png"}
-            alt="Gambar platform contoh"
-            sizes="20px"
-            className='object-contain'
-            fill
-          />
-        </li>
+    <div className="flex w-max gap-2">
+      {platforms.map((platform) => (
+        <Tooltip key={platform.id}>
+          <TooltipTrigger render={
+            <Link href={platform.link.url} target={'_blank'} className='w-5 h-5 relative'>
+              <Image
+                src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${platform.platform.icon}`}
+                alt={platform.platform.name}
+                sizes="20px"
+                className='object-contain'
+                fill
+              />
+            </Link>
+          } />
+          <TooltipContent>{platform.platform.name}</TooltipContent>
+        </Tooltip>
       ))}
-    </ul>
+    </div>
   );
 }
 
@@ -155,7 +170,8 @@ function AnimeScore({ malId, score }: { malId: number, score: number }) {
           href={`https://myanimelist.net/anime/${malId}`}
           className={cn(
             buttonVariants({
-              size: "xs",
+              size: 'xs',
+              variant: score < 6 ? 'red' : score < 8 ? 'yellow' : 'default'
             }),
           )}
           target={'_blank'}
@@ -172,14 +188,16 @@ function AnimeScore({ malId, score }: { malId: number, score: number }) {
 }
 
 function AnimeEpisodeAired({ 
-  episodeAired 
+  episodeAired,
+  status,
 }: { 
-  episodeAired: number 
+  episodeAired: number;
+  status: AnimeStatus;
 }) {
   return (
     <Tooltip>
       <TooltipTrigger render={
-        <Button size={"xs"}>
+        <Button size={"xs"} variant={status === 'finished_airing' ? 'blue' : status === 'currently_airing' ? 'default' : 'gray' }>
           <Upload data-icon="inline-start" /> {episodeAired}
         </Button>
       } />
@@ -191,32 +209,32 @@ function AnimeEpisodeAired({
 }
 
 function AnimeList({ userAnimeList }: { userAnimeList: UserAnimeList | null }) {
-  return userAnimeList ? (
+  return (
     <Tooltip>
       <TooltipTrigger render={
-        <Button size={"xs"}>
-          <Clock data-icon="inline-start" />
-          {userAnimeList.remainingWatchableEpisodes || '?'}
+        <Button size={"xs"} variant={
+          userAnimeList 
+          ? userAnimeList.remainingWatchableEpisodes == null ? 'blue'
+            : userAnimeList.remainingWatchableEpisodes > 0 ? 'yellow' : 'blue'
+          : 'default'
+        }>
+          {userAnimeList ? (<>
+            <Clock data-icon="inline-start" />
+            {userAnimeList.remainingWatchableEpisodes ?? '?'}
+          </>): (
+            <Plus />
+          )}
         </Button>
       } />
       <TooltipContent>
-        {
-          !userAnimeList.remainingWatchableEpisodes ? `Episode yang belum ditonton belum bisa dihitung` : 
+        {userAnimeList ? (
+          userAnimeList.remainingWatchableEpisodes == null ? `Episode yang belum ditonton belum bisa dihitung` : 
           userAnimeList.remainingWatchableEpisodes < 0 ? `Ada ${userAnimeList.remainingWatchableEpisodes} episode ditonton lebih awal` : 
           userAnimeList.remainingWatchableEpisodes > 0 ? `Ada ${userAnimeList.remainingWatchableEpisodes} episode yang belum ditonton` :
           `Sudah menonton semua episode terbaru`
-        }
-      </TooltipContent>
-    </Tooltip>
-  ) : (
-    <Tooltip>
-      <TooltipTrigger render={
-        <Button size={'xs'}>
-          <Plus />
-        </Button>
-      } />
-      <TooltipContent>
-        Tambah ke list saya
+        ) : (
+          'Tambah ke list saya'
+        )}
       </TooltipContent>
     </Tooltip>
   )
