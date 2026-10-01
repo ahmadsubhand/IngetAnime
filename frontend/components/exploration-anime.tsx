@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Button, buttonVariants } from "./ui/button";
-import { Clock, Plus, Star, Upload } from "lucide-react";
+import { buttonVariants } from "./ui/button";
+import { Star, Upload } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Card } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
@@ -14,6 +14,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Skeleton } from './ui/skeleton';
 import { AnimeStatus } from '../enums';
 import { useIsMobile } from '../hooks/use-mobile';
+import AnimeList from './anime-list';
+import getEpisodeAired from '../helper/get-episode-aired';
 
 export function ExplorationAnime({
   anime
@@ -23,9 +25,7 @@ export function ExplorationAnime({
     userAnimeList: UserAnimeList | null;
   })
 }) {
-  const episodeAired = anime.animePlatforms[0]?.episodeAired ?? 
-    (anime.status === 'finished_airing' ? anime.episodeTotal : null);
-
+  const episodeAired = getEpisodeAired(anime.status, anime.episodeTotal, anime.animePlatforms[0]);
   const isMobile = useIsMobile();
 
   return (
@@ -45,7 +45,7 @@ export function ExplorationAnime({
           </div>
         }
         <div className="sm:block absolute -top-px -left-px">
-          <AnimeList userAnimeList={anime.userAnimeList} />
+          <AnimeList anime={anime} />
         </div>
       </div>
       <div className="flex flex-col pl-3 pt-1.5 pb-2 pr-2 w-50 sm:w-60 h-40 sm:h-60 justify-between">
@@ -64,7 +64,11 @@ export function ExplorationAnime({
           <p>{anime.synopsis}</p>
         </ScrollArea>
         <ScrollArea>
-          <p className={`text-xs flex items-center flex-wrap${(isNaN(episodeAired) || anime.animePlatforms[0]?.id) ? ` ${isMobile ? 'max-h-5' : 'max-h-9'}` : ' max-h-14'}`}>
+          <p className={`text-xs flex items-center flex-wrap ${
+            (isMobile && anime.animePlatforms[0]?.id) ? 'max-h-5' :
+              (!isMobile && (episodeAired !== null || anime.animePlatforms[0]?.id)) ? 'max-h-9' : 
+                'max-h-14'
+          }`}>
             <span className="mr-1">Genre:</span>
             {anime.genres?.map((genre, i) => (
               <span key={genre.id} className='flex mr-1'>
@@ -96,13 +100,21 @@ export function ExplorationAnime({
         )}
         <div className="flex justify-between sm:hidden">
           {anime.mean && <AnimeScore malId={anime.malId} score={anime.mean} />}
-          {episodeAired && <AnimeEpisodeAired episodeAired={episodeAired} status={anime.status} />}
+          {episodeAired && <AnimeEpisodeAired 
+            episodeAired={episodeAired} 
+            status={anime.status} 
+            firstAnimePlatformLink={anime.animePlatforms[0]?.link.url} 
+          />}
         </div>
 
         {/* Dekstop */}
         {(anime.animePlatforms[0]?.id || episodeAired) && (
           <div className="hidden sm:flex justify-between items-end">
-            {episodeAired && <AnimeEpisodeAired episodeAired={episodeAired} status={anime.status} />}
+            {episodeAired && <AnimeEpisodeAired 
+              episodeAired={episodeAired} 
+              status={anime.status} 
+              firstAnimePlatformLink={anime.animePlatforms[0]?.link.url} 
+            />}
             {anime.animePlatforms[0]?.id && (
               <ScrollArea className={`hidden sm:flex${episodeAired ? ' max-w-40' : ''}`}>
                 <AnimePlatform platforms={anime.animePlatforms} />
@@ -190,52 +202,25 @@ function AnimeScore({ malId, score }: { malId: number, score: number }) {
 function AnimeEpisodeAired({ 
   episodeAired,
   status,
+  firstAnimePlatformLink,
 }: { 
   episodeAired: number;
   status: AnimeStatus;
+  firstAnimePlatformLink?: string;
 }) {
   return (
     <Tooltip>
       <TooltipTrigger render={
-        <Button size={"xs"} variant={status === 'finished_airing' ? 'blue' : status === 'currently_airing' ? 'default' : 'gray' }>
+        <Link href={firstAnimePlatformLink || ''} target={firstAnimePlatformLink ? '_blank' : '_self'} className={cn(buttonVariants({
+          size: 'xs',
+          variant: status === 'finished_airing' ? 'blue' : status === 'currently_airing' ? 'default' : 'gray',
+        }))}>
           <Upload data-icon="inline-start" /> {episodeAired}
-        </Button>
+        </Link>
       } />
       <TooltipContent>
         Episode {episodeAired} sudah tayang
       </TooltipContent>
     </Tooltip>
   );
-}
-
-function AnimeList({ userAnimeList }: { userAnimeList: UserAnimeList | null }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger render={
-        <Button size={"xs"} variant={
-          userAnimeList 
-          ? userAnimeList.remainingWatchableEpisodes == null ? 'blue'
-            : userAnimeList.remainingWatchableEpisodes > 0 ? 'yellow' : 'blue'
-          : 'default'
-        }>
-          {userAnimeList ? (<>
-            <Clock data-icon="inline-start" />
-            {userAnimeList.remainingWatchableEpisodes ?? '?'}
-          </>): (
-            <Plus />
-          )}
-        </Button>
-      } />
-      <TooltipContent>
-        {userAnimeList ? (
-          userAnimeList.remainingWatchableEpisodes == null ? `Episode yang belum ditonton belum bisa dihitung` : 
-          userAnimeList.remainingWatchableEpisodes < 0 ? `Ada ${userAnimeList.remainingWatchableEpisodes} episode ditonton lebih awal` : 
-          userAnimeList.remainingWatchableEpisodes > 0 ? `Ada ${userAnimeList.remainingWatchableEpisodes} episode yang belum ditonton` :
-          `Sudah menonton semua episode terbaru`
-        ) : (
-          'Tambah ke list saya'
-        )}
-      </TooltipContent>
-    </Tooltip>
-  )
 }

@@ -11,6 +11,8 @@ import { Field, FieldLabel } from '../../../components/ui/field';
 import { useIsMobile } from '../../../hooks/use-mobile';
 import { useInView } from 'react-intersection-observer';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { AlertDialog, AlertDialogContent } from '../../../components/ui/alert-dialog';
+import { Spinner } from '../../../components/ui/spinner';
 
 export default function BestPage() {
   const isMobile = useIsMobile();
@@ -28,7 +30,7 @@ export default function BestPage() {
   ]
   const [rankingType, setRankingType] = useState<RankingType>(RankingType.all);
 
-  const { data, fetchNextPage, status, isFetchingNextPage, hasNextPage } = useInfiniteQuery({
+  const { data, fetchNextPage, status, isFetchingNextPage, hasNextPage, isRefetching } = useInfiniteQuery({
     queryKey: ['anime', 'ranking', { ranking_type: rankingType }],
     initialPageParam: {
       limit,
@@ -102,6 +104,12 @@ export default function BestPage() {
           <SkeletonAnime key={i} />
         ))}
       </div>
+      <AlertDialog open={isRefetching}>
+        <AlertDialogContent className={'flex flex-row items-center w-fit gap-3'}>
+          <Spinner className='size-6 text-muted-foreground' />
+          <p className='text-muted-foreground'>Memperbarui data ...</p>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
 
     <div className="hidden sm:block fixed w-77 h-110 -left-10 -bottom-5 -z-1">
