@@ -65,7 +65,7 @@ export function animeInclude(userId?: number): {
     orderBy: [{ isMainPlatform: SortOrder }, { platformId: SortOrder }];
     include: { platform: boolean; link: boolean };
   };
-  userAnimeList: {
+  userAnimeList?: {
     where: { userId?: number };
   };
 } {
@@ -74,9 +74,11 @@ export function animeInclude(userId?: number): {
       orderBy: [{ isMainPlatform: 'desc' }, { platformId: 'asc' }],
       include: { platform: true, link: true },
     },
-    userAnimeList: {
-      where: { userId },
-    },
+    ...(userId && {
+      userAnimeList: {
+        where: { userId },
+      },
+    }),
   };
 }
 
@@ -187,7 +189,7 @@ export function animeResponseWithRelation(
       platform: PlatformPrisma;
       link: LinkPrisma;
     })[];
-    userAnimeList: UserAnimeListPrisma[];
+    userAnimeList?: UserAnimeListPrisma[];
   },
   sortBasedOnUserSelectedPlatform: boolean = true,
 ): AnimeWithRelation {
@@ -197,7 +199,7 @@ export function animeResponseWithRelation(
       return animePlatformsBasedOnUserSelectedPlatform(
         a,
         b,
-        anime.userAnimeList[0]?.animePlatformId ?? null,
+        anime.userAnimeList?.[0]?.animePlatformId ?? null,
       );
     });
   }
@@ -207,7 +209,7 @@ export function animeResponseWithRelation(
     animePlatforms: animePlatforms.map((animePlatform) =>
       animePlatformResponse(animePlatform),
     ),
-    userAnimeList: anime.userAnimeList[0]
+    userAnimeList: anime.userAnimeList?.[0]
       ? userAnimeListResponse({ ...anime.userAnimeList[0] })
       : null,
   };
