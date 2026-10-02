@@ -17,5 +17,5 @@ export type Anime = {
 
 export type AnimeWithRelation = Anime & {
   animePlatforms: AnimePlatform[];
-  userAnimeList: UserAnimeList | null;
+  userAnimeList?: UserAnimeList | null;
 };

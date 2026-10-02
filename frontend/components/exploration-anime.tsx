@@ -22,7 +22,7 @@ export function ExplorationAnime({
 }: { 
   anime: (MalAnime & Anime & {
     animePlatforms: AnimePlatform[];
-    userAnimeList: UserAnimeList | null;
+    userAnimeList?: UserAnimeList | null;
   })
 }) {
   const episodeAired = getEpisodeAired(anime.status, anime.episodeTotal, anime.animePlatforms[0]);

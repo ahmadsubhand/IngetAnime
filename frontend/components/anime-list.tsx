@@ -32,7 +32,7 @@ export default function AnimeList({
 }: { 
   anime: (Anime & {
     animePlatforms: AnimePlatform[];
-    userAnimeList: UserAnimeList | null;
+    userAnimeList?: UserAnimeList | null;
   })
 }) {
   const isMobile = useIsMobile();

@@ -15,6 +15,7 @@ interface InputFieldProps<T extends FieldValues> {
   inputType?: "text" | "number";
   className?: string;
   isRequired?: boolean;
+  isDisable?: boolean;
 }
 
 export default function InputField<T extends FieldValues>({
@@ -27,6 +28,7 @@ export default function InputField<T extends FieldValues>({
   inputType = "text",
   className = "",
   isRequired = false,
+  isDisable = false,
 }: InputFieldProps<T>) {
   const id = useId();
   return (
@@ -39,7 +41,8 @@ export default function InputField<T extends FieldValues>({
             {inputLabel}{" "}
             <span className="text-red-500">{isRequired ? "*" : ""}</span>
           </FieldLabel>
-          <Input 
+          <Input
+            disabled={isDisable}
             {...field}
             id={inputId ?? id}
             type={inputType}

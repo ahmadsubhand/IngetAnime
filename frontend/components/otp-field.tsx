@@ -13,6 +13,7 @@ interface OtpFieldProps<T extends FieldValues> {
   inputLabel?: ReactNode;
   className?: string;
   isRequired?: boolean;
+  isDisable?: boolean;
 }
 
 export default function OtpField<T extends FieldValues>({
@@ -22,6 +23,7 @@ export default function OtpField<T extends FieldValues>({
   inputLabel,
   className = "",
   isRequired = false,
+  isDisable = false,
 }: OtpFieldProps<T>) {
   const id = useId();
   return (
@@ -36,6 +38,7 @@ export default function OtpField<T extends FieldValues>({
           </FieldLabel>
           <InputOTP
             maxLength={6}
+            disabled={isDisable}
             {...field}
             id={inputId ?? id}
             pattern={REGEXP_ONLY_DIGITS}

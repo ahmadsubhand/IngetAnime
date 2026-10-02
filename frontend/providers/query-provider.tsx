@@ -12,7 +12,7 @@ function getQueryClient() {
   return browserQueryClient
 }
  
-export function ExplorationProviders({ children }: { children: ReactNode }) {
+export function QueryProvider({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={getQueryClient()}>
       {children}

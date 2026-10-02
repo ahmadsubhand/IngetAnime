@@ -12,6 +12,7 @@ interface PasswordFieldProps<T extends FieldValues> {
   inputPlaceholder?: string;
   className?: string;
   isRequired?: boolean;
+  isDisable?: boolean;
 }
 
 export default function PasswordField<T extends FieldValues>({
@@ -21,6 +22,7 @@ export default function PasswordField<T extends FieldValues>({
   inputPlaceholder,
   className = "",
   isRequired = false,
+  isDisable = false,
 }: PasswordFieldProps<T>) {
   return (
     <Controller
@@ -34,6 +36,7 @@ export default function PasswordField<T extends FieldValues>({
           </FieldLabel>
           <PasswordInput
             {...field}
+            disabled={isDisable}
             id="fdsfdsfsfd"
             placeholder={inputPlaceholder}
             aria-invalid={fieldState.invalid}

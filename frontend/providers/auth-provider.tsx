@@ -12,6 +12,7 @@ import authService from '../services/auth.service';
 import { EmailVerification, ForgotPassword, Login, Register, ResetPassword, ThirdPartyLogin } from '../validator/auth.validation';
 import { User } from '../types/user.model';
 import { Role } from '../enums';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextValue {
   user: User | null;
@@ -44,6 +45,8 @@ export function AuthProvider({
   const isVerified = user ? user.isVerified : false;
   const isAdmin = user ? (user.role === Role.admin) : false;
 
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     async function initializeAuth() {
       try {
@@ -62,6 +65,7 @@ export function AuthProvider({
   async function login(payload: Login) {
     const response = await authService.login(payload);
     setUser(response.data);
+    queryClient.invalidateQueries({ queryKey: ['anime'] });
   }
 
   async function logout() {
@@ -69,17 +73,20 @@ export function AuthProvider({
       await authService.logout();
     } finally {
       setUser(null);
+      queryClient.invalidateQueries({ queryKey: ['anime'] });
     }
   }
 
   async function register(payload: Register) {
     const response = await authService.register(payload);
     setUser(response.data);
+    queryClient.invalidateQueries({ queryKey: ['anime'] });
   }
 
   async function verifyEmail(payload: EmailVerification) {
     const response = await authService.verifyEmail(payload);
     setUser(response.data);
+    queryClient.invalidateQueries({ queryKey: ['anime'] });
   }
 
   async function resendVerification() {
@@ -93,16 +100,19 @@ export function AuthProvider({
   async function resetPassword(payload: ResetPassword) {
     const response = await authService.resetPassword(payload);
     setUser(response.data);
+    queryClient.invalidateQueries({ queryKey: ['anime'] });
   }
 
   async function loginWithGoogle(payload: ThirdPartyLogin) {
     const response = await authService.loginWithGoogle(payload);
     setUser(response.data);
+    queryClient.invalidateQueries({ queryKey: ['anime'] });
   }
 
   async function loginWithMal(payload: ThirdPartyLogin) {
     const response = await authService.loginWithMal(payload);
     setUser(response.data);
+    queryClient.invalidateQueries({ queryKey: ['anime'] });
   }
 
   return (

@@ -16,6 +16,7 @@ import axios, { HttpStatusCode } from 'axios';
 import { ApiValidationError } from '../../../types';
 import { toast } from '../../../components/ui/toast';
 import AppTitle from '../../../components/app-title';
+import { useState } from 'react';
 
 export default function LoginPage() {
   const form = useForm<Login>({
@@ -60,6 +61,9 @@ export default function LoginPage() {
     }
   }
 
+  const [isLoading, setIsLoading] = useState(false);
+  const isDisable = form.formState.isSubmitting || isLoading;
+
   return <>
     <AppTitle title='Masuk' subtitle={<>
       Tempat nonton anime makin banyak nih.
@@ -75,6 +79,7 @@ export default function LoginPage() {
           inputLabel="Username atau email"
           inputPlaceholder="Username atau email"
           className="w-full"
+          isDisable={isDisable}
           isRequired
         />
         <PasswordField
@@ -83,15 +88,19 @@ export default function LoginPage() {
           inputLabel="Password"
           inputPlaceholder="Password"
           className="w-full"
+          isDisable={isDisable}
           isRequired
         />
       </div>
 
-      <Link href={`/auth/forgot-password`} className={cn(buttonVariants({ variant: 'link', size: 'sm', className: 'w-fit self-end' }))}>
+      <Link
+        aria-disabled={isDisable}
+        href={`/auth/forgot-password`}
+        className={cn(buttonVariants({ variant: 'link', size: 'sm', className: 'w-fit self-end' }))}>
         Lupa password?
       </Link>
 
-      <Button type={'submit'} disabled={form.formState.isSubmitting}>
+      <Button type={'submit'} disabled={isDisable}>
         {form.formState.isSubmitting ? <Spinner data-icon="inline-start" /> : <LogIn data-icon="inline-start" />} 
         Masuk
       </Button>
@@ -99,11 +108,15 @@ export default function LoginPage() {
 
     <p className='text-sm text-center'>
       Belum punya akun? 
-      <Link href={`/auth/register`} className={cn(buttonVariants({ variant: 'link', size: 'sm' }))}>
+      <Link 
+        href={`/auth/register`}
+        aria-disabled={isDisable}
+        className={cn(buttonVariants({ variant: 'link', size: 'sm' }))}
+      >
         Daftar
       </Link>
     </p>
 
-    <ThirdPartyAuth />
+    <ThirdPartyAuth isLoading={isDisable} setIsLoading={setIsLoading} />
   </>
 }

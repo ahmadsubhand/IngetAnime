@@ -61,6 +61,7 @@ export default function EmailVerificationPage() {
 
   const { seconds, canResend, start } = useResendCountdown(90);
   const [isLoading, setIsLoading] = useState(false);
+  const isDisable = form.formState.isSubmitting || isLoading;
   async function resend() {
     try {
       setIsLoading(true);
@@ -101,18 +102,19 @@ export default function EmailVerificationPage() {
           form={form}
           inputName="otpCode"
           inputLabel="Kode OTP"
+          isDisable={isDisable}
           isRequired
         />
       </div>
 
       <p className='text-sm text-center'>
-        Belum menerima tautan verifikasi? 
-        <Button variant={'link'} onClick={resend} disabled={!canResend || isLoading || form.formState.isSubmitting}>
+        Belum menerima tautan verifikasi?
+        <Button variant={'link'} onClick={resend} disabled={!canResend || isDisable}>
           Kirim tautan {!canResend ? ` ulang dalam ${seconds} detik` : ''}
         </Button>
       </p>
 
-      <Button type={'submit'} disabled={form.formState.isSubmitting}>
+      <Button type={'submit'} disabled={isDisable}>
         {form.formState.isSubmitting ? <Spinner data-icon="inline-start" /> : <BadgeCheck data-icon="inline-start" />} 
         Verifikasi
       </Button>

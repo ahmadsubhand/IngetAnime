@@ -120,6 +120,7 @@ export default function ForgotPasswordPage() {
             inputLabel="Password baru"
             inputPlaceholder="Password baru"
             className="w-full"
+            isDisable={formResetPassword.formState.isSubmitting}
             isRequired
           />
           <PasswordField
@@ -128,6 +129,7 @@ export default function ForgotPasswordPage() {
             inputLabel="Konfirmasi password"
             inputPlaceholder="Konfirmasi password"
             className="w-full"
+            isDisable={formResetPassword.formState.isSubmitting}
             isRequired
           />
         </div>
@@ -146,6 +148,7 @@ export default function ForgotPasswordPage() {
             inputLabel="Username atau email"
             inputPlaceholder="Username atau email"
             className="w-full"
+            isDisable={formForgotPassword.formState.isSubmitting}
             isRequired
           />
         </div>

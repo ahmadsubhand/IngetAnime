@@ -125,6 +125,9 @@ export default function RegisterPage() {
     return () => clearTimeout(delayDebounceFn);
   }, [emailVal, form]);
 
+  const [isLoading, setIsLoading] = useState(false);
+  const isDisable = form.formState.isSubmitting || isLoading;
+
   return <>
     <AppTitle title='Daftar' subtitle={<>
       Cari tempat nonton anime terbaik?
@@ -141,6 +144,7 @@ export default function RegisterPage() {
           inputDescription={usernameMessage}
           inputPlaceholder="Username"
           className="w-full"
+          isDisable={isDisable}
           isRequired
         />
         <InputField
@@ -150,6 +154,7 @@ export default function RegisterPage() {
           inputDescription={emailMessage}
           inputPlaceholder="Email"
           className="w-full"
+          isDisable={isDisable}
           isRequired
         />
         <PasswordField
@@ -158,6 +163,7 @@ export default function RegisterPage() {
           inputLabel="Password"
           inputPlaceholder="Password"
           className="w-full"
+          isDisable={isDisable}
           isRequired
         />
         <PasswordField
@@ -166,11 +172,12 @@ export default function RegisterPage() {
           inputLabel="Konfirmasi Password"
           inputPlaceholder="Konfirmasi Password"
           className="w-full"
+          isDisable={isDisable}
           isRequired
         />
       </div>
 
-      <Button type={'submit'} disabled={form.formState.isSubmitting}>
+      <Button type={'submit'} disabled={isDisable}>
         {form.formState.isSubmitting ? <Spinner data-icon="inline-start" /> : <LogIn data-icon="inline-start" />} 
         Daftar
       </Button>
@@ -178,11 +185,14 @@ export default function RegisterPage() {
 
     <p className='text-sm text-center'>
       Sudah punya akun? 
-      <Link href={`/auth/login`} className={cn(buttonVariants({ variant: 'link', size: 'sm' }))}>
+      <Link 
+        href={`/auth/login`} 
+        aria-disabled={isDisable}
+        className={cn(buttonVariants({ variant: 'link', size: 'sm' }))}>
         Masuk
       </Link>
     </p>
 
-    <ThirdPartyAuth />
+    <ThirdPartyAuth isLoading={isDisable} setIsLoading={setIsLoading} />
   </>
 }
