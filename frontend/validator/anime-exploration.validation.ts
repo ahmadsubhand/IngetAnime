@@ -32,7 +32,7 @@ const fields = z
   .string()
   .regex(
     /^$|^[^,\s]+(,[^,\s]+)*$/,
-    'Invalid format. Value must be seperated by comma without any space',
+    'Format salah. Setiap nilai harus dipisah dengan koma tanpa spasi',
   );
 
 export class AnimeExplorationValidation {
@@ -45,7 +45,7 @@ export class AnimeExplorationValidation {
 
   static readonly GET_ANIME_RANKING = z.object({
     ranking_type: z.enum(RankingType, {
-      error: `Ranking type must be one of: ${Object.values(RankingType).join(', ')}`,
+      error: `Harus salah satu dari: ${Object.values(RankingType).join(', ')}`,
     }),
     limit: z.coerce.number().int().min(1).max(500).default(100),
     offset: z.coerce.number().int().nonnegative().default(0),
@@ -55,14 +55,14 @@ export class AnimeExplorationValidation {
   static readonly ANIME_SEASON = z.object({
     year: z.coerce.number().int().min(1917),
     season: z.enum(Season, {
-      error: `Season must be one of: ${Object.values(Season).join(', ')}`,
+      error: `Harus salah satu dari: ${Object.values(Season).join(', ')}`,
     }),
   });
 
   static readonly GET_SEASONAL_ANIME = z.object({
     sort: z
       .enum(Sort, {
-        error: `Sort must be one of: ${Object.values(Sort).join(', ')}`,
+        error: `Harus salah satu dari: ${Object.values(Sort).join(', ')}`,
       })
       .optional(),
     limit: z.coerce.number().int().min(1).max(500).default(100),
@@ -80,14 +80,14 @@ export class AnimeExplorationValidation {
     week_count: z.coerce.number().int().min(1).max(2).default(1),
     time_zone: z
       .string()
-      .min(1, 'Invalid time zone')
+      .min(1, 'Zona waktu tidak valid')
       .refine((timeZone) => {
         try {
           return dayjs().tz(timeZone).isValid();
         } catch {
           return false;
         }
-      }, 'Invalid time zone')
+      }, 'Zona waktu tidak valid')
       .default('Asia/Jakarta'),
     my_list_only: z.boolean().default(false),
     original_schedule: z.boolean().default(false),

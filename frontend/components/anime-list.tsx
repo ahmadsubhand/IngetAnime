@@ -96,26 +96,24 @@ export default function AnimeList({
               message: issue.message,
             });
           });
-          return;
         } else if (error.status === HttpStatusCode.Forbidden) {
           toast.add({
             type: 'error',
             description: 'Akun Anda belum terhubung dengan MyAnimeList. Silakan matikan sinkronisasi dengan MyAnimeList'
           })
-          return;
         } else {
           const expectedError = error.response.data as ApiExpectedError;
           toast.add({
             type: 'error',
             description: expectedError.message,
           });
-          return;
         }
+      } else {
+        toast.add({
+          type: 'error',
+          description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+        });
       }
-      toast.add({
-        type: 'error',
-        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
-      })
     }
   });
 
@@ -371,21 +369,19 @@ function AnimeListDelete({
           toast.add({
             type: 'error',
             description: 'Akun Anda belum terhubung dengan MyAnimeList. Silakan matikan sinkronisasi dengan MyAnimeList'
-          })
-          return;
+          });
         } else {
           const expectedError = error.response.data as ApiExpectedError;
           toast.add({
             type: 'error',
             description: expectedError.message,
           });
-          return;
         }
       } else {
         toast.add({
           type: 'error',
           description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
-        })
+        });
       }
     }
   });

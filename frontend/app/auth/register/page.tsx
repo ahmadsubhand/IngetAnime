@@ -13,7 +13,7 @@ import { useAuth } from '../../../providers/auth-provider';
 import { Spinner } from '../../../components/ui/spinner';
 import ThirdPartyAuth from '../../../components/third-party-auth';
 import axios, { HttpStatusCode } from 'axios';
-import { ApiValidationError } from '../../../types';
+import { ApiExpectedError, ApiValidationError } from '../../../types';
 import { toast } from '../../../components/ui/toast';
 import { useEffect, useState } from 'react';
 import userService from '../../../services/user.service';
@@ -46,21 +46,26 @@ export default function RegisterPage() {
               message: issue.message,
             });
           });
-          return;
         } else if (error.status === HttpStatusCode.Conflict) {
           form.setValues({
             username: '',
             email: '',
-          })
+          });
           form.setError('username', { message: 'Username atau email sudah digunakan' });
           form.setError('email', { message: 'Username atau email sudah digunakan' });
-          return;
+        } else {
+          const expectedError = error.response.data as ApiExpectedError;
+          toast.add({
+            type: 'error',
+            description: expectedError.message,
+          });
         }
+      } else {
+        toast.add({
+          type: 'error',
+          description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+        });
       }
-      toast.add({
-        type: 'error',
-        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
-      })
     }
   }
   

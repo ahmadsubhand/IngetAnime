@@ -13,7 +13,7 @@ import { useAuth } from '../../../providers/auth-provider';
 import { Spinner } from '../../../components/ui/spinner';
 import ThirdPartyAuth from '../../../components/third-party-auth';
 import axios, { HttpStatusCode } from 'axios';
-import { ApiValidationError } from '../../../types';
+import { ApiExpectedError, ApiValidationError } from '../../../types';
 import { toast } from '../../../components/ui/toast';
 import AppTitle from '../../../components/app-title';
 import { useState } from 'react';
@@ -43,21 +43,26 @@ export default function LoginPage() {
               message: issue.message,
             });
           });
-          return;
         } else if (error.status === HttpStatusCode.NotFound) {
           form.setValues({
             identifier: '',
             password: '',
-          })
+          });
           form.setError('identifier', { message: 'Username, email, atau password salah' });
           form.setError('password', { message: 'Username, email, atau password salah' });
-          return;
+        } else {
+          const expectedError = error.response.data as ApiExpectedError;
+          toast.add({
+            type: 'error',
+            description: expectedError.message,
+          });
         }
+      } else {
+        toast.add({
+          type: 'error',
+          description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+        });
       }
-      toast.add({
-        type: 'error',
-        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
-      })
     }
   }
 

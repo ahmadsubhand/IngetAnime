@@ -11,7 +11,7 @@ import InputField from '../../../components/input-field';
 import { useSearchParams } from 'next/navigation';
 import PasswordField from '../../../components/password-field';
 import axios, { HttpStatusCode } from 'axios';
-import { ApiValidationError } from '../../../types';
+import { ApiExpectedError, ApiValidationError } from '../../../types';
 import { toast } from '../../../components/ui/toast';
 import { useResendCountdown } from '../../../hooks/use-resend-countdown';
 import AppTitle from '../../../components/app-title';
@@ -96,13 +96,19 @@ export default function ForgotPasswordPage() {
               message: issue.message,
             });
           });
-          return;
+        } else {
+          const expectedError = error.response.data as ApiExpectedError;
+          toast.add({
+            type: 'error',
+            description: expectedError.message,
+          });
         }
+      } else {
+        toast.add({
+          type: 'error',
+          description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+        });
       }
-      toast.add({
-        type: 'error',
-        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
-      })
     }
   }
 

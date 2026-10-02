@@ -2,9 +2,9 @@ import z from 'zod';
 import { ListStatus } from '../enums';
 
 const OPTIONAL_DATE = z
-    .string('Invalid date format. Use YYYY-MM-DD')
-    .regex(/^$|^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use YYYY-MM-DD')
-    .refine((value) => !value || !isNaN(Date.parse(value)), 'Invalid date')
+    .string('Gunakan format: TTTT-BB-HH')
+    .regex(/^$|^\d{4}-\d{2}-\d{2}$/, 'Gunakan format: TTTT-BB-HH')
+    .refine((value) => !value || !isNaN(Date.parse(value)), 'Tanggal tidak valid')
     .transform((value) => (value === '' ? null : value))
     .nullable();
 
@@ -23,7 +23,7 @@ export class UserAnimeListValidation {
     episodesDifference: z.number().int().nonnegative().default(0),
     status: z
       .enum(ListStatus, {
-        error: `Status must be one of: ${this.statusTypeValues.join(', ')}`,
+        error: `Harus salah satu dari: ${this.statusTypeValues.join(', ')}`,
       })
       .default(ListStatus.plan_to_watch),
     isSyncedWithMal: z.boolean().default(false),
@@ -37,7 +37,7 @@ export class UserAnimeListValidation {
     score: z.number().int().min(0).max(10),
     episodesDifference: z.number().int().nonnegative(),
     status: z.enum(ListStatus, {
-      error: `Status must be one of: ${this.statusTypeValues.join(', ')}`,
+      error: `Harus salah satu dari: ${this.statusTypeValues.join(', ')}`,
     }),
     isSyncedWithMal: z.boolean(),
     animePlatformId: z.number().int().positive().nullable(),
@@ -51,7 +51,7 @@ export class UserAnimeListValidation {
     episodesDifference: z.number().int().nonnegative().optional(),
     status: z
       .enum(ListStatus, {
-        error: `Status must be one of: ${this.statusTypeValues.join(', ')}`,
+        error: `Harus salah satu dari: ${this.statusTypeValues.join(', ')}`,
       })
       .optional(),
     isSyncedWithMal: z.boolean().optional(),

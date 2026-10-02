@@ -4,7 +4,7 @@ const FIELDS = z
     .string()
     .regex(
       /^$|^[^,\s]+(,[^,\s]+)*$/,
-      'Invalid format. Value must be seperated by comma without any space',
+      'Format salah. Setiap nilai harus dipisah dengan koma tanpa spasi',
     );
 
 export class MyAnimeListValidation {
