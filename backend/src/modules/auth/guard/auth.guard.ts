@@ -18,6 +18,7 @@ import { Role as RolePrisma } from '../../../generated/prisma/enums';
 export abstract class BaseGuard implements CanActivate {
   private cookieName: string;
   protected abstract isAuthOptional: boolean;
+  protected abstract isRequireVerified: boolean;
 
   constructor(
     config: ConfigService,
@@ -52,6 +53,10 @@ export abstract class BaseGuard implements CanActivate {
       if (role) {
         await this.checkAuthorization(role, request.user);
       }
+
+      if (!this.isAuthOptional && this.isRequireVerified) {
+        await this.checkVerified(request.user);
+      }
       return true;
     } catch (error) {
       if (this.isAuthOptional) return true;
@@ -78,14 +83,32 @@ export abstract class BaseGuard implements CanActivate {
       throw new ForbiddenException('Admin only');
     }
   }
+
+  private async checkVerified(user: JwtPayload) {
+    const userFromDB = await this.prisma.user.findUnique({
+      where: { id: user.sub },
+      select: { isVerified: true },
+    });
+    if (!userFromDB?.isVerified) {
+      throw new ForbiddenException('Verified user only');
+    }
+  }
 }
 
 @Injectable()
 export class AuthGuard extends BaseGuard {
   protected isAuthOptional = false;
+  protected isRequireVerified = false;
 }
 
 @Injectable()
 export class OptionalAuthGuard extends BaseGuard {
   protected isAuthOptional = true;
+  protected isRequireVerified = false;
+}
+
+@Injectable()
+export class VerifiedAuthGuard extends BaseGuard {
+  protected isAuthOptional = false;
+  protected isRequireVerified = true;
 }

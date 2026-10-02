@@ -18,7 +18,7 @@ import type { PlatformId, PlatformName } from './platform.validation';
 import { PlatformValidation } from './platform.validation';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { PlatformService } from './platform.service';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { VerifiedAuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
 import { SkipThrottle } from '@nestjs/throttler';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -29,7 +29,7 @@ export class PlatformController {
 
   @Post('platform')
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   @UseInterceptors(FileInterceptor('icon'))
   async createPlatform(
@@ -61,7 +61,7 @@ export class PlatformController {
   }
 
   @Put('/platform/:id')
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('icon'))
@@ -81,7 +81,7 @@ export class PlatformController {
   }
 
   @Delete('/platform/:id')
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   @HttpCode(HttpStatus.OK)
   async deletePlatform(

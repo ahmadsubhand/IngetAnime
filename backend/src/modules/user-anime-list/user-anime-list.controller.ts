@@ -14,7 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserAnimeListService } from './user-anime-list.service';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { VerifiedAuthGuard } from '../auth/guard/auth.guard';
 import type { Request, Response } from 'express';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import type {
@@ -41,7 +41,7 @@ export class UserAnimeListController {
 
   @Post('/:animeId/my-list-status')
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   async createUserAnimeList(
     @Req() req: Request & { user: JwtPayload },
     @Param(new ZodValidationPipe(UserAnimeListValidation.ANIME_ID))
@@ -64,7 +64,7 @@ export class UserAnimeListController {
   @SkipThrottle()
   @Get('/:animeId/my-list-status')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   async getUserAnimeListDetail(
     @Req() req: Request & { user: JwtPayload },
     @Param(new ZodValidationPipe(UserAnimeListValidation.ANIME_ID))
@@ -83,7 +83,7 @@ export class UserAnimeListController {
 
   @Put('/:animeId/my-list-status')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   async updateUserAnimeList(
     @Req() req: Request & { user: JwtPayload },
     @Param(new ZodValidationPipe(UserAnimeListValidation.ANIME_ID))
@@ -104,7 +104,7 @@ export class UserAnimeListController {
   }
 
   @Patch('/:animeId/my-list-status')
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   async createOrupdateUserAnimeList(
     @Req() req: Request & { user: JwtPayload },
     @Res({ passthrough: true }) res: Response,
@@ -136,7 +136,7 @@ export class UserAnimeListController {
 
   @Delete('/:animeId/my-list-status')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   async deleteUserAnimeList(
     @Req() req: Request & { user: JwtPayload },
     @Param(new ZodValidationPipe(UserAnimeListValidation.ANIME_ID))

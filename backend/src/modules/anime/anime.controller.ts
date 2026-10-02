@@ -18,7 +18,7 @@ import { ApiResponse } from '../../types';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { AnimeValidation } from './anime.validation';
 import type { AnimeId, CreateAnime, UpdateAnime } from './anime.validation';
-import { AuthGuard, OptionalAuthGuard } from '../auth/guard/auth.guard';
+import { OptionalAuthGuard, VerifiedAuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
 import { Request } from 'express';
 import { JwtPayload } from '../../types';
@@ -29,7 +29,7 @@ export class AnimeController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   async createAnime(
     @Body(new ZodValidationPipe(AnimeValidation.CREATE_ANIME))
@@ -62,7 +62,7 @@ export class AnimeController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   async updateAnime(
     @Param(new ZodValidationPipe(AnimeValidation.ANIME_ID))
@@ -80,7 +80,7 @@ export class AnimeController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   async deleteAnime(
     @Param(new ZodValidationPipe(AnimeValidation.ANIME_ID)) data: AnimeId,

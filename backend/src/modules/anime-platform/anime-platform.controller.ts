@@ -27,7 +27,7 @@ import {
   Link,
 } from './anime-platform.model';
 import { ApiResponse } from '../../types';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { VerifiedAuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
 import type { Response } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -40,7 +40,7 @@ export class AnimePlatformController {
 
   @Post('/:animeId/platform/:platformId')
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   async createAnimePlatform(
     @Param(new ZodValidationPipe(AnimePlatformValidation.ANIME_PLATFORM_ID))
@@ -73,7 +73,7 @@ export class AnimePlatformController {
 
   @Put('/:animeId/platform/:platformId')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   async updateAnimePlatform(
     @Param(new ZodValidationPipe(AnimePlatformValidation.ANIME_PLATFORM_ID))
@@ -90,7 +90,7 @@ export class AnimePlatformController {
   }
 
   @Patch('/:animeId/platform/:platformId')
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   async createOrUpdateAnimePlatform(
     @Param(new ZodValidationPipe(AnimePlatformValidation.ANIME_PLATFORM_ID))
@@ -119,7 +119,7 @@ export class AnimePlatformController {
 
   @Delete('/:animeId/platform/:platformId')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   async deleteAnimePlatform(
     @Param(new ZodValidationPipe(AnimePlatformValidation.ANIME_PLATFORM_ID))
