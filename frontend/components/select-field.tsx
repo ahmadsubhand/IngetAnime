@@ -17,6 +17,7 @@ interface SelectFieldProps<T extends FieldValues> {
   inputDescription?: string;
   className?: string;
   isRequired?: boolean;
+  isDisable?: boolean;
 }
 
 export default function SelectField<T extends FieldValues>({
@@ -28,6 +29,7 @@ export default function SelectField<T extends FieldValues>({
   inputDescription,
   className = "",
   isRequired = false,
+  isDisable = false,
 }: SelectFieldProps<T>) {
   const id = useId();
   return (
@@ -40,7 +42,7 @@ export default function SelectField<T extends FieldValues>({
             {inputLabel}{" "}
             <span className="text-red-500">{isRequired ? "*" : ""}</span>
           </FieldLabel>
-          <Select items={options} value={field.value} onValueChange={field.onChange}>
+          <Select items={options} value={field.value} onValueChange={field.onChange} disabled={isDisable}>
             <SelectTrigger className={`bg-background w-full`} id={inputId ?? id}>
               <SelectValue />
             </SelectTrigger>

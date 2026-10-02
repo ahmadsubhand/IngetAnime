@@ -26,6 +26,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import malService from '../services/mal.service';
 import { Switch } from './ui/switch';
 import { useIsMobile } from '../hooks/use-mobile';
+import { Spinner } from './ui/spinner';
 
 export default function AnimeList({
   anime
@@ -96,6 +97,12 @@ export default function AnimeList({
             });
           });
           return;
+        } else if (error.status === HttpStatusCode.Forbidden) {
+          toast.add({
+            type: 'error',
+            description: 'Akun Anda belum terhubung dengan MyAnimeList. Silakan matikan sinkronisasi dengan MyAnimeList'
+          })
+          return;
         } else {
           const expectedError = error.response.data as ApiExpectedError;
           toast.add({
@@ -112,28 +119,38 @@ export default function AnimeList({
     }
   });
 
+  const [isFetchDataFromMal, setIsFetchDataFromMal] = useState(false);
   async function getMyAnimeListStatus() {
-    const statusFromMal = (await malService.detail({ fields: 'my_list_status' }, anime.malId)).data.my_list_status;
-    if (statusFromMal) {
-      form.setValues({
-        status: statusFromMal?.status,
-        progress: statusFromMal?.num_episodes_watched,
-        score: statusFromMal?.score,
-        startDate: statusFromMal?.start_date,
-        finishDate: statusFromMal?.finish_date,
-      })
-      toast.add({
-        type: 'success',
-        description: 'Berhasil mendapatkan status dari MyAnimeList'
-      })
-    } else {
+    try {
+      setIsFetchDataFromMal(true);
+      const statusFromMal = (await malService.detail({ fields: 'my_list_status' }, anime.malId)).data.my_list_status;
+      if (statusFromMal) {
+        form.setValues({
+          status: statusFromMal?.status,
+          progress: statusFromMal?.num_episodes_watched,
+          score: statusFromMal?.score,
+          startDate: statusFromMal?.start_date,
+          finishDate: statusFromMal?.finish_date,
+        })
+        toast.add({
+          type: 'success',
+          description: 'Berhasil mendapatkan status dari MyAnimeList'
+        })
+      } else {
+        throw Error('my_list_status tidak ditemukan');
+      }
+    } catch {
       toast.add({
         type: 'error',
         description: 
           'Gagal terhubung dengan MyAnimeList. Status anime tidak ditemukan atau akun Anda belum terhubung dengan MyAnimeList.'
       })
+    } finally {
+      setIsFetchDataFromMal(false);
     }
   }
+
+  const isDisable = mutation.isPending || form.formState.isSubmitting || isFetchDataFromMal;
 
   return (
     <>
@@ -201,16 +218,16 @@ export default function AnimeList({
             </p>
           </div>
 
-          <div className='flex overflow-y-scroll flex-col gap-4 no-scrollbar'>
+          <div className='flex overflow-y-scroll sm:overflow-visible flex-col gap-4 no-scrollbar p-1 sm:p-0'>
             <FieldWrap>
-              <SelectField form={form} inputName={'status'} inputLabel={'Status'} options={[
+              <SelectField form={form} inputName={'status'} inputLabel={'Status'} isDisable={isDisable} options={[
                 { label: 'Berjalan', value: ListStatus.watching },
                 { label: 'Selesai', value: ListStatus.completed },
                 { label: 'Direncanakan', value: ListStatus.plan_to_watch },
                 { label: 'Ditunda', value: ListStatus.on_hold },
                 { label: 'Ditinggalkan', value: ListStatus.dropped },
               ]} />
-              <SelectField form={form} inputName={'progress'} inputLabel={'Progres'} options={
+              <SelectField form={form} inputName={'progress'} inputLabel={'Progres'} isDisable={isDisable} options={
                 Array.from({ length: (episodeAired ?? 0) + 1 }).map((_, i) => { 
                   return { label: i.toString(), value: i }
                 })
@@ -218,12 +235,12 @@ export default function AnimeList({
             </FieldWrap>
               
             <FieldWrap>
-              <SelectField form={form} inputName={'score'} inputLabel={'Skor'} options={
+              <SelectField form={form} inputName={'score'} inputLabel={'Skor'} isDisable={isDisable} options={
                 Array.from({ length: 11 }).map((_, i) => { 
                   return { label: i.toString(), value: i }
                 })
               } />
-              <SelectField form={form} inputName={'animePlatformId'} inputLabel={'Platform'} options={
+              <SelectField form={form} inputName={'animePlatformId'} inputLabel={'Platform'} isDisable={isDisable} options={
                 [{ label: 'Tidak ada', value: null as number | null }].concat(
                   anime.animePlatforms.map((platform) => {
                     return { label: platform.platform.name, value: platform.id }
@@ -233,21 +250,34 @@ export default function AnimeList({
             </FieldWrap>
 
             <FieldWrap>
-              <DateField form={form} inputName={'startDate'} inputLabel={'Mulai nonton'} inputPlaceholder='TTTT-BB-HH' />
-              <DateField form={form} inputName={'finishDate'} inputLabel={'Selesai nonton'} inputPlaceholder='TTTT-BB-HH' />
+              <DateField 
+                form={form}
+                inputName={'startDate'}
+                inputLabel={'Mulai nonton'}
+                isDisable={isDisable}
+                inputPlaceholder='TTTT-BB-HH' 
+              />
+              <DateField
+                form={form}
+                inputName={'finishDate'}
+                inputLabel={'Selesai nonton'}
+                isDisable={isDisable}
+                inputPlaceholder='TTTT-BB-HH' 
+              />
             </FieldWrap>
           </div>
           
           <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-            <Button variant={'blue'} onClick={getMyAnimeListStatus}>
-              <CloudDownload />
+            <Button variant={'blue'} onClick={getMyAnimeListStatus} disabled={isDisable}>
+              {isFetchDataFromMal ? <Spinner data-icon="inline-start" /> : <CloudDownload />}
               Cek status MyAnimeList saya
             </Button>
             <SwitchField
               className='w-fit'
               form={form} 
               inputName={'isSyncedWithMal'} 
-              inputLabel={'Sinkronisasi dengan MyAnimeList'} 
+              inputLabel={'Sinkronisasi dengan MyAnimeList'}
+              isDisable={isDisable}
               labelPosition={isMobile ? 'right' : 'left'}
             />
           </div>
@@ -255,19 +285,20 @@ export default function AnimeList({
           <div className="flex justify-between items-center mt-1 sm:mt-0">
             <Button 
               variant={'red'} 
-              disabled={mutation.isPending || !anime.userAnimeList} 
+              disabled={isDisable || !anime.userAnimeList} 
               onClick={() => setIsDeleteDialogOpen(true)}
             >
               <Trash /> <span className='hidden sm:inline'>Hapus</span>
             </Button>
             <div className="flex gap-2 sm:gap-3">
               <DialogClose render={
-                <Button variant={'red'} disabled={mutation.isPending}>
+                <Button variant={'red'} disabled={isDisable}>
                   <X /> Batal
                 </Button>
               } />
-              <Button type='submit' disabled={mutation.isPending}>
-                Simpan <Check />
+              <Button type='submit' disabled={isDisable}>
+                Simpan
+                {(mutation.isPending || form.formState.isSubmitting) ? <Spinner data-icon="inline-start" /> : <Check />}
               </Button>
             </div>
           </div>
@@ -297,7 +328,7 @@ function FieldWrap({ children }: { children: ReactNode }) {
   )
 }
 
-function AnimeListDelete({ 
+function AnimeListDelete({
   animeId, animeTitle, isSyncedWithMalPreviously, isOpen, setIsOpen, setRootDialogOpen
 }: {
   animeId: number;
@@ -336,11 +367,20 @@ function AnimeListDelete({
     },
     onError: (error) => {
       if (axios.isAxiosError(error) && error.response?.data) {
-        const expectedError = error.response.data as ApiExpectedError;
-        toast.add({
-          type: 'error',
-          description: expectedError.message,
-        });
+        if (error.status === HttpStatusCode.Forbidden) {
+          toast.add({
+            type: 'error',
+            description: 'Akun Anda belum terhubung dengan MyAnimeList. Silakan matikan sinkronisasi dengan MyAnimeList'
+          })
+          return;
+        } else {
+          const expectedError = error.response.data as ApiExpectedError;
+          toast.add({
+            type: 'error',
+            description: expectedError.message,
+          });
+          return;
+        }
       } else {
         toast.add({
           type: 'error',
@@ -363,6 +403,7 @@ function AnimeListDelete({
                 id={`is-synced-with-mal-${animeId.toString()}`}
                 checked={isSyncedWithMal}
                 onCheckedChange={setIsSyncedWithMal}
+                disabled={mutation.isPending}
               />
               <FieldLabel htmlFor={`is-synced-with-mal-${animeId.toString()}`}>
                 Sinkronisasi dengan MyAnimeList
@@ -380,7 +421,8 @@ function AnimeListDelete({
             onClick={() => mutation.mutate()}
             className={'flex-row-reverse sm:flex-row'}
           >
-            Hapus <Trash />
+            Hapus
+            {mutation.isPending ? <Spinner data-icon="inline-start" /> : <Trash />}
           </Button>
         </DialogFooter>
       </DialogContent>

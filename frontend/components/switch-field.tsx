@@ -15,6 +15,7 @@ interface SwitchFieldProps<T extends FieldValues> {
   inputDescription?: string;
   className?: string;
   isRequired?: boolean;
+  isDisable?: boolean;
   labelPosition?: "left" | "right";
 }
 
@@ -26,6 +27,7 @@ export default function SwitchField<T extends FieldValues>({
   inputDescription,
   className = "",
   isRequired = false,
+  isDisable = false,
   labelPosition = "right",
 }: SwitchFieldProps<T>) {
   const id = useId();
@@ -51,6 +53,7 @@ export default function SwitchField<T extends FieldValues>({
             </FieldLabel>
             <Switch 
               id={inputId ?? id}
+              disabled={isDisable}
               checked={field.value ?? false}
               onCheckedChange={field.onChange}
               aria-invalid={fieldState.invalid}  />

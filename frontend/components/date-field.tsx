@@ -25,6 +25,7 @@ interface DateFieldProps<T extends FieldValues> {
   inputPlaceholder?: string;
   className?: string;
   isRequired?: boolean;
+  isDisable?: boolean;
 }
 
 export default function DateField<T extends FieldValues>({
@@ -36,6 +37,7 @@ export default function DateField<T extends FieldValues>({
   inputPlaceholder,
   className = "",
   isRequired = false,
+  isDisable = false,
 }: DateFieldProps<T>) {
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -65,6 +67,7 @@ export default function DateField<T extends FieldValues>({
 
             <InputGroup>
               <InputGroupInput
+                disabled={isDisable}
                 value={field.value ?? ""}
                 id={inputId ?? id}
                 placeholder={inputPlaceholder}
@@ -97,6 +100,7 @@ export default function DateField<T extends FieldValues>({
                   <PopoverTrigger
                     render={
                       <InputGroupButton
+                        disabled={isDisable}
                         variant="ghost"
                         size="icon-xs"
                         aria-label="Select date"
