@@ -97,28 +97,30 @@ export class UserAnimeListService {
     data: CreateUserAnimeList,
   ): Promise<UserAnimeListWithRelation> {
     try {
-      if (data.animePlatformId) {
-        await this.checkAnimeSimilaritiesBetweenPlatformAndList(
-          animeId,
-          data.animePlatformId,
-        );
-      }
+      return await this.prisma.$transaction(async (tx) => {
+        if (data.animePlatformId) {
+          await this.checkAnimeSimilaritiesBetweenPlatformAndList(
+            animeId,
+            data.animePlatformId,
+          );
+        }
 
-      const userAnimeList = await this.prisma.userAnimeList.create({
-        data: {
-          ...data,
-          ...userAnimeListRequest(data.startDate, data.finishDate),
-          userId,
-          animeId,
-        },
-        include: this.userAnimeListInclude,
+        const userAnimeList = await tx.userAnimeList.create({
+          data: {
+            ...data,
+            ...userAnimeListRequest(data.startDate, data.finishDate),
+            userId,
+            animeId,
+          },
+          include: this.userAnimeListInclude,
+        });
+
+        if (data.isSyncedWithMal) {
+          await this.updateMalStatus(userId, animeId, data);
+        }
+
+        return userAnimeListWithRelation(userAnimeList);
       });
-
-      if (data.isSyncedWithMal) {
-        await this.updateMalStatus(userId, animeId, data);
-      }
-
-      return userAnimeListWithRelation(userAnimeList);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -155,29 +157,31 @@ export class UserAnimeListService {
     data: UpdateUserAnimeList,
   ): Promise<UserAnimeListWithRelation> {
     try {
-      if (data.animePlatformId) {
-        await this.checkAnimeSimilaritiesBetweenPlatformAndList(
-          animeId,
-          data.animePlatformId,
-        );
-      }
+      return await this.prisma.$transaction(async (tx) => {
+        if (data.animePlatformId) {
+          await this.checkAnimeSimilaritiesBetweenPlatformAndList(
+            animeId,
+            data.animePlatformId,
+          );
+        }
 
-      const userAnimeList = await this.prisma.userAnimeList.update({
-        where: {
-          userId_animeId: { userId, animeId },
-        },
-        data: {
-          ...data,
-          ...userAnimeListRequest(data.startDate, data.finishDate),
-        },
-        include: this.userAnimeListInclude,
+        const userAnimeList = await tx.userAnimeList.update({
+          where: {
+            userId_animeId: { userId, animeId },
+          },
+          data: {
+            ...data,
+            ...userAnimeListRequest(data.startDate, data.finishDate),
+          },
+          include: this.userAnimeListInclude,
+        });
+
+        if (data.isSyncedWithMal) {
+          await this.updateMalStatus(userId, animeId, data);
+        }
+
+        return userAnimeListWithRelation(userAnimeList);
       });
-
-      if (data.isSyncedWithMal) {
-        await this.updateMalStatus(userId, animeId, data);
-      }
-
-      return userAnimeListWithRelation(userAnimeList);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -199,44 +203,30 @@ export class UserAnimeListService {
     data: CreateOrUpdateUserAnimeList,
   ): Promise<UserAnimeListWithRelation & { statusCode: HttpStatus }> {
     try {
-      if (data.animePlatformId) {
-        await this.checkAnimeSimilaritiesBetweenPlatformAndList(
-          animeId,
-          data.animePlatformId,
-        );
-      }
-
-      let userAnimeList: UserAnimeListPrisma & {
-          anime: AnimePrisma;
-          animePlatform:
-            | (AnimePlatformPrisma & {
-                platform: PlatformPrisma;
-                link: LinkPrisma;
-              })
-            | null;
-        },
-        statusCode = HttpStatus.OK;
-
-      try {
-        userAnimeList = await this.prisma.userAnimeList.update({
-          where: {
-            userId_animeId: { userId, animeId },
-          },
-          data: {
-            ...data,
-            ...userAnimeListRequest(data.startDate, data.finishDate),
-            userId,
+      return await this.prisma.$transaction(async (tx) => {
+        if (data.animePlatformId) {
+          await this.checkAnimeSimilaritiesBetweenPlatformAndList(
             animeId,
+            data.animePlatformId,
+          );
+        }
+
+        let userAnimeList: UserAnimeListPrisma & {
+            anime: AnimePrisma;
+            animePlatform:
+              | (AnimePlatformPrisma & {
+                  platform: PlatformPrisma;
+                  link: LinkPrisma;
+                })
+              | null;
           },
-          include: this.userAnimeListInclude,
-        });
-      } catch (error) {
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2025'
-        ) {
-          statusCode = HttpStatus.CREATED;
-          userAnimeList = await this.prisma.userAnimeList.create({
+          statusCode = HttpStatus.OK;
+
+        try {
+          userAnimeList = await tx.userAnimeList.update({
+            where: {
+              userId_animeId: { userId, animeId },
+            },
             data: {
               ...data,
               ...userAnimeListRequest(data.startDate, data.finishDate),
@@ -245,19 +235,35 @@ export class UserAnimeListService {
             },
             include: this.userAnimeListInclude,
           });
-        } else {
-          throw error;
+        } catch (error) {
+          if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === 'P2025'
+          ) {
+            statusCode = HttpStatus.CREATED;
+            userAnimeList = await tx.userAnimeList.create({
+              data: {
+                ...data,
+                ...userAnimeListRequest(data.startDate, data.finishDate),
+                userId,
+                animeId,
+              },
+              include: this.userAnimeListInclude,
+            });
+          } else {
+            throw error;
+          }
         }
-      }
 
-      if (data.isSyncedWithMal) {
-        await this.updateMalStatus(userId, animeId, data);
-      }
+        if (data.isSyncedWithMal) {
+          await this.updateMalStatus(userId, animeId, data);
+        }
 
-      return {
-        ...userAnimeListWithRelation(userAnimeList),
-        statusCode,
-      };
+        return {
+          ...userAnimeListWithRelation(userAnimeList),
+          statusCode,
+        };
+      });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -295,34 +301,36 @@ export class UserAnimeListService {
     }
   > {
     try {
-      const userAnimeList = await this.prisma.userAnimeList.delete({
-        where: {
-          userId_animeId: { userId, animeId },
-        },
-        select: {
-          id: true,
-          isSyncedWithMal: true,
-          anime: {
-            select: { title: true, malId: true },
+      return await this.prisma.$transaction(async (tx) => {
+        const userAnimeList = await tx.userAnimeList.delete({
+          where: {
+            userId_animeId: { userId, animeId },
           },
-          animePlatform: {
-            select: {
-              platform: {
-                select: { name: true },
-              },
-              link: {
-                select: { url: true },
+          select: {
+            id: true,
+            isSyncedWithMal: true,
+            anime: {
+              select: { title: true, malId: true },
+            },
+            animePlatform: {
+              select: {
+                platform: {
+                  select: { name: true },
+                },
+                link: {
+                  select: { url: true },
+                },
               },
             },
           },
-        },
+        });
+
+        if (userAnimeList.isSyncedWithMal) {
+          await this.mal.deleteMalStatus(userId, userAnimeList.anime.malId);
+        }
+
+        return userAnimeList;
       });
-
-      if (userAnimeList.isSyncedWithMal) {
-        await this.mal.deleteMalStatus(userId, userAnimeList.anime.malId);
-      }
-
-      return userAnimeList;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&

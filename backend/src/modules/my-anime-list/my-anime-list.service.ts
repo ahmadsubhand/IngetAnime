@@ -185,6 +185,7 @@ export class MyAnimeListService {
 
         return access_token;
       }
+      return undefined;
     }
   }
 
