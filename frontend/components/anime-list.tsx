@@ -27,6 +27,8 @@ import malService from '../services/mal.service';
 import { Switch } from './ui/switch';
 import { useIsMobile } from '../hooks/use-mobile';
 import { Spinner } from './ui/spinner';
+import { useAuth } from '../providers/auth-provider';
+import { useRouter } from 'next/navigation';
 
 export default function AnimeList({
   anime
@@ -38,6 +40,10 @@ export default function AnimeList({
 }) {
   const isMobile = useIsMobile();
   const episodeAired = getEpisodeAired(anime.status, anime.episodeTotal, anime.animePlatforms[0]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
 
   const form = useForm<CreateOrUpdateUserAnimeList>({
     resolver: zodResolver(UserAnimeListValidation.CREATE_OR_UPDATE_USER_ANIME_LIST),
@@ -54,24 +60,26 @@ export default function AnimeList({
     }
   });
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   useEffect(() => {
     if (isOpen) {
-      form.reset(
-        anime.userAnimeList ?? {
-          startDate: null,
-          finishDate: null,
-          progress: 0,
-          score: 0,
-          episodesDifference: 0,
-          status: 'plan_to_watch',
-          isSyncedWithMal: false,
-          animePlatformId: null,
-        }
-      );
+      if (!user?.isVerified) {
+        router.push('/auth');
+      } else {
+        form.reset(
+          anime.userAnimeList ?? {
+            startDate: null,
+            finishDate: null,
+            progress: 0,
+            score: 0,
+            episodesDifference: 0,
+            status: 'plan_to_watch',
+            isSyncedWithMal: false,
+            animePlatformId: null,
+          }
+        );
+      }
     }
-  }, [isOpen, anime.userAnimeList, form]);
+  }, [isOpen, anime.userAnimeList, form, user?.isVerified, router]);
 
   const queryClient = useQueryClient();
   const mutation = useMutation({
