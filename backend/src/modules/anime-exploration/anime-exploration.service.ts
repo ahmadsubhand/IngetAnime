@@ -64,6 +64,7 @@ export class AnimeExplorationService {
     const endpoint = '/anime';
     const url = `https://api.myanimelist.net/v2${endpoint}`;
     const params = new URLSearchParams({
+      nsfw: 'true',
       q: data.q,
       ...this.requiredParams(data),
     });
@@ -109,6 +110,7 @@ export class AnimeExplorationService {
     const endpoint = '/anime/ranking';
     const url = `https://api.myanimelist.net/v2${endpoint}`;
     const params = new URLSearchParams({
+      nsfw: 'true',
       ranking_type: data.ranking_type,
       ...this.requiredParams(data),
     });
@@ -155,6 +157,7 @@ export class AnimeExplorationService {
     const endpoint = `/anime/season/${param.year}/${param.season}`;
     const url = `https://api.myanimelist.net/v2${endpoint}`;
     const params = new URLSearchParams({
+      nsfw: 'true',
       ...(data.sort && { sort: data.sort }),
       ...this.requiredParams(data),
     });
@@ -203,6 +206,7 @@ export class AnimeExplorationService {
     const endpoint = '/anime/suggestions';
     const url = `https://api.myanimelist.net/v2${endpoint}`;
     const params = new URLSearchParams({
+      nsfw: 'true',
       ...this.requiredParams(data),
     });
 
