@@ -6,7 +6,7 @@ import { ExplorationAnime, SkeletonAnime } from "../anime";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import animeExplorationService from "../../../services/anime-exploration.service";
 import { useEffect, useState } from "react";
-import { RankingType } from "../../../enums";
+import { Season } from "../../../enums";
 import { Field, FieldLabel } from "../../../components/ui/field";
 import { useIsMobile } from "../../../hooks/use-mobile";
 import { useInView } from "react-intersection-observer";
@@ -19,23 +19,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
+import getCurrentSeason from "../../../helper/get-current-season";
 import AnimeUpdate from '../../../components/anime-update';
 
-export default function BestPage() {
+export default function SeasonalPage() {
   const isMobile = useIsMobile();
   const limit = isMobile ? 5 : 12;
-  const rankingTypes = [
-    { label: "Semua", value: RankingType.all },
-    { label: "TV series", value: RankingType.tv },
-    { label: "Film", value: RankingType.movie },
-    { label: "OVA", value: RankingType.ova },
-    { label: "Spesial", value: RankingType.special },
-    { label: "Sedang tayang", value: RankingType.airing },
-    { label: "Segera tayang", value: RankingType.upcoming },
-    { label: "Terpopuler", value: RankingType.bypopularity },
-    { label: "Terfavorit", value: RankingType.favorite },
+  const { season: currentSeason, year: currentYear } = getCurrentSeason();
+
+  const seasons = [
+    { label: "Fall", value: Season.fall },
+    { label: "Summer", value: Season.summer },
+    { label: "Spring", value: Season.spring },
+    { label: "Winter", value: Season.winter },
   ];
-  const [rankingType, setRankingType] = useState<RankingType>(RankingType.all);
+  const [season, setSeason] = useState<Season>(currentSeason);
+
+  const YEAR_MINIMAL = 1917;
+  const years = Array.from({ length: currentYear - YEAR_MINIMAL + 1 }).map(
+    (_, i) => {
+      const year = currentYear - i;
+      return { label: year.toString(), value: year };
+    },
+  );
+  const [year, setYear] = useState(currentYear);
 
   const {
     data,
@@ -45,17 +52,19 @@ export default function BestPage() {
     hasNextPage,
     isRefetching,
   } = useInfiniteQuery({
-    queryKey: ["anime", "ranking", { ranking_type: rankingType }],
+    queryKey: ["anime", "season", { year, season }],
     initialPageParam: {
       limit,
       offset: 0,
     },
     queryFn: async ({ pageParam }) => {
-      const response = await animeExplorationService.getAnimeRanking({
-        ...pageParam,
-        ranking_type: rankingType,
-        fields: "synopsis,genres,average_episode_duration,mean",
-      });
+      const response = await animeExplorationService.getSeasonalAnime(
+        {
+          ...pageParam,
+          fields: "synopsis,genres,average_episode_duration,mean",
+        },
+        { year, season },
+      );
       return response.data;
     },
     getNextPageParam: (lastPage) => {
@@ -88,25 +97,46 @@ export default function BestPage() {
   return (
     <>
       <AppTitle
-        title="Anime Terbaik"
-        subtitle="Temukan anime dengan rating tertinggi dan kualitas terbaik untuk kamu tonton sekarang!"
+        title="Anime Musiman"
+        subtitle="Pantau anime terbaru yang sedang tayang musim ini lengkap dengan jadwal rilisnya!"
       />
-
       <Field orientation={"horizontal"}>
-        <FieldLabel htmlFor="ranking-type">Jenis Peringkat</FieldLabel>
+        <FieldLabel htmlFor="season">Musim</FieldLabel>
+
         <Select
           disabled={status === "pending"}
-          items={rankingTypes}
-          value={rankingType}
-          onValueChange={(value) => setRankingType(value ?? RankingType.all)}
+          items={seasons}
+          value={season}
+          onValueChange={(value) => setSeason(value ?? currentSeason)}
         >
-          <SelectTrigger className={`bg-background w-full`} id="ranking-type">
+          <SelectTrigger className={`bg-background w-full`} id="season">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectLabel>Jenis Peringkat</SelectLabel>
-              {rankingTypes.map((option) => (
+              <SelectLabel>Musim</SelectLabel>
+              {seasons.map((option) => (
+                <SelectItem value={option.value} key={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+
+        <Select
+          disabled={status === "pending"}
+          items={years}
+          value={year}
+          onValueChange={(value) => setYear(value ?? currentYear)}
+        >
+          <SelectTrigger className={`bg-background w-full`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Tahun</SelectLabel>
+              {years.map((option) => (
                 <SelectItem value={option.value} key={option.value}>
                   {option.label}
                 </SelectItem>
@@ -133,23 +163,23 @@ export default function BestPage() {
 
       <AnimeUpdate isOpen={isRefetching} />
 
-      <div className="hidden sm:block fixed w-60 h-150 -left-24 -bottom-25 -z-1">
+      <div className="hidden sm:block fixed w-67 h-120 -left-2 -bottom-20 -z-1">
         <Image
-          src={"/fern.webp"}
-          alt="Fern"
+          src={"/nene.png"}
+          alt="Sakura Nene"
           fill
           className="object-contain"
-          sizes="257px"
+          sizes="595px"
           loading={"eager"}
         />
       </div>
-      <div className="hidden sm:block fixed w-96 h-174 -right-48 -bottom-46 -z-1">
+      <div className="hidden sm:block fixed w-88 h-119 -right-45 -bottom-20 -z-1">
         <Image
-          src={"/emilia.webp"}
-          alt="Emilia"
+          src={"/aoba.png"}
+          alt="Suzukaze Aoba"
           fill
           className="object-contain"
-          sizes="945px"
+          sizes="1483px"
           loading={"eager"}
         />
       </div>

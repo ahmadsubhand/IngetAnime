@@ -42,7 +42,7 @@ export default function AnimeList({
   const episodeAired = getEpisodeAired(anime.status, anime.episodeTotal, anime.animePlatforms[0]);
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const { user } = useAuth();
+  const { isVerified } = useAuth();
   const router = useRouter();
 
   const form = useForm<CreateOrUpdateUserAnimeList>({
@@ -62,7 +62,7 @@ export default function AnimeList({
 
   useEffect(() => {
     if (isOpen) {
-      if (!user?.isVerified) {
+      if (!isVerified) {
         router.push('/auth');
       } else {
         form.reset(
@@ -79,7 +79,7 @@ export default function AnimeList({
         );
       }
     }
-  }, [isOpen, anime.userAnimeList, form, user?.isVerified, router]);
+  }, [isOpen, anime.userAnimeList, form, isVerified, router]);
 
   const queryClient = useQueryClient();
   const mutation = useMutation({

@@ -16,6 +16,7 @@ interface InputFieldProps<T extends FieldValues> {
   className?: string;
   isRequired?: boolean;
   isDisable?: boolean;
+  orientation?: 'horizontal' | 'vertical'
 }
 
 export default function InputField<T extends FieldValues>({
@@ -29,6 +30,7 @@ export default function InputField<T extends FieldValues>({
   className = "",
   isRequired = false,
   isDisable = false,
+  orientation = 'vertical'
 }: InputFieldProps<T>) {
   const id = useId();
   return (
@@ -36,7 +38,7 @@ export default function InputField<T extends FieldValues>({
       name={inputName}
       control={form.control}
       render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid} className={`${className}`}>
+        <Field data-invalid={fieldState.invalid} className={`${className}`} orientation={orientation}>
           <FieldLabel htmlFor={inputId ?? id}>
             {inputLabel}{" "}
             <span className="text-red-500">{isRequired ? "*" : ""}</span>
