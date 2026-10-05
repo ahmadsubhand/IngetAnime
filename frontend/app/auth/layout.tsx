@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../providers/auth-provider';
@@ -13,11 +13,20 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   const emailVerificationPath = '/auth/email-verification';
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && !isVerified && (pathname !== emailVerificationPath)) {
+    if (
+      !isLoading &&
+      isAuthenticated &&
+      !isVerified &&
+      pathname !== emailVerificationPath
+    ) {
       router.replace(emailVerificationPath);
     } else if (!isLoading && isAuthenticated && isVerified) {
       router.replace('/');
-    } else if (!isLoading && !isAuthenticated && pathname === emailVerificationPath) {
+    } else if (
+      !isLoading &&
+      !isAuthenticated &&
+      pathname === emailVerificationPath
+    ) {
       router.replace('/auth');
     }
   }, [isLoading, isAuthenticated, isVerified, pathname, router]);
@@ -25,10 +34,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   if (isLoading || isVerified) {
     return (
       <div className="w-full h-full flex flex-col gap-2 items-center justify-center">
-          <Spinner className="size-8" />
-          <p className="text-lg">
-            Mengecek sesi Anda ...
-          </p>
+        <Spinner className="size-8" />
+        <p className="text-lg">Mengecek sesi Anda ...</p>
       </div>
     );
   }
@@ -42,7 +49,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </div>
       <div className="relative hidden md:block w-1/2">
         <Image
-          src={"/auth-bg.jpg"}
+          src={'/auth-bg.jpg'}
           alt="Auth Background - Kaguya Shinomiya"
           className="object-cover"
           fill

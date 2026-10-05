@@ -1,25 +1,25 @@
-import Image from "next/image";
-import Link from "next/link";
-import { buttonVariants } from "../../components/ui/button";
-import { Star, Upload } from "lucide-react";
-import { cn } from "../../lib/utils";
-import { Card } from "../../components/ui/card";
-import { ScrollArea } from "../../components/ui/scroll-area";
-import { MalAnime } from "../../types/my-anime-list.model";
-import { Anime } from "../../types/anime.model";
-import type { AnimePlatform } from "../../types/anime-platform.model";
-import { UserAnimeList } from "../../types/user-anime-list.model";
-import dayjs from "dayjs";
+import Image from 'next/image';
+import Link from 'next/link';
+import { buttonVariants } from '@/components/ui/button';
+import { Star, Upload } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { MalAnime } from '@/types/my-anime-list.model';
+import { Anime } from '@/types/anime.model';
+import type { AnimePlatform } from '@/types/anime-platform.model';
+import { UserAnimeList } from '@/types/user-anime-list.model';
+import dayjs from 'dayjs';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "../../components/ui/tooltip";
-import { Skeleton } from "../../components/ui/skeleton";
-import { AnimeStatus } from "../../enums";
-import { useIsMobile } from "../../hooks/use-mobile";
-import AnimeList from "../../components/anime-list";
-import getEpisodeAired from "../../helper/get-episode-aired";
+} from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AnimeStatus } from '@/enums';
+import { useIsMobile } from '@/hooks/use-mobile';
+import AnimeList from '@/components/anime-list';
+import getEpisodeAired from '@/helper/get-episode-aired';
 
 export function ExplorationAnime({
   anime,
@@ -44,7 +44,7 @@ export function ExplorationAnime({
           src={anime.picture}
           alt={anime.title}
           sizes="120px"
-          loading={"lazy"}
+          loading={'lazy'}
           className="object-cover"
           fill
         />
@@ -62,12 +62,12 @@ export function ExplorationAnime({
           <p className="font-bold line-clamp-2">{anime.title}</p>
           <p className="hidden sm:block text-xs">
             {[
-              anime.releaseAt && dayjs(anime.releaseAt).format("MMM DD, YYYY"),
+              anime.releaseAt && dayjs(anime.releaseAt).format('MMM DD, YYYY'),
               anime.episodeTotal &&
-                `${anime.episodeTotal} eps${anime.average_episode_duration ? `, ${Math.floor(anime.average_episode_duration / 60)} min` : ""}`,
+                `${anime.episodeTotal} eps${anime.average_episode_duration ? `, ${Math.floor(anime.average_episode_duration / 60)} min` : ''}`,
             ]
               .filter(Boolean)
-              .join(" -- ")}
+              .join(' -- ')}
           </p>
         </div>
         <ScrollArea className="hidden sm:flex text-xs max-h-20">
@@ -77,31 +77,31 @@ export function ExplorationAnime({
           <p
             className={`text-xs flex items-center flex-wrap ${
               isMobile && anime.animePlatforms[0]?.id
-                ? "max-h-5"
+                ? 'max-h-5'
                 : !isMobile &&
                     (episodeAired !== null || anime.animePlatforms[0]?.id)
-                  ? "max-h-9"
-                  : "max-h-14"
+                  ? 'max-h-9'
+                  : 'max-h-14'
             }`}
           >
             <span className="mr-1">Genre:</span>
             {anime.genres?.map((genre, i) => (
               <span key={genre.id} className="flex mr-1">
                 <Link
-                  target={"_blank"}
+                  target={'_blank'}
                   href={`https://myanimelist.net/anime/genre/${genre.id}`}
                   className={cn(
                     buttonVariants({
-                      variant: "link",
-                      size: "xs",
-                      class: "px-0 h-fit text-xs",
+                      variant: 'link',
+                      size: 'xs',
+                      class: 'px-0 h-fit text-xs',
                     }),
                   )}
                 >
                   {genre.name}
                 </Link>
 
-                {i < (anime.genres?.length ?? 0) - 1 && ", "}
+                {i < (anime.genres?.length ?? 0) - 1 && ', '}
               </span>
             ))}
           </p>
@@ -136,7 +136,7 @@ export function ExplorationAnime({
             )}
             {anime.animePlatforms[0]?.id && (
               <ScrollArea
-                className={`hidden sm:flex${episodeAired ? " max-w-40" : ""}`}
+                className={`hidden sm:flex${episodeAired ? ' max-w-40' : ''}`}
               >
                 <AnimePlatform platforms={anime.animePlatforms} />
               </ScrollArea>
@@ -181,7 +181,7 @@ function AnimePlatform({ platforms }: { platforms: AnimePlatform[] }) {
             render={
               <Link
                 href={platform.link.url}
-                target={"_blank"}
+                target={'_blank'}
                 className="w-5 h-5 relative"
               >
                 <Image
@@ -210,11 +210,11 @@ function AnimeScore({ malId, score }: { malId: number; score: number }) {
             href={`https://myanimelist.net/anime/${malId}`}
             className={cn(
               buttonVariants({
-                size: "xs",
-                variant: score < 6 ? "red" : score < 8 ? "yellow" : "default",
+                size: 'xs',
+                variant: score < 6 ? 'red' : score < 8 ? 'yellow' : 'default',
               }),
             )}
-            target={"_blank"}
+            target={'_blank'}
           >
             <Star data-icon="inline-start" />
             {score}
@@ -240,17 +240,17 @@ function AnimeEpisodeAired({
       <TooltipTrigger
         render={
           <Link
-            href={firstAnimePlatformLink || ""}
-            target={firstAnimePlatformLink ? "_blank" : "_self"}
+            href={firstAnimePlatformLink || ''}
+            target={firstAnimePlatformLink ? '_blank' : '_self'}
             className={cn(
               buttonVariants({
-                size: "xs",
+                size: 'xs',
                 variant:
-                  status === "finished_airing"
-                    ? "blue"
-                    : status === "currently_airing"
-                      ? "default"
-                      : "gray",
+                  status === 'finished_airing'
+                    ? 'blue'
+                    : status === 'currently_airing'
+                      ? 'default'
+                      : 'gray',
               }),
             )}
           >

@@ -1,15 +1,17 @@
-"use client";
+'use client';
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from 'react';
 import { ApiResponse } from '../types';
 import userService from '../services/user.service';
 import authService from '../services/auth.service';
-import { EmailVerification, ForgotPassword, Login, Register, ResetPassword, ThirdPartyLogin } from '../validator/auth.validation';
+import {
+  EmailVerification,
+  ForgotPassword,
+  Login,
+  Register,
+  ResetPassword,
+  ThirdPartyLogin,
+} from '../validator/auth.validation';
 import { User } from '../types/user.model';
 import { Role } from '../enums';
 import { useQueryClient } from '@tanstack/react-query';
@@ -25,7 +27,9 @@ interface AuthContextValue {
   register: (payload: Register) => Promise<void>;
   verifyEmail: (payload: EmailVerification) => Promise<void>;
   resendVerification: () => Promise<ApiResponse<{ email: string }>>;
-  forgotPassword: (payload: ForgotPassword) => Promise<ApiResponse<{ email: string; username: string }>>;
+  forgotPassword: (
+    payload: ForgotPassword,
+  ) => Promise<ApiResponse<{ email: string; username: string }>>;
   resetPassword: (payload: ResetPassword) => Promise<void>;
   loginWithGoogle: (payload: ThirdPartyLogin) => Promise<void>;
   loginWithMal: (payload: ThirdPartyLogin) => Promise<void>;
@@ -33,17 +37,13 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const isAuthenticated = user !== null;
   const isVerified = user ? user.isVerified : false;
-  const isAdmin = user ? (user.role === Role.admin) : false;
+  const isAdmin = user ? user.role === Role.admin : false;
 
   const queryClient = useQueryClient();
 
@@ -94,7 +94,7 @@ export function AuthProvider({
   }
 
   async function forgotPassword(payload: ForgotPassword) {
-    return await authService.forgotPassword(payload);;
+    return await authService.forgotPassword(payload);
   }
 
   async function resetPassword(payload: ResetPassword) {
@@ -143,9 +143,7 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error(
-      "useAuth must be used within an AuthProvider",
-    );
+    throw new Error('useAuth must be used within an AuthProvider');
   }
 
   return context;

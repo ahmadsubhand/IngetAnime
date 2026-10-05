@@ -3,11 +3,14 @@ import { ApiResponse } from '../types';
 import { Link } from '../types/anime-platform.model';
 import { Anime } from '../types/anime.model';
 import { Platform } from '../types/platform.model';
-import { UserAnimeList, UserAnimeListWithRelation } from '../types/user-anime-list.model';
+import {
+  UserAnimeList,
+  UserAnimeListWithRelation,
+} from '../types/user-anime-list.model';
 import { CreateOrUpdateUserAnimeList } from '../validator/user-anime-list.validation';
 
-function getPrefix(animeId: number)  {
-  return `/anime/${animeId.toString()}/my-list-status`
+function getPrefix(animeId: number) {
+  return `/anime/${animeId.toString()}/my-list-status`;
 }
 
 export const userAnimeListService = {
@@ -20,30 +23,30 @@ export const userAnimeListService = {
   },
 
   async delete(animeId: number) {
-    const { data } = await api.delete<ApiResponse<
-      {
-        id: UserAnimeList['id'];
-        isSyncedWithMal: UserAnimeList['isSyncedWithMal'];
-      } & {
-        anime: {
-          title: Anime['title'];
-          malId: Anime['malId'];
-        };
-      } & {
-        animePlatform: {
-          platform: {
-            name: Platform['name'];
+    const { data } = await api.delete<
+      ApiResponse<
+        {
+          id: UserAnimeList['id'];
+          isSyncedWithMal: UserAnimeList['isSyncedWithMal'];
+        } & {
+          anime: {
+            title: Anime['title'];
+            malId: Anime['malId'];
           };
-          link: {
-            url: Link['url'];
-          };
-        } | null;
-      }
-    >>(
-      `${getPrefix(animeId)}`,
-    );
+        } & {
+          animePlatform: {
+            platform: {
+              name: Platform['name'];
+            };
+            link: {
+              url: Link['url'];
+            };
+          } | null;
+        }
+      >
+    >(`${getPrefix(animeId)}`);
     return data;
   },
-}
+};
 
 export default userAnimeListService;

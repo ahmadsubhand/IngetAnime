@@ -14,14 +14,13 @@ import {
 import { SkipThrottle } from '@nestjs/throttler';
 import { AnimeService } from './anime.service';
 import { AnimeWithRelation, Anime } from './anime.model';
-import { ApiResponse } from '../../types';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { AnimeValidation } from './anime.validation';
 import type { AnimeId, CreateAnime, UpdateAnime } from './anime.validation';
 import { OptionalAuthGuard, VerifiedAuthGuard } from '../auth/guard/auth.guard';
 import { Role } from '../auth/decorator/role.decarator';
 import { Request } from 'express';
-import { JwtPayload } from '../../types';
+import { ApiResponse, JwtPayload } from '../../types';
 
 @Controller('anime')
 export class AnimeController {

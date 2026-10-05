@@ -6,8 +6,8 @@ import {
   Lightbulb,
   LucideIcon,
   Trophy,
-} from "lucide-react";
-import AppLogo from "./app-logo";
+} from 'lucide-react';
+import AppLogo from './app-logo';
 import {
   Sidebar,
   SidebarContent,
@@ -21,14 +21,14 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "./ui/sidebar";
-import Link from "next/link";
+} from './ui/sidebar';
+import Link from 'next/link';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "./ui/collapsible";
-import { Separator } from "./ui/separator";
+} from './ui/collapsible';
+import { Separator } from './ui/separator';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -37,8 +37,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "./ui/navigation-menu";
-import AppProfile from "./app-profile";
+} from './ui/navigation-menu';
+import AppProfile from './app-profile';
 import { ReactNode } from 'react';
 
 export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
@@ -51,34 +51,34 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
 
   const menuItems: MenuItem[] = [
     {
-      title: "Timeline",
-      href: "/timeline",
+      title: 'Timeline',
+      href: '/anime/timeline',
       icon: CalendarDays,
     },
     {
-      title: "Eksplorasi",
+      title: 'Eksplorasi',
       icon: Compass,
       children: [
         {
-          title: "Terbaik",
-          href: "/exploration/best",
+          title: 'Terbaik',
+          href: '/anime/exploration/best',
           icon: Trophy,
         },
         {
-          title: "Musiman",
-          href: "/exploration/seasonal",
+          title: 'Musiman',
+          href: '/anime/exploration/seasonal',
           icon: CalendarDays,
         },
         {
-          title: "Rekomendasi",
-          href: "/exploration/recommendation",
+          title: 'Rekomendasi',
+          href: '/anime/exploration/recommendation',
           icon: Lightbulb,
         },
       ],
     },
     {
-      title: "List",
-      href: "/list",
+      title: 'List',
+      href: '/anime/list',
       icon: BookText,
     },
   ];
@@ -119,7 +119,7 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
                               return (
                                 <SidebarMenuSubItem key={child.title}>
                                   <SidebarMenuSubButton
-                                    render={<Link href={child.href ?? "#"} />}
+                                    render={<Link href={child.href ?? '#'} />}
                                   >
                                     <ChildIcon />
                                     <span>{child.title}</span>
@@ -137,7 +137,7 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      render={<Link href={item.href ?? "#"} />}
+                      render={<Link href={item.href ?? '#'} />}
                     >
                       <Icon />
                       <span>{item.title}</span>
@@ -177,7 +177,7 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
                       return (
                         <NavigationMenuLink
                           key={child.title}
-                          render={<Link href={child.href ?? "#"} />}
+                          render={<Link href={child.href ?? '#'} />}
                         >
                           <ChildIcon />
                           {child.title}
@@ -193,7 +193,7 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
               <NavigationMenuItem key={item.title}>
                 <NavigationMenuLink
                   className={navigationMenuTriggerStyle()}
-                  render={<Link href={item.href ?? "#"} />}
+                  render={<Link href={item.href ?? '#'} />}
                 >
                   <Icon />
                   {item.title}

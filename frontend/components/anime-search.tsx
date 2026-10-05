@@ -1,20 +1,26 @@
-"use client";
+'use client';
 
-import { Search } from "lucide-react";
+import { Search } from 'lucide-react';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "./ui/input-group";
-import { Control, Controller, FieldValues, Path, UseFormClearErrors } from "react-hook-form";
-import { Field, FieldDescription } from "./ui/field";
+} from './ui/input-group';
+import {
+  Control,
+  Controller,
+  FieldValues,
+  Path,
+  UseFormClearErrors,
+} from 'react-hook-form';
+import { Field, FieldDescription } from './ui/field';
 
 export default function AnimeSearch<T extends FieldValues>({
   form,
   inputName,
   isDisable = false,
-  className = "",
+  className = '',
 }: {
   form: {
     control: Control<T>;
@@ -29,7 +35,10 @@ export default function AnimeSearch<T extends FieldValues>({
       name={inputName}
       control={form.control}
       render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid} className={`relative ${className}`}>
+        <Field
+          data-invalid={fieldState.invalid}
+          className={`relative ${className}`}
+        >
           <InputGroup>
             <InputGroupInput
               disabled={isDisable}
@@ -41,15 +50,15 @@ export default function AnimeSearch<T extends FieldValues>({
               }}
               aria-invalid={fieldState.invalid}
             />
-            <InputGroupAddon align={"inline-end"}>
-              <InputGroupButton disabled={isDisable} type='submit'>
+            <InputGroupAddon align={'inline-end'}>
+              <InputGroupButton disabled={isDisable} type="submit">
                 <Search />
               </InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
           {fieldState.invalid && (
             <FieldDescription
-              className={`z-50 absolute -bottom-7 left-0 ${fieldState.invalid ? "text-destructive" : ""}`}
+              className={`z-50 absolute -bottom-7 left-0 ${fieldState.invalid ? 'text-destructive' : ''}`}
             >
               {fieldState.error?.message}
             </FieldDescription>

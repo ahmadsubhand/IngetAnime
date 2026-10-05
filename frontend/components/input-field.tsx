@@ -1,6 +1,6 @@
-import { ReactNode, useId } from "react";
-import { Control, Controller, FieldValues, Path } from "react-hook-form";
-import { Field, FieldDescription, FieldLabel } from "./ui/field";
+import { ReactNode, useId } from 'react';
+import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { Field, FieldDescription, FieldLabel } from './ui/field';
 import { Input } from './ui/input';
 
 interface InputFieldProps<T extends FieldValues> {
@@ -12,11 +12,11 @@ interface InputFieldProps<T extends FieldValues> {
   inputLabel?: ReactNode;
   inputDescription?: string;
   inputPlaceholder?: string;
-  inputType?: "text" | "number";
+  inputType?: 'text' | 'number';
   className?: string;
   isRequired?: boolean;
   isDisable?: boolean;
-  orientation?: 'horizontal' | 'vertical'
+  orientation?: 'horizontal' | 'vertical';
 }
 
 export default function InputField<T extends FieldValues>({
@@ -26,11 +26,11 @@ export default function InputField<T extends FieldValues>({
   inputLabel,
   inputDescription,
   inputPlaceholder,
-  inputType = "text",
-  className = "",
+  inputType = 'text',
+  className = '',
   isRequired = false,
   isDisable = false,
-  orientation = 'vertical'
+  orientation = 'vertical',
 }: InputFieldProps<T>) {
   const id = useId();
   return (
@@ -38,10 +38,14 @@ export default function InputField<T extends FieldValues>({
       name={inputName}
       control={form.control}
       render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid} className={`${className}`} orientation={orientation}>
+        <Field
+          data-invalid={fieldState.invalid}
+          className={`${className}`}
+          orientation={orientation}
+        >
           <FieldLabel htmlFor={inputId ?? id}>
-            {inputLabel}{" "}
-            <span className="text-red-500">{isRequired ? "*" : ""}</span>
+            {inputLabel}{' '}
+            <span className="text-red-500">{isRequired ? '*' : ''}</span>
           </FieldLabel>
           <Input
             disabled={isDisable}
@@ -50,12 +54,14 @@ export default function InputField<T extends FieldValues>({
             type={inputType}
             placeholder={inputPlaceholder}
             aria-invalid={fieldState.invalid}
-            {...(inputType === "number" && {
+            {...(inputType === 'number' && {
               onChange: (e) => field.onChange(parseInt(e.target.value)),
             })}
           />
           {(fieldState.invalid || inputDescription) && (
-            <FieldDescription className={fieldState.invalid ? 'text-destructive' : ''}>
+            <FieldDescription
+              className={fieldState.invalid ? 'text-destructive' : ''}
+            >
               {fieldState.error?.message || inputDescription}
             </FieldDescription>
           )}

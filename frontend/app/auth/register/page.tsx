@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
 import { useForm, useWatch } from 'react-hook-form';
 import { AuthValidation, Register } from '../../../validator/auth.validation';
-import { zodResolver } from "@hookform/resolvers/zod"
+import { zodResolver } from '@hookform/resolvers/zod';
 import InputField from '../../../components/input-field';
 import PasswordField from '../../../components/password-field';
 import { LogIn } from 'lucide-react';
@@ -28,8 +28,8 @@ export default function RegisterPage() {
       email: '',
       password: '',
       confirmPassword: '',
-    }
-  })
+    },
+  });
 
   const { register } = useAuth();
 
@@ -51,8 +51,12 @@ export default function RegisterPage() {
             username: '',
             email: '',
           });
-          form.setError('username', { message: 'Username atau email sudah digunakan' });
-          form.setError('email', { message: 'Username atau email sudah digunakan' });
+          form.setError('username', {
+            message: 'Username atau email sudah digunakan',
+          });
+          form.setError('email', {
+            message: 'Username atau email sudah digunakan',
+          });
         } else {
           const expectedError = error.response.data as ApiExpectedError;
           toast.add({
@@ -63,20 +67,21 @@ export default function RegisterPage() {
       } else {
         toast.add({
           type: 'error',
-          description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+          description:
+            'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
         });
       }
     }
   }
-  
+
   const usernameVal = useWatch({
     control: form.control,
     name: 'username',
   });
   const [usernameMessage, setUsernameMessage] = useState('');
-  
+
   useEffect(() => {
-    const delayDebounceFn = setTimeout( async () => {
+    const delayDebounceFn = setTimeout(async () => {
       if (form.formState.errors.username || !usernameVal) {
         setUsernameMessage('');
         return;
@@ -89,12 +94,14 @@ export default function RegisterPage() {
         setUsernameMessage('');
         if (axios.isAxiosError(error) && error.response?.data) {
           if (error.status === HttpStatusCode.Conflict) {
-            form.setError('username', { message: `"${usernameVal}" sudah digunakan` });
+            form.setError('username', {
+              message: `"${usernameVal}" sudah digunakan`,
+            });
             return;
           }
         }
       }
-    }, 1000)
+    }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
   }, [usernameVal, form]);
@@ -105,12 +112,12 @@ export default function RegisterPage() {
   });
   const [emailMessage, setEmailMessage] = useState('');
 
-  useEffect(() => { 
-    const delayDebounceFn = setTimeout( async () => {
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
       if (form.formState.errors.email || !emailVal) {
         setEmailMessage('');
         return;
-      };
+      }
       setEmailMessage('Mengecek ...');
 
       try {
@@ -120,12 +127,14 @@ export default function RegisterPage() {
         setEmailMessage('');
         if (axios.isAxiosError(error) && error.response?.data) {
           if (error.status === HttpStatusCode.Conflict) {
-            form.setError('email', { message: `"${emailVal}" sudah digunakan` });
+            form.setError('email', {
+              message: `"${emailVal}" sudah digunakan`,
+            });
             return;
           }
         }
       }
-    }, 1000)
+    }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
   }, [emailVal, form]);
@@ -133,71 +142,86 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const isDisable = form.formState.isSubmitting || isLoading;
 
-  return <>
-    <AppTitle title='Daftar' subtitle={<>
-      Cari tempat nonton anime terbaik?
-      <br />
-      Yuk eksplor disini!
-    </>} />
+  return (
+    <>
+      <AppTitle
+        title="Daftar"
+        subtitle={
+          <>
+            Cari tempat nonton anime terbaik?
+            <br />
+            Yuk eksplor disini!
+          </>
+        }
+      />
 
-    <form onSubmit={form.handleSubmit(onSubmit)} className='w-full flex flex-col gap-5'>
-      <div className="flex flex-col gap-3 w-full">
-        <InputField
-          form={form}
-          inputName="username"
-          inputLabel="Username"
-          inputDescription={usernameMessage}
-          inputPlaceholder="Username"
-          className="w-full"
-          isDisable={isDisable}
-          isRequired
-        />
-        <InputField
-          form={form}
-          inputName="email"
-          inputLabel="Email"
-          inputDescription={emailMessage}
-          inputPlaceholder="Email"
-          className="w-full"
-          isDisable={isDisable}
-          isRequired
-        />
-        <PasswordField
-          form={form}
-          inputName="password"
-          inputLabel="Password"
-          inputPlaceholder="Password"
-          className="w-full"
-          isDisable={isDisable}
-          isRequired
-        />
-        <PasswordField
-          form={form}
-          inputName="confirmPassword"
-          inputLabel="Konfirmasi Password"
-          inputPlaceholder="Konfirmasi Password"
-          className="w-full"
-          isDisable={isDisable}
-          isRequired
-        />
-      </div>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="w-full flex flex-col gap-5"
+      >
+        <div className="flex flex-col gap-3 w-full">
+          <InputField
+            form={form}
+            inputName="username"
+            inputLabel="Username"
+            inputDescription={usernameMessage}
+            inputPlaceholder="Username"
+            className="w-full"
+            isDisable={isDisable}
+            isRequired
+          />
+          <InputField
+            form={form}
+            inputName="email"
+            inputLabel="Email"
+            inputDescription={emailMessage}
+            inputPlaceholder="Email"
+            className="w-full"
+            isDisable={isDisable}
+            isRequired
+          />
+          <PasswordField
+            form={form}
+            inputName="password"
+            inputLabel="Password"
+            inputPlaceholder="Password"
+            className="w-full"
+            isDisable={isDisable}
+            isRequired
+          />
+          <PasswordField
+            form={form}
+            inputName="confirmPassword"
+            inputLabel="Konfirmasi Password"
+            inputPlaceholder="Konfirmasi Password"
+            className="w-full"
+            isDisable={isDisable}
+            isRequired
+          />
+        </div>
 
-      <Button type={'submit'} disabled={isDisable}>
-        {form.formState.isSubmitting ? <Spinner data-icon="inline-start" /> : <LogIn data-icon="inline-start" />} 
-        Daftar
-      </Button>
-    </form>
+        <Button type={'submit'} disabled={isDisable}>
+          {form.formState.isSubmitting ? (
+            <Spinner data-icon="inline-start" />
+          ) : (
+            <LogIn data-icon="inline-start" />
+          )}
+          Daftar
+        </Button>
+      </form>
 
-    <p className='text-sm text-center'>
-      Sudah punya akun? 
-      <Link 
-        href={`/auth/login`} 
-        aria-disabled={isDisable}
-        className={cn(buttonVariants({ variant: 'link', size: 'sm' }))}>
-        Masuk
-      </Link>
-    </p>
+      <p className="text-sm text-center">
+        Sudah punya akun?
+        <Link
+          href={`/auth/login`}
+          aria-disabled={isDisable}
+          className={cn(buttonVariants({ variant: 'link', size: 'sm' }))}
+        >
+          Masuk
+        </Link>
+      </p>
 
-    <ThirdPartyAuth isLoading={isDisable} setIsLoading={setIsLoading} />
-  </>
+      <ThirdPartyAuth isLoading={isDisable} setIsLoading={setIsLoading} />
+    </>
+  );
 }

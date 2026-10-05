@@ -1,11 +1,11 @@
 import z from 'zod';
 
 const FIELDS = z
-    .string()
-    .regex(
-      /^$|^[^,\s]+(,[^,\s]+)*$/,
-      'Format salah. Setiap nilai harus dipisah dengan koma tanpa spasi',
-    );
+  .string()
+  .regex(
+    /^$|^[^,\s]+(,[^,\s]+)*$/,
+    'Format salah. Setiap nilai harus dipisah dengan koma tanpa spasi',
+  );
 
 export class MyAnimeListValidation {
   static readonly ANIME_ID = z.object({

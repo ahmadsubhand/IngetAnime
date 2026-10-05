@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
-import { Control, Controller, FieldValues, Path } from "react-hook-form";
-import { Field, FieldError, FieldLabel } from "./ui/field";
-import { PasswordInput } from "./ui/password-input";
+import { ReactNode } from 'react';
+import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { Field, FieldError, FieldLabel } from './ui/field';
+import { PasswordInput } from './ui/password-input';
 
 interface PasswordFieldProps<T extends FieldValues> {
   form: {
@@ -20,7 +20,7 @@ export default function PasswordField<T extends FieldValues>({
   inputName,
   inputLabel,
   inputPlaceholder,
-  className = "",
+  className = '',
   isRequired = false,
   isDisable = false,
 }: PasswordFieldProps<T>) {
@@ -31,8 +31,8 @@ export default function PasswordField<T extends FieldValues>({
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid} className={className}>
           <FieldLabel htmlFor="fdsfdsfsfd">
-            {inputLabel}{" "}
-            <span className="text-red-500">{isRequired ? "*" : ""}</span>
+            {inputLabel}{' '}
+            <span className="text-red-500">{isRequired ? '*' : ''}</span>
           </FieldLabel>
           <PasswordInput
             {...field}

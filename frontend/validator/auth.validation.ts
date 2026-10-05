@@ -19,23 +19,16 @@ const password = z
   .regex(/[A-Z]/, 'Minimal ada satu huruf kapital')
   .regex(/[a-z]/, 'Minimal ada satu huruf kecil')
   .regex(/[0-9]/, 'Minimal ada satu angka')
-  .regex(
-    /[@$!%*?&]/,
-    'Minimal ada satu karakter khusus (@$!%*?&)',
-  );
+  .regex(/[@$!%*?&]/, 'Minimal ada satu karakter khusus (@$!%*?&)');
 
 export class AuthValidation {
   static readonly REGISTER = z
     .object({
-      email: z
-        .email('Format email tidak valid')
-        .nonempty('Wajib diisi'),
+      email: z.email('Format email tidak valid').nonempty('Wajib diisi'),
 
       password,
 
-      confirmPassword: z
-        .string()
-        .min(8, 'Minimal 8 karakter'),
+      confirmPassword: z.string().min(8, 'Minimal 8 karakter'),
 
       username: z
         .string()
@@ -53,9 +46,7 @@ export class AuthValidation {
 
   static readonly LOGIN = z.object({
     identifier,
-    password: z
-      .string()
-      .min(8, 'Minimal 8 karakter'),
+    password: z.string().min(8, 'Minimal 8 karakter'),
   });
 
   static readonly EMAIL_VERIFICATION = z.object({
@@ -80,9 +71,7 @@ export class AuthValidation {
 
       newPassword: password,
 
-      confirmPassword: z
-        .string()
-        .min(8, 'Minimal terdiri dari 8 karakter'),
+      confirmPassword: z.string().min(8, 'Minimal terdiri dari 8 karakter'),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
       message: 'Konfirmasi kata sandi tidak cocok',

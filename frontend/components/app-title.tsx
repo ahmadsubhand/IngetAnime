@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
 
-export default function AppTitle({ 
-  title, subtitle 
+export default function AppTitle({
+  title,
+  subtitle,
 }: {
   title: string;
   subtitle: ReactNode;
@@ -11,5 +12,5 @@ export default function AppTitle({
       <h1 className="text-2xl font-bold">{title}</h1>
       <p>{subtitle}</p>
     </div>
-  )
+  );
 }

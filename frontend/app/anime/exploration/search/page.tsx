@@ -1,36 +1,33 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import AppTitle from "../../../components/app-title";
-import { ExplorationAnime, SkeletonAnime } from "../anime";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import animeExplorationService from "../../../services/anime-exploration.service";
-import { useEffect, useState } from "react";
-import { useIsMobile } from "../../../hooks/use-mobile";
-import { useInView } from "react-intersection-observer";
-import { Controller, useForm } from "react-hook-form";
-import { AnimeExplorationValidation, GetAnimeList } from "../../../validator/anime-exploration.validation";
-import { zodResolver } from "@hookform/resolvers/zod";
+import Image from 'next/image';
+import AppTitle from '@/components/app-title';
+import { ExplorationAnime, SkeletonAnime } from '../anime';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import animeExplorationService from '@/services/anime-exploration.service';
+import { useEffect, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useInView } from 'react-intersection-observer';
+import { Controller, useForm } from 'react-hook-form';
 import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "../../../components/ui/field";
-import { ChevronUp, Search } from "lucide-react";
-import { cn } from "../../../lib/utils";
-import { Button, buttonVariants } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import AnimeEmpty from "../../../components/anime-empty";
-import AnimeUpdate from '../../../components/anime-update';
+  AnimeExplorationValidation,
+  GetAnimeList,
+} from '@/validator/anime-exploration.validation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
+import { ChevronUp, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import AnimeEmpty from '@/components/anime-empty';
+import AnimeUpdate from '@/components/anime-update';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
-  const qFromParam = searchParams.get('q') || "";
+  const qFromParam = searchParams.get('q') || '';
 
-  return (
-    <PageContent initialQuery={qFromParam} key={qFromParam} />
-  )
+  return <PageContent initialQuery={qFromParam} key={qFromParam} />;
 }
 
 function PageContent({ initialQuery }: { initialQuery: string }) {
@@ -39,20 +36,25 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
 
   const form = useForm({
     resolver: zodResolver(AnimeExplorationValidation.GET_ANIME_LIST),
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
       q: initialQuery,
     },
   });
   const [submittedQuery, setSubmittedQuery] = useState(
-    AnimeExplorationValidation.GET_ANIME_LIST.safeParse({ q: initialQuery }).success ? initialQuery : ""
+    AnimeExplorationValidation.GET_ANIME_LIST.safeParse({ q: initialQuery })
+      .success
+      ? initialQuery
+      : '',
   );
-  const canSearch = AnimeExplorationValidation.GET_ANIME_LIST.safeParse({ q: submittedQuery }).success;
+  const canSearch = AnimeExplorationValidation.GET_ANIME_LIST.safeParse({
+    q: submittedQuery,
+  }).success;
 
   const router = useRouter();
   function onSubmit(data: GetAnimeList) {
     setSubmittedQuery(data.q);
-    router.push(`/exploration/search?q=${data.q}`)
+    router.push(`/anime/exploration/search?q=${data.q}`);
   }
 
   const {
@@ -63,7 +65,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
     hasNextPage,
     isRefetching,
   } = useInfiniteQuery({
-    queryKey: ["anime", "search", { q: submittedQuery }],
+    queryKey: ['anime', 'search', { q: submittedQuery }],
     initialPageParam: {
       limit,
       offset: 0,
@@ -72,7 +74,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
       const response = await animeExplorationService.getAnimeList({
         ...pageParam,
         q: submittedQuery,
-        fields: "synopsis,genres,average_episode_duration,mean",
+        fields: 'synopsis,genres,average_episode_duration,mean',
       });
       return response.data;
     },
@@ -85,7 +87,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
 
       return {
         limit,
-        offset: Number(url.searchParams.get("offset")),
+        offset: Number(url.searchParams.get('offset')),
       };
     },
     staleTime: Infinity,
@@ -103,7 +105,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
   );
 
   const { ref, inView } = useInView({
-    rootMargin: "400px",
+    rootMargin: '400px',
   });
 
   useEffect(() => {
@@ -119,37 +121,34 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
         subtitle="Temukan informasi lengkap anime berdasarkan judul, termasuk sinopsis, genre, dan platform untuk menontonnya!"
       />
 
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="w-full"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
         <Controller
-          name={"q"}
+          name={'q'}
           control={form.control}
           render={({ field, fieldState }) => (
             <div className="flex flex-col gap-3">
               <Field
                 data-invalid={fieldState.invalid}
-                orientation={"horizontal"}
+                orientation={'horizontal'}
               >
                 <Input
                   className="bg-background"
                   disabled={
                     form.formState.isSubmitting ||
-                    (status === "pending" && canSearch)
+                    (status === 'pending' && canSearch)
                   }
                   {...field}
-                  id={"query"}
-                  type={"search"}
-                  placeholder={"Cari anime ..."}
+                  id={'query'}
+                  type={'search'}
+                  placeholder={'Cari anime ...'}
                   aria-invalid={fieldState.invalid}
                 />
                 <Button
                   type="submit"
-                  size={"icon"}
+                  size={'icon'}
                   disabled={
                     form.formState.isSubmitting ||
-                    (status === "pending" && canSearch)
+                    (status === 'pending' && canSearch)
                   }
                 >
                   <Search />
@@ -157,7 +156,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
               </Field>
               {fieldState.invalid && (
                 <FieldDescription
-                  className={fieldState.invalid ? "text-destructive" : ""}
+                  className={fieldState.invalid ? 'text-destructive' : ''}
                 >
                   {fieldState.error?.message}
                 </FieldDescription>
@@ -169,12 +168,12 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
 
       {canSearch ? (
         <div
-          className={`w-full flex sm:flex-wrap flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center ${(animes.length < 1 && status === 'success') ? 'min-h-full' : ''}`}
+          className={`w-full flex sm:flex-wrap flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center ${animes.length < 1 && status === 'success' ? 'min-h-full' : ''}`}
         >
           {animes.map((anime) => (
             <ExplorationAnime anime={anime} key={anime.id} />
           ))}
-          {animes.length < 1 && status === "success" && (
+          {animes.length < 1 && status === 'success' && (
             <AnimeEmpty
               className="md:w-145"
               message="Anime tidak ditemukan, silakan gunakan kata kunci lainnya"
@@ -186,7 +185,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
               imageWithDiv={
                 <div className="w-50 h-50 sm:h-56 relative">
                   <Image
-                    src={"/cocoa-shock.png"}
+                    src={'/cocoa-shock.png'}
                     alt="Cocoa Hoto"
                     fill
                     className="object-contain"
@@ -201,7 +200,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
             ref={ref}
             className="w-full flex sm:flex-wrap flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
           >
-            {(status === "pending" || isFetchingNextPage) &&
+            {(status === 'pending' || isFetchingNextPage) &&
               Array.from({ length: isMobile ? 3 : 6 }).map((_, i) => (
                 <SkeletonAnime key={i} />
               ))}
@@ -219,7 +218,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
           imageWithDiv={
             <div className="w-50 h-50 sm:h-63 relative">
               <Image
-                src={"/cocoa-confused.png"}
+                src={'/cocoa-confused.png'}
                 alt="Cocoa Hoto"
                 fill
                 className="object-contain"
@@ -235,22 +234,22 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
 
       <div className="hidden sm:block fixed w-77 h-110 -left-10 -bottom-5 -z-1">
         <Image
-          src={"/conan.png"}
+          src={'/conan.png'}
           alt="Edogawa Conan"
           fill
           className="object-contain"
           sizes="424px"
-          loading={"eager"}
+          loading={'eager'}
         />
       </div>
       <div className="hidden sm:block fixed w-70 h-84 -right-20 -bottom-5 -z-1">
         <Image
-          src={"/haibara.png"}
+          src={'/haibara.png'}
           alt="Haibara Ai"
           fill
           className="object-contain"
           sizes="560px"
-          loading={"eager"}
+          loading={'eager'}
         />
       </div>
     </>

@@ -1,7 +1,6 @@
 import z from 'zod';
 
 export class UserValidation {
-
   public static readonly CHECK_EMAIL = z.object({
     email: z.email(),
   });

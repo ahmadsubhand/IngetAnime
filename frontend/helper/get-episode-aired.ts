@@ -5,6 +5,8 @@ export default function getEpisodeAired(
   episodeTotal: number,
   firstAnimePlatform?: { episodeAired: number } | null,
 ) {
-  return firstAnimePlatform?.episodeAired ?? 
-    (status === 'finished_airing' ? episodeTotal : null);
+  return (
+    firstAnimePlatform?.episodeAired ??
+    (status === 'finished_airing' ? episodeTotal : null)
+  );
 }

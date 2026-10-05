@@ -1,7 +1,15 @@
-import { ReactNode, useId } from "react";
-import { Control, Controller, FieldValues, Path } from "react-hook-form";
-import { Field, FieldDescription, FieldLabel } from "./ui/field";
-import { Select, SelectContent, SelectGroup, SelectLabel, SelectTrigger, SelectValue, SelectItem } from './ui/select';
+import { ReactNode, useId } from 'react';
+import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { Field, FieldDescription, FieldLabel } from './ui/field';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  SelectItem,
+} from './ui/select';
 
 interface SelectFieldProps<T extends FieldValues> {
   form: {
@@ -27,7 +35,7 @@ export default function SelectField<T extends FieldValues>({
   inputId,
   inputLabel,
   inputDescription,
-  className = "",
+  className = '',
   isRequired = false,
   isDisable = false,
 }: SelectFieldProps<T>) {
@@ -39,11 +47,19 @@ export default function SelectField<T extends FieldValues>({
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid} className={`${className}`}>
           <FieldLabel htmlFor={inputId ?? id}>
-            {inputLabel}{" "}
-            <span className="text-red-500">{isRequired ? "*" : ""}</span>
+            {inputLabel}{' '}
+            <span className="text-red-500">{isRequired ? '*' : ''}</span>
           </FieldLabel>
-          <Select items={options} value={field.value} onValueChange={field.onChange} disabled={isDisable}>
-            <SelectTrigger className={`bg-background w-full`} id={inputId ?? id}>
+          <Select
+            items={options}
+            value={field.value}
+            onValueChange={field.onChange}
+            disabled={isDisable}
+          >
+            <SelectTrigger
+              className={`bg-background w-full`}
+              id={inputId ?? id}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -58,7 +74,9 @@ export default function SelectField<T extends FieldValues>({
             </SelectContent>
           </Select>
           {(fieldState.invalid || inputDescription) && (
-            <FieldDescription className={fieldState.invalid ? 'text-destructive' : ''}>
+            <FieldDescription
+              className={fieldState.invalid ? 'text-destructive' : ''}
+            >
               {fieldState.error?.message || inputDescription}
             </FieldDescription>
           )}

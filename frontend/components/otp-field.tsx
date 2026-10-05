@@ -1,8 +1,8 @@
-import { ReactNode, useId } from "react";
-import { Control, Controller, FieldValues, Path } from "react-hook-form";
-import { Field, FieldError, FieldLabel } from "./ui/field";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "./ui/input-otp";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { ReactNode, useId } from 'react';
+import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { Field, FieldError, FieldLabel } from './ui/field';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from './ui/input-otp';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
 
 interface OtpFieldProps<T extends FieldValues> {
   form: {
@@ -21,7 +21,7 @@ export default function OtpField<T extends FieldValues>({
   inputName,
   inputId,
   inputLabel,
-  className = "",
+  className = '',
   isRequired = false,
   isDisable = false,
 }: OtpFieldProps<T>) {
@@ -33,8 +33,8 @@ export default function OtpField<T extends FieldValues>({
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid} className={`${className}`}>
           <FieldLabel htmlFor={inputId ?? id}>
-            {inputLabel}{" "}
-            <span className="text-red-500">{isRequired ? "*" : ""}</span>
+            {inputLabel}{' '}
+            <span className="text-red-500">{isRequired ? '*' : ''}</span>
           </FieldLabel>
           <InputOTP
             maxLength={6}

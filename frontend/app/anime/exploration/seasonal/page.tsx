@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import AppTitle from "../../../components/app-title";
-import { ExplorationAnime, SkeletonAnime } from "../anime";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import animeExplorationService from "../../../services/anime-exploration.service";
-import { useEffect, useState } from "react";
-import { Season } from "../../../enums";
-import { Field, FieldLabel } from "../../../components/ui/field";
-import { useIsMobile } from "../../../hooks/use-mobile";
-import { useInView } from "react-intersection-observer";
+import Image from 'next/image';
+import AppTitle from '@/components/app-title';
+import { ExplorationAnime, SkeletonAnime } from '../anime';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import animeExplorationService from '@/services/anime-exploration.service';
+import { useEffect, useState } from 'react';
+import { Season } from '@/enums';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useInView } from 'react-intersection-observer';
 import {
   Select,
   SelectContent,
@@ -18,9 +18,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
-import getCurrentSeason from "../../../helper/get-current-season";
-import AnimeUpdate from '../../../components/anime-update';
+} from '@/components/ui/select';
+import getCurrentSeason from '@/helper/get-current-season';
+import AnimeUpdate from '@/components/anime-update';
 
 export default function SeasonalPage() {
   const isMobile = useIsMobile();
@@ -28,10 +28,10 @@ export default function SeasonalPage() {
   const { season: currentSeason, year: currentYear } = getCurrentSeason();
 
   const seasons = [
-    { label: "Fall", value: Season.fall },
-    { label: "Summer", value: Season.summer },
-    { label: "Spring", value: Season.spring },
-    { label: "Winter", value: Season.winter },
+    { label: 'Fall', value: Season.fall },
+    { label: 'Summer', value: Season.summer },
+    { label: 'Spring', value: Season.spring },
+    { label: 'Winter', value: Season.winter },
   ];
   const [season, setSeason] = useState<Season>(currentSeason);
 
@@ -52,7 +52,7 @@ export default function SeasonalPage() {
     hasNextPage,
     isRefetching,
   } = useInfiniteQuery({
-    queryKey: ["anime", "season", { year, season }],
+    queryKey: ['anime', 'season', { year, season }],
     initialPageParam: {
       limit,
       offset: 0,
@@ -61,7 +61,7 @@ export default function SeasonalPage() {
       const response = await animeExplorationService.getSeasonalAnime(
         {
           ...pageParam,
-          fields: "synopsis,genres,average_episode_duration,mean",
+          fields: 'synopsis,genres,average_episode_duration,mean',
         },
         { year, season },
       );
@@ -76,7 +76,7 @@ export default function SeasonalPage() {
 
       return {
         limit,
-        offset: Number(url.searchParams.get("offset")),
+        offset: Number(url.searchParams.get('offset')),
       };
     },
     staleTime: Infinity,
@@ -85,7 +85,7 @@ export default function SeasonalPage() {
   const animes = data?.pages.flatMap((page) => page.anime) ?? [];
 
   const { ref, inView } = useInView({
-    rootMargin: "400px",
+    rootMargin: '400px',
   });
 
   useEffect(() => {
@@ -100,11 +100,11 @@ export default function SeasonalPage() {
         title="Anime Musiman"
         subtitle="Pantau anime terbaru yang sedang tayang musim ini lengkap dengan jadwal rilisnya!"
       />
-      <Field orientation={"horizontal"}>
+      <Field orientation={'horizontal'}>
         <FieldLabel htmlFor="season">Musim</FieldLabel>
 
         <Select
-          disabled={status === "pending"}
+          disabled={status === 'pending'}
           items={seasons}
           value={season}
           onValueChange={(value) => setSeason(value ?? currentSeason)}
@@ -125,7 +125,7 @@ export default function SeasonalPage() {
         </Select>
 
         <Select
-          disabled={status === "pending"}
+          disabled={status === 'pending'}
           items={years}
           value={year}
           onValueChange={(value) => setYear(value ?? currentYear)}
@@ -154,7 +154,7 @@ export default function SeasonalPage() {
           ref={ref}
           className="w-full flex sm:flex-wrap flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
         >
-          {(status === "pending" || isFetchingNextPage) &&
+          {(status === 'pending' || isFetchingNextPage) &&
             Array.from({ length: isMobile ? 3 : 6 }).map((_, i) => (
               <SkeletonAnime key={i} />
             ))}
@@ -165,22 +165,22 @@ export default function SeasonalPage() {
 
       <div className="hidden sm:block fixed w-67 h-120 -left-2 -bottom-20 -z-1">
         <Image
-          src={"/nene.png"}
+          src={'/nene.png'}
           alt="Sakura Nene"
           fill
           className="object-contain"
           sizes="595px"
-          loading={"eager"}
+          loading={'eager'}
         />
       </div>
       <div className="hidden sm:block fixed w-88 h-119 -right-45 -bottom-20 -z-1">
         <Image
-          src={"/aoba.png"}
+          src={'/aoba.png'}
           alt="Suzukaze Aoba"
           fill
           className="object-contain"
           sizes="1483px"
-          loading={"eager"}
+          loading={'eager'}
         />
       </div>
     </>

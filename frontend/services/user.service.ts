@@ -14,7 +14,7 @@ export const userService = {
   async checkUsernameAvailability(payload: CheckUsername) {
     const { data } = await api.get<ApiResponse<{ username: string }>>(
       `${prefix}/check/username`,
-      { params: payload }
+      { params: payload },
     );
     return data;
   },
@@ -22,10 +22,10 @@ export const userService = {
   async checkEmailAvailability(payload: CheckEmail) {
     const { data } = await api.get<ApiResponse<{ email: string }>>(
       `${prefix}/check/email`,
-      { params: payload }
+      { params: payload },
     );
     return data;
   },
-}
+};
 
 export default userService;

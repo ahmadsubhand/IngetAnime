@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Spinner } from '../../../components/ui/spinner';
@@ -19,22 +19,24 @@ export default function ThirdPartyLoginPage() {
   useEffect(() => {
     if (state && code) {
       if (iss === 'https://accounts.google.com') {
-        loginWithGoogle({ state, code })
+        loginWithGoogle({ state, code });
       } else {
-        loginWithMal({ state, code })
+        loginWithMal({ state, code });
       }
     } else if (error === 'access_denied' || error) {
       router.push('/auth');
     }
   }, [state, code, iss, loginWithGoogle, loginWithMal, error, router]);
 
-  return <>
-    <AppTitle title='Menghubungkan Akun' subtitle={<>
-      Tunggu sebentar, kami sedang menghubungkan akun Anda ...
-    </>} />
-    <div className="w-full flex justify-center">
-      <Spinner className='size-8' />
-    </div>
-  </>
-  
+  return (
+    <>
+      <AppTitle
+        title="Menghubungkan Akun"
+        subtitle={<>Tunggu sebentar, kami sedang menghubungkan akun Anda ...</>}
+      />
+      <div className="w-full flex justify-center">
+        <Spinner className="size-8" />
+      </div>
+    </>
+  );
 }

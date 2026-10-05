@@ -2,11 +2,11 @@ import z from 'zod';
 import { ListStatus } from '../enums';
 
 const OPTIONAL_DATE = z
-    .string('Gunakan format: TTTT-BB-HH')
-    .regex(/^$|^\d{4}-\d{2}-\d{2}$/, 'Gunakan format: TTTT-BB-HH')
-    .refine((value) => !value || !isNaN(Date.parse(value)), 'Tanggal tidak valid')
-    .transform((value) => (value === '' ? null : value))
-    .nullable();
+  .string('Gunakan format: TTTT-BB-HH')
+  .regex(/^$|^\d{4}-\d{2}-\d{2}$/, 'Gunakan format: TTTT-BB-HH')
+  .refine((value) => !value || !isNaN(Date.parse(value)), 'Tanggal tidak valid')
+  .transform((value) => (value === '' ? null : value))
+  .nullable();
 
 export class UserAnimeListValidation {
   private static statusTypeValues = Object.values(ListStatus);

@@ -1,18 +1,18 @@
-"use client"
+'use client';
 
-import { ReactNode, useId, useState } from "react";
-import { Control, Controller, FieldValues, Path } from "react-hook-form";
-import { Field, FieldDescription, FieldLabel } from "./ui/field";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { ReactNode, useId, useState } from 'react';
+import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { Field, FieldDescription, FieldLabel } from './ui/field';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "./ui/input-group";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { Calendar } from "./ui/calendar";
-import dayjs from "dayjs";
+} from './ui/input-group';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar } from './ui/calendar';
+import dayjs from 'dayjs';
 
 interface DateFieldProps<T extends FieldValues> {
   form: {
@@ -35,7 +35,7 @@ export default function DateField<T extends FieldValues>({
   inputLabel,
   inputDescription,
   inputPlaceholder,
-  className = "",
+  className = '',
   isRequired = false,
   isDisable = false,
 }: DateFieldProps<T>) {
@@ -49,38 +49,33 @@ export default function DateField<T extends FieldValues>({
       control={form.control}
       render={({ field, fieldState }) => {
         const selectedDate =
-          typeof field.value === "string" && field.value
-            ? dayjs(field.value, "YYYY-MM-DD", true).toDate()
+          typeof field.value === 'string' && field.value
+            ? dayjs(field.value, 'YYYY-MM-DD', true).toDate()
             : undefined;
 
         return (
-          <Field
-            data-invalid={fieldState.invalid}
-            className={className}
-          >
+          <Field data-invalid={fieldState.invalid} className={className}>
             <FieldLabel htmlFor={inputId ?? id}>
-              {inputLabel}{" "}
-              <span className="text-red-500">
-                {isRequired ? "*" : ""}
-              </span>
+              {inputLabel}{' '}
+              <span className="text-red-500">{isRequired ? '*' : ''}</span>
             </FieldLabel>
 
             <InputGroup>
               <InputGroupInput
                 disabled={isDisable}
-                value={field.value ?? ""}
+                value={field.value ?? ''}
                 id={inputId ?? id}
                 placeholder={inputPlaceholder}
                 onChange={(e) => {
                   const value = e.target.value;
                   field.onChange(value || null);
-                  const parsedDate = dayjs(value, "YYYY-MM-DD", true);
+                  const parsedDate = dayjs(value, 'YYYY-MM-DD', true);
                   if (parsedDate.isValid()) {
                     setMonth(parsedDate.toDate());
                   }
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "ArrowDown") {
+                  if (e.key === 'ArrowDown') {
                     e.preventDefault();
                     setOpen(true);
                   }
@@ -88,15 +83,22 @@ export default function DateField<T extends FieldValues>({
               />
 
               <InputGroupAddon align="inline-end">
-                <Popover open={open} onOpenChange={(open) => {
-                  setOpen(open);
-                  if (!open && field.value) {
-                    const selectedDate = dayjs(field.value, "YYYY-MM-DD", true);
-                    if (selectedDate.isValid()) {
-                      setMonth(selectedDate.toDate());
+                <Popover
+                  open={open}
+                  onOpenChange={(open) => {
+                    setOpen(open);
+                    if (!open && field.value) {
+                      const selectedDate = dayjs(
+                        field.value,
+                        'YYYY-MM-DD',
+                        true,
+                      );
+                      if (selectedDate.isValid()) {
+                        setMonth(selectedDate.toDate());
+                      }
                     }
-                  }
-                }}>
+                  }}
+                >
                   <PopoverTrigger
                     render={
                       <InputGroupButton
@@ -106,9 +108,7 @@ export default function DateField<T extends FieldValues>({
                         aria-label="Select date"
                       >
                         <CalendarIcon />
-                        <span className="sr-only">
-                          Pilih tanggal
-                        </span>
+                        <span className="sr-only">Pilih tanggal</span>
                       </InputGroupButton>
                     }
                   />
@@ -128,7 +128,7 @@ export default function DateField<T extends FieldValues>({
                           field.onChange(null);
                           return;
                         }
-                        field.onChange(dayjs(date).format("YYYY-MM-DD"));
+                        field.onChange(dayjs(date).format('YYYY-MM-DD'));
                         setMonth(date);
                         setOpen(false);
                       }}
@@ -140,7 +140,9 @@ export default function DateField<T extends FieldValues>({
             </InputGroup>
 
             {(fieldState.invalid || inputDescription) && (
-              <FieldDescription className={fieldState.invalid ? "text-destructive" : ""}>
+              <FieldDescription
+                className={fieldState.invalid ? 'text-destructive' : ''}
+              >
                 {fieldState.error?.message || inputDescription}
               </FieldDescription>
             )}

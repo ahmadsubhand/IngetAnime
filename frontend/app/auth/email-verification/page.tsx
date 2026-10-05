@@ -1,8 +1,11 @@
-"use client"
+'use client';
 
 import { useForm } from 'react-hook-form';
-import { AuthValidation, EmailVerification } from '../../../validator/auth.validation';
-import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  AuthValidation,
+  EmailVerification,
+} from '../../../validator/auth.validation';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { BadgeCheck } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { useAuth } from '../../../providers/auth-provider';
@@ -21,12 +24,12 @@ export default function EmailVerificationPage() {
     mode: 'onChange',
     defaultValues: {
       otpCode: '',
-    }
-  })
+    },
+  });
   const { verifyEmail, resendVerification } = useAuth();
   async function onSubmit(data: EmailVerification) {
     try {
-      await verifyEmail(data)
+      await verifyEmail(data);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
         if (error.status === HttpStatusCode.BadRequest) {
@@ -57,7 +60,8 @@ export default function EmailVerificationPage() {
       } else {
         toast.add({
           type: 'error',
-          description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+          description:
+            'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
         });
       }
     }
@@ -75,53 +79,69 @@ export default function EmailVerificationPage() {
       toast.add({
         type: 'success',
         description: `Tautan verifikasi akun telah dikirim ke ${response.data.email}`,
-      })
+      });
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
         if (error.status === HttpStatusCode.TooManyRequests) {
           toast.add({
             type: 'error',
-            description: 'Terlalu banyak percobaan. Silakan coba lagi beberapa saat lagi.',
-          })
+            description:
+              'Terlalu banyak percobaan. Silakan coba lagi beberapa saat lagi.',
+          });
           return;
         }
       }
       toast.add({
         type: 'error',
-        description: 'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
-      })
+        description:
+          'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+      });
     } finally {
       setIsLoading(false);
     }
   }
 
-  return <>
-    <AppTitle title='Verifikasi Email' subtitle={<>
-      Verifikasi akunmu untuk menikmati lebih banyak fitur!
-    </>} />
+  return (
+    <>
+      <AppTitle
+        title="Verifikasi Email"
+        subtitle={<>Verifikasi akunmu untuk menikmati lebih banyak fitur!</>}
+      />
 
-    <form onSubmit={form.handleSubmit(onSubmit)} className='w-full flex flex-col gap-5'>
-      <div className="flex flex-col gap-3 w-fit self-center">
-        <OtpField
-          form={form}
-          inputName="otpCode"
-          inputLabel="Kode OTP"
-          isDisable={isDisable}
-          isRequired
-        />
-      </div>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="w-full flex flex-col gap-5"
+      >
+        <div className="flex flex-col gap-3 w-fit self-center">
+          <OtpField
+            form={form}
+            inputName="otpCode"
+            inputLabel="Kode OTP"
+            isDisable={isDisable}
+            isRequired
+          />
+        </div>
 
-      <p className='text-sm text-center'>
-        Belum menerima tautan verifikasi?
-        <Button variant={'link'} onClick={resend} disabled={!canResend || isDisable}>
-          Kirim tautan {!canResend ? ` ulang dalam ${seconds} detik` : ''}
+        <p className="text-sm text-center">
+          Belum menerima tautan verifikasi?
+          <Button
+            variant={'link'}
+            onClick={resend}
+            disabled={!canResend || isDisable}
+          >
+            Kirim tautan {!canResend ? ` ulang dalam ${seconds} detik` : ''}
+          </Button>
+        </p>
+
+        <Button type={'submit'} disabled={isDisable}>
+          {form.formState.isSubmitting ? (
+            <Spinner data-icon="inline-start" />
+          ) : (
+            <BadgeCheck data-icon="inline-start" />
+          )}
+          Verifikasi
         </Button>
-      </p>
-
-      <Button type={'submit'} disabled={isDisable}>
-        {form.formState.isSubmitting ? <Spinner data-icon="inline-start" /> : <BadgeCheck data-icon="inline-start" />} 
-        Verifikasi
-      </Button>
-    </form>
-  </>
+      </form>
+    </>
+  );
 }

@@ -8,14 +8,12 @@ const csrfService = {
       return csrfToken;
     }
 
-    const { data } = await api.get<{ csrfToken: string }>(
-      "/csrf-token",
-    );
+    const { data } = await api.get<{ csrfToken: string }>('/csrf-token');
 
     csrfToken = data.csrfToken;
 
     return csrfToken;
-  }
-}
+  },
+};
 
 export default csrfService;

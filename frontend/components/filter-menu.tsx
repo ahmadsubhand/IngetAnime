@@ -1,18 +1,14 @@
-"use client";
+'use client';
 
-import {
-  ChevronDown,
-  LucideIcon,
-  SlidersHorizontal,
-} from "lucide-react";
-import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { ChevronDown, LucideIcon, SlidersHorizontal } from 'lucide-react';
+import { Button } from './ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "./ui/collapsible";
-import { ReactNode } from "react";
+} from './ui/collapsible';
+import { ReactNode } from 'react';
 
 export function FilterMenu({ children }: { children: ReactNode }) {
   return (
@@ -20,12 +16,12 @@ export function FilterMenu({ children }: { children: ReactNode }) {
       <Popover>
         <PopoverTrigger
           render={
-            <Button size={"icon"}>
+            <Button size={'icon'}>
               <SlidersHorizontal />
             </Button>
           }
         />
-        <PopoverContent align="start" className={"px-3 py-0 gap-0"}>
+        <PopoverContent align="start" className={'px-3 py-0 gap-0'}>
           {children}
 
           {/* <FilterMenuItem>
@@ -119,7 +115,7 @@ export function FilterMenuHeader({
 }) {
   return (
     <CollapsibleTrigger
-      className={"w-full flex gap-2 items-center py-2 text-sm"}
+      className={'w-full flex gap-2 items-center py-2 text-sm'}
     >
       <Icon size={16} />
       <span>{label}</span>

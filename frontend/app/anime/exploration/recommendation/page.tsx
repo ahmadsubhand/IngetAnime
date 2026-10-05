@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import AppTitle from "../../../components/app-title";
-import { ExplorationAnime, SkeletonAnime } from "../anime";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import animeExplorationService from "../../../services/anime-exploration.service";
-import { useEffect } from "react";
-import { useIsMobile } from "../../../hooks/use-mobile";
-import { useInView } from "react-intersection-observer";
-import { useAuth } from "../../../providers/auth-provider";
-import { useRouter } from "next/navigation";
-import { Settings } from "lucide-react";
-import { Button } from "../../../components/ui/button";
-import AnimeEmpty from '../../../components/anime-empty';
-import AnimeUpdate from '../../../components/anime-update';
+import Image from 'next/image';
+import AppTitle from '@/components/app-title';
+import { ExplorationAnime, SkeletonAnime } from '../anime';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import animeExplorationService from '@/services/anime-exploration.service';
+import { useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useInView } from 'react-intersection-observer';
+import { useAuth } from '@/providers/auth-provider';
+import { useRouter } from 'next/navigation';
+import { Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import AnimeEmpty from '@/components/anime-empty';
+import AnimeUpdate from '@/components/anime-update';
 
 export default function RecommendationPage() {
   const isMobile = useIsMobile();
@@ -23,7 +23,7 @@ export default function RecommendationPage() {
   const router = useRouter();
   useEffect(() => {
     if (!user?.isVerified) {
-      router.push("/auth");
+      router.push('/auth');
     }
   }, [user, router]);
 
@@ -35,7 +35,7 @@ export default function RecommendationPage() {
     hasNextPage,
     isRefetching,
   } = useInfiniteQuery({
-    queryKey: ["anime", "suggestions"],
+    queryKey: ['anime', 'suggestions'],
     initialPageParam: {
       limit,
       offset: 0,
@@ -43,7 +43,7 @@ export default function RecommendationPage() {
     queryFn: async ({ pageParam }) => {
       const response = await animeExplorationService.getSuggestedAnime({
         ...pageParam,
-        fields: "synopsis,genres,average_episode_duration,mean",
+        fields: 'synopsis,genres,average_episode_duration,mean',
       });
       return response.data;
     },
@@ -56,7 +56,7 @@ export default function RecommendationPage() {
 
       return {
         limit,
-        offset: Number(url.searchParams.get("offset")),
+        offset: Number(url.searchParams.get('offset')),
       };
     },
     staleTime: Infinity,
@@ -65,7 +65,7 @@ export default function RecommendationPage() {
   const animes = data?.pages.flatMap((page) => page.anime) ?? [];
 
   const { ref, inView } = useInView({
-    rootMargin: "400px",
+    rootMargin: '400px',
   });
 
   useEffect(() => {
@@ -90,17 +90,16 @@ export default function RecommendationPage() {
             ref={ref}
             className="w-full flex sm:flex-wrap flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
           >
-            {(status === "pending" || isFetchingNextPage) &&
+            {(status === 'pending' || isFetchingNextPage) &&
               Array.from({ length: isMobile ? 3 : 6 }).map((_, i) => (
                 <SkeletonAnime key={i} />
               ))}
           </div>
         </div>
       ) : (
-
-        <AnimeEmpty 
-          className='sm:w-155 md:w-186'
-          message='Hubungkan akun dengan MyAnimeList untuk mendapatkan rekomendasi anime'
+        <AnimeEmpty
+          className="sm:w-155 md:w-186"
+          message="Hubungkan akun dengan MyAnimeList untuk mendapatkan rekomendasi anime"
           action={
             <Button>
               <Settings /> Pengaturan
@@ -109,7 +108,7 @@ export default function RecommendationPage() {
           imageWithDiv={
             <div className="w-full h-45 sm:h-40 md:h-51 relative mt-0 sm:mt-10 md:mt-0">
               <Image
-                src={"/yui.png"}
+                src={'/yui.png'}
                 alt="Yui Hirasawa"
                 fill
                 className="object-contain"
@@ -125,22 +124,22 @@ export default function RecommendationPage() {
 
       <div className="hidden sm:block fixed w-84 h-205 -left-12 -bottom-50 -z-1">
         <Image
-          src={"/gojo.png"}
+          src={'/gojo.png'}
           alt="Gojo Satoru"
           fill
           className="object-contain"
           sizes="856px"
-          loading={"eager"}
+          loading={'eager'}
         />
       </div>
       <div className="hidden sm:block fixed w-132 h-188 -right-50 -bottom-40 -z-1">
         <Image
-          src={"/ayanakoji.png"}
+          src={'/ayanakoji.png'}
           alt="Ayanakoji Kiyotaka"
           fill
           className="object-contain"
           sizes="1400px"
-          loading={"eager"}
+          loading={'eager'}
         />
       </div>
     </>
