@@ -107,7 +107,7 @@ export default function RecommendationPage() {
             </Button>
           }
           imageWithDiv={
-            <div className="w-full h-51 sm:h-40 md:h-51 relative mt-0 sm:mt-10 md:mt-0">
+            <div className="w-full h-45 sm:h-40 md:h-51 relative mt-0 sm:mt-10 md:mt-0">
               <Image
                 src={"/yui.png"}
                 alt="Yui Hirasawa"

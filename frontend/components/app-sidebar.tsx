@@ -1,14 +1,47 @@
-import { BookText, CalendarDays, ChevronDown, Compass, Lightbulb, LucideIcon, Search, Trophy } from 'lucide-react';
-import AppLogo from './app-logo';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './ui/input-group';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from './ui/sidebar';
-import Link from 'next/link';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { Separator } from './ui/separator';
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from './ui/navigation-menu';
-import AppProfile from './app-profile';
+import {
+  BookText,
+  CalendarDays,
+  ChevronDown,
+  Compass,
+  Lightbulb,
+  LucideIcon,
+  Trophy,
+} from "lucide-react";
+import AppLogo from "./app-logo";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "./ui/sidebar";
+import Link from "next/link";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
+import { Separator } from "./ui/separator";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "./ui/navigation-menu";
+import AppProfile from "./app-profile";
+import { ReactNode } from 'react';
 
-export function AppSidebar() {
+export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
   type MenuItem = {
     title: string;
     href?: string;
@@ -18,34 +51,34 @@ export function AppSidebar() {
 
   const menuItems: MenuItem[] = [
     {
-      title: 'Timeline',
-      href: '/auth',
+      title: "Timeline",
+      href: "/timeline",
       icon: CalendarDays,
     },
     {
-      title: 'Eksplorasi',
+      title: "Eksplorasi",
       icon: Compass,
       children: [
         {
-          title: 'Terbaik',
-          href: '/exploration/best',
+          title: "Terbaik",
+          href: "/exploration/best",
           icon: Trophy,
         },
         {
-          title: 'Musiman',
-          href: '/exploration/seasonal',
+          title: "Musiman",
+          href: "/exploration/seasonal",
           icon: CalendarDays,
         },
         {
-          title: 'Rekomendasi',
-          href: '/exploration/recommendation',
+          title: "Rekomendasi",
+          href: "/exploration/recommendation",
           icon: Lightbulb,
         },
       ],
     },
     {
-      title: 'List',
-      href: '/auth',
+      title: "List",
+      href: "/list",
       icon: BookText,
     },
   ];
@@ -54,14 +87,9 @@ export function AppSidebar() {
     <>
       {/* Mobile */}
       <Sidebar>
-        <SidebarHeader className='p-4'>
-          <AppLogo/>
-          <InputGroup>
-            <InputGroupInput placeholder='Cari anime ...' />
-            <InputGroupAddon align={'inline-end'}>
-              <InputGroupButton><Search /></InputGroupButton>
-            </InputGroupAddon>
-          </InputGroup>
+        <SidebarHeader className="p-4">
+          <AppLogo />
+          {animeSearch}
         </SidebarHeader>
 
         <Separator />
@@ -75,10 +103,7 @@ export function AppSidebar() {
 
                 if (item.children) {
                   return (
-                    <Collapsible
-                      key={item.title}
-                      className="group/collapsible"
-                    >
+                    <Collapsible key={item.title} className="group/collapsible">
                       <SidebarMenuItem>
                         <SidebarMenuButton render={<CollapsibleTrigger />}>
                           <Icon />
@@ -94,7 +119,7 @@ export function AppSidebar() {
                               return (
                                 <SidebarMenuSubItem key={child.title}>
                                   <SidebarMenuSubButton
-                                    render={<Link href={child.href ?? '#'} />}
+                                    render={<Link href={child.href ?? "#"} />}
                                   >
                                     <ChildIcon />
                                     <span>{child.title}</span>
@@ -112,7 +137,7 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      render={<Link href={item.href ?? '#'} />}
+                      render={<Link href={item.href ?? "#"} />}
                     >
                       <Icon />
                       <span>{item.title}</span>
@@ -126,8 +151,8 @@ export function AppSidebar() {
 
         <Separator />
 
-        <SidebarFooter className='p-4'>
-          <AppProfile size='lg'/>
+        <SidebarFooter className="p-4">
+          <AppProfile size="lg" />
         </SidebarFooter>
       </Sidebar>
 
@@ -152,9 +177,7 @@ export function AppSidebar() {
                       return (
                         <NavigationMenuLink
                           key={child.title}
-                          render={
-                            <Link href={child.href ?? '#'} />
-                          }
+                          render={<Link href={child.href ?? "#"} />}
                         >
                           <ChildIcon />
                           {child.title}
@@ -170,7 +193,7 @@ export function AppSidebar() {
               <NavigationMenuItem key={item.title}>
                 <NavigationMenuLink
                   className={navigationMenuTriggerStyle()}
-                  render={<Link href={item.href ?? '#'} />}
+                  render={<Link href={item.href ?? "#"} />}
                 >
                   <Icon />
                   {item.title}
@@ -181,5 +204,5 @@ export function AppSidebar() {
         </NavigationMenuList>
       </NavigationMenu>
     </>
-  )
+  );
 }

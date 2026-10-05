@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useIsMobile } from "../../../hooks/use-mobile";
 import { useInView } from "react-intersection-observer";
 import { Controller, useForm } from "react-hook-form";
-import { AnimeExplorationValidation } from "../../../validator/anime-exploration.validation";
+import { AnimeExplorationValidation, GetAnimeList } from "../../../validator/anime-exploration.validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Field,
@@ -22,8 +22,18 @@ import { Button, buttonVariants } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import AnimeEmpty from "../../../components/anime-empty";
 import AnimeUpdate from '../../../components/anime-update';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SearchPage() {
+  const searchParams = useSearchParams();
+  const qFromParam = searchParams.get('q') || "";
+
+  return (
+    <PageContent initialQuery={qFromParam} key={qFromParam} />
+  )
+}
+
+function PageContent({ initialQuery }: { initialQuery: string }) {
   const isMobile = useIsMobile();
   const limit = isMobile ? 5 : 12;
 
@@ -31,11 +41,19 @@ export default function SearchPage() {
     resolver: zodResolver(AnimeExplorationValidation.GET_ANIME_LIST),
     mode: "onChange",
     defaultValues: {
-      q: "",
+      q: initialQuery,
     },
   });
-  const [submittedQuery, setSubmittedQuery] = useState("");
-  const canSearch = submittedQuery.length > 3;
+  const [submittedQuery, setSubmittedQuery] = useState(
+    AnimeExplorationValidation.GET_ANIME_LIST.safeParse({ q: initialQuery }).success ? initialQuery : ""
+  );
+  const canSearch = AnimeExplorationValidation.GET_ANIME_LIST.safeParse({ q: submittedQuery }).success;
+
+  const router = useRouter();
+  function onSubmit(data: GetAnimeList) {
+    setSubmittedQuery(data.q);
+    router.push(`/exploration/search?q=${data.q}`)
+  }
 
   const {
     data,
@@ -94,10 +112,6 @@ export default function SearchPage() {
     }
   }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
-
   return (
     <>
       <AppTitle
@@ -106,7 +120,7 @@ export default function SearchPage() {
       />
 
       <form
-        onSubmit={form.handleSubmit((data) => setSubmittedQuery(data.q))}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="w-full"
       >
         <Controller
@@ -170,7 +184,7 @@ export default function SearchPage() {
                 </FieldLabel>
               }
               imageWithDiv={
-                <div className="w-50 h-56 relative">
+                <div className="w-50 h-50 sm:h-56 relative">
                   <Image
                     src={"/cocoa-shock.png"}
                     alt="Cocoa Hoto"
@@ -203,7 +217,7 @@ export default function SearchPage() {
             </FieldLabel>
           }
           imageWithDiv={
-            <div className="w-50 h-55 sm:h-63 relative">
+            <div className="w-50 h-50 sm:h-63 relative">
               <Image
                 src={"/cocoa-confused.png"}
                 alt="Cocoa Hoto"
