@@ -41,6 +41,7 @@ import { useIsMobile } from '../hooks/use-mobile';
 import { Spinner } from './ui/spinner';
 import { useAuth } from '../providers/auth-provider';
 import { useRouter } from 'next/navigation';
+import InputField from '@/components/input-field';
 
 export default function AnimeList({
   anime,
@@ -285,17 +286,27 @@ export default function AnimeList({
                     { label: 'Ditinggalkan', value: ListStatus.dropped },
                   ]}
                 />
-                <SelectField
-                  form={form}
-                  inputName={'progress'}
-                  inputLabel={'Progres'}
-                  isDisable={isDisable}
-                  options={Array.from({ length: (episodeAired ?? 0) + 1 }).map(
-                    (_, i) => {
-                      return { label: i.toString(), value: i };
-                    },
-                  )}
-                />
+                {(anime.episodeTotal && anime.episodeTotal < 101) ? (
+                  <SelectField
+                    form={form}
+                    inputName={'progress'}
+                    inputLabel={'Progres'}
+                    isDisable={isDisable}
+                    options={Array.from({ length: anime.episodeTotal + 1 }).map(
+                      (_, i) => {
+                        return { label: i.toString(), value: i };
+                      },
+                    )}
+                  />
+                ) : (
+                  <InputField
+                    form={form}
+                    inputName='progress'
+                    inputLabel='Progress'
+                    isDisable={isDisable}
+                    inputType='number'
+                  />
+                )}
               </FieldWrap>
 
               <FieldWrap>

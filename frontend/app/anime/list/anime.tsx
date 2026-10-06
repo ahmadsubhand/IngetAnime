@@ -39,7 +39,6 @@ export function ListAnime({
     anime.episodeTotal,
     anime.animePlatforms[0],
   );
-  const isMobile = useIsMobile();
   const season = anime.releaseAt
     ? getCurrentSeason(dayjs(anime.releaseAt))
     : null;

@@ -24,7 +24,7 @@ export default function ThirdPartyLoginPage() {
         loginWithMal({ state, code });
       }
     } else if (error === 'access_denied' || error) {
-      router.push('/auth');
+      router.replace('/auth');
     }
   }, [state, code, iss, loginWithGoogle, loginWithMal, error, router]);
 

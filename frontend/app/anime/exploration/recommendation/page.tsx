@@ -23,7 +23,7 @@ export default function RecommendationPage() {
   const router = useRouter();
   useEffect(() => {
     if (!user?.isVerified) {
-      router.push('/auth');
+      router.replace('/auth');
     }
   }, [user, router]);
 

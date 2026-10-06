@@ -18,12 +18,14 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 import usePlatforms from '@/hooks/use-platforms';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/providers/auth-provider';
 import userService from '@/services/user.service';
 import { UserValidation } from '@/validator/user.validation';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Compass, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
@@ -34,6 +36,14 @@ type Sort = (typeof UserValidation.Sort)[keyof typeof UserValidation.Sort];
 export default function ListPage() {
   const isMobile = useIsMobile();
   const limit = isMobile ? 5 : 12;
+
+  const { user } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (!user?.isVerified) {
+      router.replace('/auth');
+    }
+  }, [user, router]);
 
   const statusOptions = [
     { label: 'Semua', value: UserValidation.ListStatusFilter.all },
