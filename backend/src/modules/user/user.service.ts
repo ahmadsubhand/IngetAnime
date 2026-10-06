@@ -136,7 +136,9 @@ export class UserService {
       anime_id: {
         anime: { id: 'asc' },
       },
-      // remaining_watchable_episodes: {},
+      remaining_watchable_episodes: {
+        remainingWatchableEpisodes: 'desc',
+      },
     };
 
     const userAnimeList = await this.prisma.userAnimeList.findMany({

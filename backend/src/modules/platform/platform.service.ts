@@ -17,6 +17,11 @@ export class PlatformService {
 
   constructor(private prisma: PrismaService) {}
 
+  async getAllPlatform(): Promise<Platform[]> {
+    const platforms = await this.prisma.platform.findMany();
+    return platforms;
+  }
+
   async createPlatform(
     data: PlatformName,
     file?: Express.Multer.File,

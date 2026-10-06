@@ -35,6 +35,7 @@ import { Anime } from '../anime/anime.model';
 import { Platform } from '../platform/platform.model';
 import { Link } from '../anime-platform/anime-platform.model';
 
+@SkipThrottle()
 @Controller('/anime')
 export class UserAnimeListController {
   constructor(private service: UserAnimeListService) {}
@@ -61,7 +62,6 @@ export class UserAnimeListController {
     };
   }
 
-  @SkipThrottle()
   @Get('/:animeId/my-list-status')
   @HttpCode(HttpStatus.OK)
   @UseGuards(VerifiedAuthGuard)

@@ -34,6 +34,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { Anime } from '../anime/anime.model';
 import { Platform } from '../platform/platform.model';
 
+@SkipThrottle()
 @Controller('/anime')
 export class AnimePlatformController {
   constructor(private service: AnimePlatformService) {}
@@ -56,7 +57,6 @@ export class AnimePlatformController {
     };
   }
 
-  @SkipThrottle()
   @Get('/:animeId/platform/:platformId')
   @HttpCode(HttpStatus.OK)
   async getAnimePlatformDetail(

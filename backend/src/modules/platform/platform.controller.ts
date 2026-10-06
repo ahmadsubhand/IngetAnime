@@ -23,11 +23,23 @@ import { Role } from '../auth/decorator/role.decarator';
 import { SkipThrottle } from '@nestjs/throttler';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-@Controller()
+@Controller('platform')
 export class PlatformController {
   constructor(private service: PlatformService) {}
 
-  @Post('platform')
+  @SkipThrottle()
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  async getAllPlatform(): Promise<ApiResponse<Platform[]>> {
+    const platform = await this.service.getAllPlatform();
+    return {
+      message: 'Get all platform successfully',
+      data: platform,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(VerifiedAuthGuard)
   @Role('admin')
@@ -46,7 +58,7 @@ export class PlatformController {
   }
 
   @SkipThrottle()
-  @Get('/platform/:id')
+  @Get('/:id')
   @HttpCode(HttpStatus.OK)
   async getPlatformDetail(
     @Param(new ZodValidationPipe(PlatformValidation.PLATFORM_ID))
@@ -60,7 +72,7 @@ export class PlatformController {
     };
   }
 
-  @Put('/platform/:id')
+  @Put('/:id')
   @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   @HttpCode(HttpStatus.OK)
@@ -80,7 +92,7 @@ export class PlatformController {
     };
   }
 
-  @Delete('/platform/:id')
+  @Delete('/:id')
   @UseGuards(VerifiedAuthGuard)
   @Role('admin')
   @HttpCode(HttpStatus.OK)

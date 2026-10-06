@@ -14,7 +14,7 @@ export class UserValidation {
     anime_release_at: 'anime_release_at',
     anime_title: 'anime_title',
     anime_id: 'anime_id',
-    // remaining_watchable_episodes: 'remaining_watchable_episodes',
+    remaining_watchable_episodes: 'remaining_watchable_episodes',
   } as const;
 
   public static ImportType = {
