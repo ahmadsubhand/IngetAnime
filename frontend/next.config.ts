@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
         pathname: '/images/anime/**',
       },
       {
+        protocol: 'https',
+        hostname: 'ik.imagekit.io',
+      },
+      {
         protocol: apiUrl.protocol.replace(':', '') as 'http' | 'https',
         hostname: apiUrl.hostname,
         port: apiUrl.port,

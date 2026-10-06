@@ -1,32 +1,28 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { buttonVariants } from '@/components/ui/button';
-import { Star, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MalAnime } from '@/types/my-anime-list.model';
 import { Anime } from '@/types/anime.model';
-import type { AnimePlatform } from '@/types/anime-platform.model';
+import type { AnimePlatform as AnimePlatformType } from '@/types/anime-platform.model';
+import AnimePlatform from '@/components/anime-platform';
 import { UserAnimeList } from '@/types/user-anime-list.model';
 import dayjs from 'dayjs';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AnimeStatus } from '@/enums';
 import { useIsMobile } from '@/hooks/use-mobile';
 import AnimeList from '@/components/anime-list';
 import getEpisodeAired from '@/helper/get-episode-aired';
+import AnimeScore from '@/components/anime-score';
+import AnimeEpisodeAired from '@/components/anime-episode-aired';
 
 export function ExplorationAnime({
   anime,
 }: {
   anime: MalAnime &
     Anime & {
-      animePlatforms: AnimePlatform[];
+      animePlatforms: AnimePlatformType[];
       userAnimeList?: UserAnimeList | null;
     };
 }) {
@@ -50,7 +46,11 @@ export function ExplorationAnime({
         />
         {anime.mean && (
           <div className="hidden sm:block absolute -bottom-px -left-px">
-            <AnimeScore malId={anime.malId} score={anime.mean} />
+            <AnimeScore
+              malId={anime.malId}
+              score={anime.mean}
+              scoreSource="myanimelist"
+            />
           </div>
         )}
         <div className="sm:block absolute -top-px -left-px">
@@ -114,7 +114,7 @@ export function ExplorationAnime({
           </ScrollArea>
         )}
         <div className="flex justify-between sm:hidden">
-          {anime.mean && <AnimeScore malId={anime.malId} score={anime.mean} />}
+          {anime.mean && <AnimeScore malId={anime.malId} score={anime.mean} scoreSource='myanimelist' />}
           {episodeAired && (
             <AnimeEpisodeAired
               episodeAired={episodeAired}
@@ -169,96 +169,5 @@ export function SkeletonAnime() {
         </div>
       </div>
     </Card>
-  );
-}
-
-function AnimePlatform({ platforms }: { platforms: AnimePlatform[] }) {
-  return (
-    <div className="flex w-max gap-2">
-      {platforms.map((platform) => (
-        <Tooltip key={platform.id}>
-          <TooltipTrigger
-            render={
-              <Link
-                href={platform.link.url}
-                target={'_blank'}
-                className="w-5 h-5 relative"
-              >
-                <Image
-                  src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${platform.platform.icon}`}
-                  alt={platform.platform.name}
-                  sizes="20px"
-                  className="object-contain"
-                  fill
-                />
-              </Link>
-            }
-          />
-          <TooltipContent>{platform.platform.name}</TooltipContent>
-        </Tooltip>
-      ))}
-    </div>
-  );
-}
-
-function AnimeScore({ malId, score }: { malId: number; score: number }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Link
-            href={`https://myanimelist.net/anime/${malId}`}
-            className={cn(
-              buttonVariants({
-                size: 'xs',
-                variant: score < 6 ? 'red' : score < 8 ? 'yellow' : 'default',
-              }),
-            )}
-            target={'_blank'}
-          >
-            <Star data-icon="inline-start" />
-            {score}
-          </Link>
-        }
-      />
-      <TooltipContent>Lihat detail lebih lengkap di MyAnimeList</TooltipContent>
-    </Tooltip>
-  );
-}
-
-function AnimeEpisodeAired({
-  episodeAired,
-  status,
-  firstAnimePlatformLink,
-}: {
-  episodeAired: number;
-  status: AnimeStatus;
-  firstAnimePlatformLink?: string;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Link
-            href={firstAnimePlatformLink || ''}
-            target={firstAnimePlatformLink ? '_blank' : '_self'}
-            className={cn(
-              buttonVariants({
-                size: 'xs',
-                variant:
-                  status === 'finished_airing'
-                    ? 'blue'
-                    : status === 'currently_airing'
-                      ? 'default'
-                      : 'gray',
-              }),
-            )}
-          >
-            <Upload data-icon="inline-start" /> {episodeAired}
-          </Link>
-        }
-      />
-      <TooltipContent>Episode {episodeAired} sudah tayang</TooltipContent>
-    </Tooltip>
   );
 }

@@ -1,5 +1,5 @@
 import z from 'zod';
-import { ListStatus } from '../enums';
+import { ListStatus } from '@/enums';
 
 const OPTIONAL_DATE = z
   .string('Gunakan format: TTTT-BB-HH')
