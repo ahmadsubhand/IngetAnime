@@ -38,6 +38,13 @@ export const platformService = {
     );
     return data;
   },
+
+  async deletePlatform(id: number) {
+    const { data } = await api.delete<ApiResponse<{ id: number; name: string }>>(
+      `${prefix}/${id}`,
+    );
+    return data;
+  },
 };
 
 export default platformService;

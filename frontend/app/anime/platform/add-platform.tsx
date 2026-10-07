@@ -1,9 +1,7 @@
-'use client';
-
-import InputField from '@/components/input-field';
 import { Button } from '@/components/ui/button';
 import { Field, FieldDescription, FieldGroup } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
 import UseFileInput from '@/hooks/use-file-input';
 import platformService from '@/services/platform.service';
@@ -17,7 +15,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios, { HttpStatusCode } from 'axios';
 import { ImageIcon, Plus, Upload, X } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
 export default function AddPlatform() {
@@ -193,7 +190,11 @@ export default function AddPlatform() {
           disabled={isDisable}
           className={'sm:flex-col w-full sm:w-fit sm:h-21 px-5'}
         >
-          <Plus />
+          {isDisable ? (
+            <Spinner />
+          ) : (
+            <Plus />
+          )}
           Tambah
         </Button>
       </FieldGroup>

@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { Platform } from './platform.model';
@@ -164,6 +165,15 @@ export class PlatformService {
     platformId: number,
   ): Promise<{ id: number; name: string }> {
     try {
+      const animePlatformCounts = await this.prisma.animePlatform.count({
+        where: { platformId },
+      });
+      if (animePlatformCounts) {
+        throw new UnprocessableEntityException(
+          'Cannot delete a platform that is currently in use',
+        );
+      }
+
       const platform = await this.prisma.platform.delete({
         where: {
           id: platformId,

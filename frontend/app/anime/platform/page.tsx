@@ -8,7 +8,6 @@ import AnimeEmpty from '@/components/anime-empty';
 import AnimeUpdate from '@/components/anime-update';
 import AppTitle from '@/components/app-title';
 import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/providers/auth-provider';
 import platformService from '@/services/platform.service';
 import { useQuery } from '@tanstack/react-query';
@@ -81,7 +80,7 @@ export default function ListPage() {
           />
         )}
         {status === 'pending' &&
-          Array.from({ length: 8 }).map((_, i) => (
+          Array.from({ length: 10 }).map((_, i) => (
             <PlatformSkeleton key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
           ))}
       </div>

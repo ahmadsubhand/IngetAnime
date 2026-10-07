@@ -1,10 +1,10 @@
-'use client';
-
+import DeletePlatform from '@/app/anime/platform/delete-platform';
 import InputField from '@/components/input-field';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
 import UseFileInput from '@/hooks/use-file-input';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -101,26 +101,28 @@ export default function ListPlatform({
   const width = Math.ceil(platform.ratio * height);
 
   return (
-    <Card className="relative items-center py-5 px-6 gap-3">
+    <Card className="relative items-center py-5 px-6 gap-3 w-full sm:w-70">
       <div className="w-fit flex-wrap sm:flex-nowrap flex justify-center items-center gap-3">
-        <div
-          className="relative"
-          style={{
-            width: `${width}px`,
-            height: `${height}px`,
-          }}
-        >
-          <Image
-            src={
-              iconPreview ??
-              `${process.env.NEXT_PUBLIC_API_BASE_URL}${platform.icon}`
-            }
-            alt={platform.name}
-            sizes={`${width}px`}
-            className="object-contain"
-            loading="eager"
-            fill
-          />
+        <div className="overflow-hidden max-w-20 sm:max-w-30">
+          <div
+            className="relative"
+            style={{
+              width: `${width}px`,
+              height: `${height}px`,
+            }}
+          >
+            <Image
+              src={
+                iconPreview ??
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}${platform.icon}`
+              }
+              alt={platform.name}
+              sizes={`${width}px`}
+              className="object-contain"
+              loading="eager"
+              fill
+            />
+          </div>
         </div>
         <p className="max-w-36 sm:max-w-27">
           {platform._count.animePlatforms || 0} platform anime telah terhubung
@@ -159,6 +161,7 @@ export default function ListPlatform({
         className="w-full flex gap-3 items-start justify-center"
         onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
       >
+        <DeletePlatform platform={platform} />
         <InputField
           form={form}
           inputName="name"
@@ -167,7 +170,11 @@ export default function ListPlatform({
           isDisable={isDisable}
         />
         <Button type="submit" disabled={isDisable}>
-          <Check />
+          {isDisable ? (
+            <Spinner />
+          ) : (
+            <Check />
+          )}
         </Button>
       </form>
     </Card>
@@ -176,7 +183,7 @@ export default function ListPlatform({
 
 export function PlatformSkeleton({ className = '' }: { className?: string }) {
   return (
-    <Card className={`relative items-center py-5 px-6 gap-3 ${className}`}>
+    <Card className={`relative items-center py-5 px-6 gap-3 w-full sm:w-70 ${className}`}>
       <div className="w-fit flex-wrap sm:flex-nowrap flex justify-center items-center gap-3">
         <Skeleton className="w-10 sm:w-20 h-10 sm:h-20" />
         <div className="flex flex-col gap-2 max-w-36 sm:max-w-27">
@@ -186,13 +193,14 @@ export function PlatformSkeleton({ className = '' }: { className?: string }) {
         </div>
       </div>
 
-      <div className="w-full flex gap-4 items-center justify-center">
-        <Skeleton className="w-9 h-9" />
-        <Skeleton className="w-53 h-9" />
+      <div className="w-full flex gap-3 items-center justify-center">
+        <Skeleton className="w-12 h-9" />
+        <Skeleton className="w-full h-9" />
       </div>
       <div className="w-full flex gap-3 items-start justify-center">
-        <Skeleton className="w-53 h-9" />
-        <Skeleton className="w-9 h-9" />
+        <Skeleton className="w-17 h-9" />
+        <Skeleton className="w-full h-9" />
+        <Skeleton className="w-17 h-9" />
       </div>
     </Card>
   );
