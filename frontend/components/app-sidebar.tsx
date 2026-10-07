@@ -6,6 +6,7 @@ import {
   Lightbulb,
   LucideIcon,
   Trophy,
+  TvMinimalPlay,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 import {
@@ -40,6 +41,8 @@ import {
 } from './ui/navigation-menu';
 import AppProfile from './app-profile';
 import { ReactNode } from 'react';
+import { useAuth } from '@/providers/auth-provider';
+import { cn } from '@/lib/utils';
 
 export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
   type MenuItem = {
@@ -82,6 +85,15 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
       icon: BookText,
     },
   ];
+
+  const { isAdmin } = useAuth();
+  if (isAdmin) {
+    menuItems.unshift({
+      title: 'Platform',
+      href: '/anime/platform',
+      icon: TvMinimalPlay,
+    })
+  }
 
   return (
     <>
@@ -165,7 +177,9 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
             if (item.children) {
               return (
                 <NavigationMenuItem key={item.title}>
-                  <NavigationMenuTrigger className="flex items-center gap-1.5 [&_svg:not([class*='size-'])]:size-4">
+                  <NavigationMenuTrigger 
+                    className="flex items-center gap-1.5 [&_svg:not([class*='size-'])]:size-4 px-2 lg:px-4"
+                  >
                     <Icon />
                     {item.title}
                   </NavigationMenuTrigger>
@@ -192,7 +206,7 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
             return (
               <NavigationMenuItem key={item.title}>
                 <NavigationMenuLink
-                  className={navigationMenuTriggerStyle()}
+                  className={cn(navigationMenuTriggerStyle({ className: 'px-2 lg:px-4' }))}
                   render={<Link href={item.href ?? '#'} />}
                 >
                   <Icon />
