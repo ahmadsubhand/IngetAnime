@@ -30,7 +30,9 @@ export class PlatformController {
   @SkipThrottle()
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getAllPlatform(): Promise<ApiResponse<Platform[]>> {
+  async getAllPlatform(): Promise<
+    ApiResponse<(Platform & { _count: { animePlatforms: number } })[]>
+  > {
     const platform = await this.service.getAllPlatform();
     return {
       message: 'Get all platform successfully',

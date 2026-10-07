@@ -126,7 +126,6 @@ export class AnimePlatformService {
         if (error.code === 'P2003') {
           throw new NotFoundException('Anime not found');
         } else if (error.code === 'P2002') {
-          console.log(error);
           throw new ConflictException('Anime platform already exists');
         }
       }

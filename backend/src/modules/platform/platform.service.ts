@@ -17,8 +17,17 @@ export class PlatformService {
 
   constructor(private prisma: PrismaService) {}
 
-  async getAllPlatform(): Promise<Platform[]> {
-    const platforms = await this.prisma.platform.findMany();
+  async getAllPlatform(): Promise<
+    (Platform & { _count: { animePlatforms: number } })[]
+  > {
+    const platforms = await this.prisma.platform.findMany({
+      orderBy: { name: 'asc' },
+      include: {
+        _count: {
+          select: { animePlatforms: true },
+        },
+      },
+    });
     return platforms;
   }
 
@@ -108,6 +117,8 @@ export class PlatformService {
         }
         const ratio = width / height;
 
+        deleteLocalFile(existingPlatform.icon);
+
         const newIconUrl = saveLocalFile(
           this.ICON_FOLDER_PATH,
           data.name,
@@ -126,8 +137,6 @@ export class PlatformService {
             ratio,
           },
         });
-
-        deleteLocalFile(existingPlatform.icon);
 
         return platform;
       } else {

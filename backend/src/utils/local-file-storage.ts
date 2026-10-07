@@ -1,4 +1,4 @@
-import { extname } from 'path';
+import path, { extname } from 'path';
 import * as fs from 'fs';
 
 export function saveLocalFile(
@@ -7,12 +7,13 @@ export function saveLocalFile(
   file: Express.Multer.File,
 ) {
   const fileNameWithExt = `${fileName}${extname(file.originalname)}`;
-  const uploadDir = `./uploads/${folderPath}`;
-  const uploadPath = `${uploadDir}/${fileNameWithExt}`;
+  const uploadDir = path.resolve('uploads', folderPath);
+  const uploadPath = path.join(uploadDir, fileNameWithExt);
 
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
+
   fs.writeFileSync(uploadPath, file.buffer);
 
   return `/uploads/${folderPath}/${fileNameWithExt}`;
