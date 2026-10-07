@@ -59,7 +59,7 @@ export default function AnimeList({
   );
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const { isVerified } = useAuth();
+  const { isVerified, isLoading } = useAuth();
   const router = useRouter();
 
   const form = useForm<CreateOrUpdateUserAnimeList>({
@@ -81,7 +81,7 @@ export default function AnimeList({
 
   useEffect(() => {
     if (isOpen) {
-      if (!isVerified) {
+      if (!isLoading && !isVerified) {
         router.push('/auth');
       } else {
         form.reset(

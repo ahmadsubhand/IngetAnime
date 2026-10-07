@@ -19,10 +19,10 @@ export default function RecommendationPage() {
   const isMobile = useIsMobile();
   const limit = isMobile ? 5 : 12;
 
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
   useEffect(() => {
-    if (!user?.isVerified) {
+    if (!isLoading && !user?.isVerified) {
       router.replace('/auth');
     }
   }, [user, router]);
@@ -91,8 +91,8 @@ export default function RecommendationPage() {
             className="w-full flex sm:flex-wrap flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
           >
             {(status === 'pending' || isFetchingNextPage) &&
-              Array.from({ length: isMobile ? 3 : 6 }).map((_, i) => (
-                <SkeletonAnime key={i} />
+              Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonAnime key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
               ))}
           </div>
         </div>

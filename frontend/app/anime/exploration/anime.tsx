@@ -148,9 +148,9 @@ export function ExplorationAnime({
   );
 }
 
-export function SkeletonAnime() {
+export function SkeletonAnime({ className = '' }: { className?: string }) {
   return (
-    <Card className="flex flex-row p-0 gap-0 rounded-lg">
+    <Card className={`flex flex-row p-0 gap-0 rounded-lg ${className}`}>
       <Skeleton className="w-30 sm:w-43 h-40 sm:h-60 rounded-none" />
       <div className="flex flex-col pl-3 pt-1.5 pb-2 pr-2 w-50 sm:w-60 h-40 sm:h-60 justify-between">
         <div className="flex flex-col gap-2">

@@ -201,8 +201,8 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
             className="w-full flex sm:flex-wrap flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
           >
             {(status === 'pending' || isFetchingNextPage) &&
-              Array.from({ length: isMobile ? 3 : 6 }).map((_, i) => (
-                <SkeletonAnime key={i} />
+              Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonAnime key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
               ))}
           </div>
         </div>

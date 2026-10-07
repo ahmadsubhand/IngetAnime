@@ -37,13 +37,13 @@ export default function ListPage() {
   const isMobile = useIsMobile();
   const limit = isMobile ? 5 : 12;
 
-  const { user } = useAuth();
+  const { isVerified, isLoading } = useAuth();
   const router = useRouter();
   useEffect(() => {
-    if (!user?.isVerified) {
+    if (!isLoading && !isVerified) {
       router.replace('/auth');
     }
-  }, [user, router]);
+  }, [isVerified, router]);
 
   const statusOptions = [
     { label: 'Semua', value: UserValidation.ListStatusFilter.all },
@@ -272,8 +272,8 @@ export default function ListPage() {
           className="w-full flex sm:flex-wrap flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
         >
           {(queryStatus === 'pending' || isFetchingNextPage) &&
-            Array.from({ length: isMobile ? 3 : 6 }).map((_, i) => (
-              <div key={i} />
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
             ))}
         </div>
       </div>

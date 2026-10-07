@@ -43,11 +43,14 @@ export default function InputField<T extends FieldValues>({
           className={`${className}`}
           orientation={orientation}
         >
-          <FieldLabel htmlFor={inputId ?? id}>
-            {inputLabel}{' '}
-            <span className="text-red-500">{isRequired ? '*' : ''}</span>
-          </FieldLabel>
+          {inputLabel && (
+            <FieldLabel htmlFor={inputId ?? id}>
+              {inputLabel}{' '}
+              <span className="text-red-500">{isRequired ? '*' : ''}</span>
+            </FieldLabel>
+          )}
           <Input
+            className='bg-background'
             disabled={isDisable}
             {...field}
             id={inputId ?? id}
