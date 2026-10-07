@@ -1,6 +1,6 @@
 'use client';
 
-import { ListAnime } from '@/app/anime/list/anime';
+import { ListAnime, SkeletonAnime } from '@/app/anime/list/anime';
 import AnimeEmpty from '@/components/anime-empty';
 import AnimeUpdate from '@/components/anime-update';
 import AppTitle from '@/components/app-title';
@@ -273,7 +273,7 @@ export default function ListPage() {
         >
           {(queryStatus === 'pending' || isFetchingNextPage) &&
             Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
+              <SkeletonAnime key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
             ))}
         </div>
       </div>

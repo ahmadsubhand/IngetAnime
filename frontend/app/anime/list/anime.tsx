@@ -11,7 +11,6 @@ import AnimePlatform from '@/components/anime-platform';
 import { UserAnimeList } from '@/types/user-anime-list.model';
 import dayjs from 'dayjs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/hooks/use-mobile';
 import AnimeList from '@/components/anime-list';
 import getEpisodeAired from '@/helper/get-episode-aired';
 import getCurrentSeason from '@/helper/get-current-season';
@@ -211,24 +210,41 @@ export function ListAnime({
   );
 }
 
-export function SkeletonAnime() {
+export function SkeletonAnime({ className = '' }: { className?: string }) {
   return (
-    <Card className="flex flex-row p-0 gap-0 rounded-lg">
+    <Card className={`flex flex-row p-0 gap-0 rounded-lg ${className}`}>
       <Skeleton className="w-30 sm:w-43 h-40 sm:h-60 rounded-none" />
       <div className="flex flex-col pl-3 pt-1.5 pb-2 pr-2 w-50 sm:w-60 h-40 sm:h-60 justify-between">
         <div className="flex flex-col gap-2">
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="hidden sm:block h-4 w-full" />
-        </div>
-        <div className="flex flex-col gap-2">
           <Skeleton className="h-4 w-full" />
-          <Skeleton className="hidden sm:block h-4 w-full" />
-          <Skeleton className="hidden sm:block h-4 w-1/2" />
+          <Skeleton className="h-4 w-1/2" />
         </div>
-        <Skeleton className="h-4 w-full" />
-        <div className="flex sm:hidden justify-between">
-          <Skeleton className="h-5 w-10" />
-          <Skeleton className="h-5 w-10" />
+
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <div className="hidden sm:flex gap-2">
+              <Skeleton className='h-6 w-10' />
+              <Skeleton className='h-6 w-10' />
+            </div>
+            <Skeleton className='h-4 w-12' />
+            <div className="flex gap-2">
+              <Skeleton className='h-6 w-8' />
+              <Skeleton className='h-6 w-8' />
+            </div>
+          </div>
+
+          <Skeleton className='h-2 w-full' />
+
+          <div className="hidden sm:flex justify-end w-full">
+            <Skeleton className='h-4 w-12' />
+          </div>
+        </div>
+        <div className="flex justify-between">
+          <Skeleton className='hidden sm:block w-10 h-6' />
+          <div className="flex gap-1">
+            <Skeleton className='w-6 h-6' />
+            <Skeleton className='w-6 h-6' />
+          </div>
         </div>
       </div>
     </Card>
