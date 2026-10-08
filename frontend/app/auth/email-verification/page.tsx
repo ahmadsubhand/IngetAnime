@@ -26,6 +26,8 @@ export default function EmailVerificationPage() {
       otpCode: '',
     },
   });
+  const { isSubmitting } = form.formState;
+
   const { verifyEmail, resendVerification } = useAuth();
   async function onSubmit(data: EmailVerification) {
     try {
@@ -69,7 +71,7 @@ export default function EmailVerificationPage() {
 
   const { seconds, canResend, start } = useResendCountdown(90);
   const [isLoading, setIsLoading] = useState(false);
-  const isDisable = form.formState.isSubmitting || isLoading;
+  const isDisable = isSubmitting || isLoading;
   async function resend() {
     try {
       setIsLoading(true);
@@ -134,7 +136,7 @@ export default function EmailVerificationPage() {
         </p>
 
         <Button type={'submit'} disabled={isDisable}>
-          {form.formState.isSubmitting ? (
+          {isSubmitting ? (
             <Spinner data-icon="inline-start" />
           ) : (
             <BadgeCheck data-icon="inline-start" />

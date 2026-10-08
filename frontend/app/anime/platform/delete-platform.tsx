@@ -16,7 +16,7 @@ export default function DeletePlatform({
   platform: Platform & { _count: { animePlatforms: number } };
 }) {
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       await platformService.deletePlatform(platform.id);
     },
@@ -72,7 +72,7 @@ export default function DeletePlatform({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <Button variant={'red'} disabled={mutation.isPending} onClick={handleClick}>
+      <Button variant={'red'} disabled={isPending} onClick={handleClick}>
         <Trash />
       </Button>
       <DialogContent showCloseButton={false}>
@@ -86,7 +86,7 @@ export default function DeletePlatform({
         </DialogHeader>
         <DialogFooter>
           <DialogClose
-            disabled={mutation.isPending}
+            disabled={isPending}
             render={
               <Button variant={'outline'}>
                 <X /> Batal
@@ -95,12 +95,12 @@ export default function DeletePlatform({
           />
           <Button
             variant={'red'}
-            disabled={mutation.isPending}
-            onClick={() => mutation.mutate()}
+            disabled={isPending}
+            onClick={() => mutate()}
             className={'flex-row-reverse sm:flex-row'}
           >
             Hapus
-            {mutation.isPending ? (
+            {isPending ? (
               <Spinner />
             ) : (
               <Trash />

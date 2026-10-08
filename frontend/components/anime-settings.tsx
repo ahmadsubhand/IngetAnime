@@ -290,7 +290,7 @@ function InformationSettings({
   const { isDirty, isSubmitting } = form.formState;
 
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async (data: UpdateAnime) => {
       const response = (await animeService.update(data, anime.id)).data;
       form.reset({
@@ -388,11 +388,11 @@ function InformationSettings({
     }
   }
 
-  const isDisable = mutation.isPending || isSubmitting || isFetchDataFromMal;
+  const isDisable = isPending || isSubmitting || isFetchDataFromMal;
 
   return (
     <FormSettings
-      onSubmit={form.handleSubmit((data: UpdateAnime) => mutation.mutate(data))}
+      onSubmit={form.handleSubmit((data: UpdateAnime) => mutate(data))}
     >
       <HeaderSettings anime={anime} />
       <OverflowSettings>
@@ -496,7 +496,7 @@ function InformationSettings({
         />
         <Button type="submit" disabled={isDisable}>
           Simpan
-          {mutation.isPending || isSubmitting ? (
+          {isPending || isSubmitting ? (
             <Spinner data-icon="inline-start" />
           ) : (
             <Check />
@@ -558,7 +558,7 @@ function PlatformSettings({
   const { dirtyFields, isSubmitting, isDirty } = form.formState;
 
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async (data: CreateOrUpdateAnimePlatform) => {
       const response = (await animePlatformService.createOrUpdate(
         data,
@@ -617,7 +617,7 @@ function PlatformSettings({
     },
   });
 
-  const isDisable = mutation.isPending || isSubmitting;
+  const isDisable = isPending || isSubmitting;
 
   function onSubmit(data: CreateOrUpdateAnimePlatform) {
     if (
@@ -631,7 +631,7 @@ function PlatformSettings({
           'Jadwal episode sebelumnya tidak boleh lewat dari jadwal episode berikutnya',
       });
     } else {
-      mutation.mutate(data);
+      mutate(data);
     }
   }
 
@@ -834,7 +834,7 @@ function PlatformSettings({
         />
         <Button type="submit" disabled={isDisable}>
           Simpan
-          {mutation.isPending || isSubmitting ? (
+          {isPending || isSubmitting ? (
             <Spinner data-icon="inline-start" />
           ) : (
             <Check />

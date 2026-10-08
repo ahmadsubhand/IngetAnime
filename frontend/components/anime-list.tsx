@@ -78,6 +78,7 @@ export default function AnimeList({
       animePlatformId: null,
     },
   });
+  const { isSubmitting } = form.formState;
 
   useEffect(() => {
     if (isOpen) {
@@ -101,7 +102,7 @@ export default function AnimeList({
   }, [isOpen, anime.userAnimeList, form, isVerified, router]);
 
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async (data: CreateOrUpdateUserAnimeList) => {
       await userAnimeListService.createOrUpdate(data, anime.id);
     },
@@ -183,7 +184,7 @@ export default function AnimeList({
   }
 
   const isDisable =
-    mutation.isPending || form.formState.isSubmitting || isFetchDataFromMal;
+    isPending || isSubmitting || isFetchDataFromMal;
 
   return (
     <>
@@ -249,7 +250,7 @@ export default function AnimeList({
           <form
             className="w-full sm:w-155 py-4 px-5 flex flex-col justify-between gap-4"
             onSubmit={form.handleSubmit((data: CreateOrUpdateUserAnimeList) =>
-              mutation.mutate(data),
+              mutate(data),
             )}
           >
             <div className="flex flex-col gap-1 text-center">
@@ -399,7 +400,7 @@ export default function AnimeList({
                 />
                 <Button type="submit" disabled={isDisable}>
                   Simpan
-                  {mutation.isPending || form.formState.isSubmitting ? (
+                  {isPending || isSubmitting ? (
                     <Spinner data-icon="inline-start" />
                   ) : (
                     <Check />
@@ -461,7 +462,7 @@ function AnimeListDelete({
   }, [isOpen, isSyncedWithMalPreviously]);
 
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       if (isSyncedWithMal !== isSyncedWithMalPreviously) {
         await userAnimeListService.createOrUpdate({ isSyncedWithMal }, animeId);
@@ -518,7 +519,7 @@ function AnimeListDelete({
                 id={`is-synced-with-mal-${animeId.toString()}`}
                 checked={isSyncedWithMal}
                 onCheckedChange={setIsSyncedWithMal}
-                disabled={mutation.isPending}
+                disabled={isPending}
               />
               <FieldLabel htmlFor={`is-synced-with-mal-${animeId.toString()}`}>
                 Sinkronisasi dengan MyAnimeList
@@ -528,7 +529,7 @@ function AnimeListDelete({
         </DialogHeader>
         <DialogFooter>
           <DialogClose
-            disabled={mutation.isPending}
+            disabled={isPending}
             render={
               <Button variant={'outline'}>
                 <X /> Batal
@@ -537,12 +538,12 @@ function AnimeListDelete({
           />
           <Button
             variant={'red'}
-            disabled={mutation.isPending}
-            onClick={() => mutation.mutate()}
+            disabled={isPending}
+            onClick={() => mutate()}
             className={'flex-row-reverse sm:flex-row'}
           >
             Hapus
-            {mutation.isPending ? (
+            {isPending ? (
               <Spinner data-icon="inline-start" />
             ) : (
               <Trash />

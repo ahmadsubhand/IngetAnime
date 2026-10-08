@@ -26,6 +26,7 @@ export default function AppHeader() {
       q: qFromParam,
     },
   });
+  const { isSubmitting } = form.formState;
 
   const router = useRouter();
   function onSubmit(data: GetAnimeList) {
@@ -44,7 +45,7 @@ export default function AppHeader() {
         <AnimeSearch
           form={form}
           inputName="q"
-          isDisable={form.formState.isSubmitting}
+          isDisable={isSubmitting}
           className="ml-5 md:max-w-100"
         />
 
@@ -54,7 +55,7 @@ export default function AppHeader() {
               <AnimeSearch
                 form={form}
                 inputName="q"
-                isDisable={form.formState.isSubmitting}
+                isDisable={isSubmitting}
               />
             }
           />

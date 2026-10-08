@@ -26,6 +26,7 @@ import { ApiExpectedError } from '@/types';
 import CustomError from '@/helper/custom-error';
 import { useAuth } from '@/providers/auth-provider';
 import AnimeSettings from '@/components/anime-settings';
+import { Spinner } from '@/components/ui/spinner';
 
 export function ListAnime({
   anime,
@@ -47,7 +48,7 @@ export function ListAnime({
   const ratio = anime.episodeTotal ? 100 / anime.episodeTotal : 0;
 
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationKey: ['anime'],
     mutationFn: async (progress: CreateOrUpdateUserAnimeList['progress']) => {
       if (progress && progress < 0) {
@@ -157,21 +158,23 @@ export function ListAnime({
 
             <div className="flex gap-2">
               <Button
+                disabled={isPending}
                 size={'xs'}
                 variant={'red'}
                 onClick={() => {
-                  mutation.mutate((anime.userAnimeList?.progress ?? 0) - 1);
+                  mutate((anime.userAnimeList?.progress ?? 0) - 1);
                 }}
               >
-                <Minus />
+                {isPending ? <Spinner className='size-3' /> : <Minus />}
               </Button>
               <Button
+                disabled={isPending}
                 size={'xs'}
                 onClick={() => {
-                  mutation.mutate((anime.userAnimeList?.progress ?? 0) + 1);
+                  mutate((anime.userAnimeList?.progress ?? 0) + 1);
                 }}
               >
-                <Plus />
+                {isPending ? <Spinner className='size-3' /> : <Plus />}
               </Button>
             </div>
           </div>

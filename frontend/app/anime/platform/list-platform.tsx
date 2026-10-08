@@ -43,9 +43,10 @@ export default function ListPlatform({
       name: platform.name,
     },
   });
+  const { isSubmitting } = form.formState;
 
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async (data: PlatformName) => {
       await platformService.updatePlatform(data, platform.id, iconFile);
     },
@@ -94,7 +95,7 @@ export default function ListPlatform({
     handleIconReset();
   }
 
-  const isDisable = mutation.isPending || form.formState.isSubmitting;
+  const isDisable = isPending || isSubmitting;
 
   const isMobile = useIsMobile();
   const height = isMobile ? 40 : 80;
@@ -159,7 +160,7 @@ export default function ListPlatform({
 
       <form
         className="w-full flex gap-3 items-start justify-center"
-        onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
+        onSubmit={form.handleSubmit((data) => mutate(data))}
       >
         <DeletePlatform platform={platform} />
         <InputField

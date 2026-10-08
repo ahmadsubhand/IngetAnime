@@ -30,6 +30,7 @@ export default function RegisterPage() {
       confirmPassword: '',
     },
   });
+  const { isSubmitting, errors } = form.formState;
 
   const { register } = useAuth();
 
@@ -82,7 +83,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      if (form.formState.errors.username || !usernameVal) {
+      if (errors.username || !usernameVal) {
         setUsernameMessage('');
         return;
       }
@@ -114,7 +115,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      if (form.formState.errors.email || !emailVal) {
+      if (errors.email || !emailVal) {
         setEmailMessage('');
         return;
       }
@@ -140,7 +141,7 @@ export default function RegisterPage() {
   }, [emailVal, form]);
 
   const [isLoading, setIsLoading] = useState(false);
-  const isDisable = form.formState.isSubmitting || isLoading;
+  const isDisable = isSubmitting || isLoading;
 
   return (
     <>
@@ -201,7 +202,7 @@ export default function RegisterPage() {
         </div>
 
         <Button type={'submit'} disabled={isDisable}>
-          {form.formState.isSubmitting ? (
+          {isSubmitting ? (
             <Spinner data-icon="inline-start" />
           ) : (
             <LogIn data-icon="inline-start" />

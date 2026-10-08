@@ -36,9 +36,10 @@ export default function AddPlatform() {
       name: '',
     },
   });
+  const { isSubmitting } = form.formState;
 
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const { isPending, mutate } = useMutation({
     mutationFn: async (data: PlatformName) => {
       await platformService.createPlatform(data, iconFile);
     },
@@ -83,12 +84,12 @@ export default function AddPlatform() {
     },
   });
 
-  const isDisable = mutation.isPending || form.formState.isSubmitting;
+  const isDisable = isPending || isSubmitting;
 
   return (
     <form
       className="w-full"
-      onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
+      onSubmit={form.handleSubmit((data) => mutate(data))}
     >
       <FieldGroup className="sm:flex-row justify-center items-center sm:items-end gap-4">
         {/* Image Preview */}

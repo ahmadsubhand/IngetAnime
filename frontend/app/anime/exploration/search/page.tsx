@@ -41,6 +41,8 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
       q: initialQuery,
     },
   });
+  const { isSubmitting } = form.formState;
+
   const [submittedQuery, setSubmittedQuery] = useState(
     AnimeExplorationValidation.GET_ANIME_LIST.safeParse({ q: initialQuery })
       .success
@@ -134,7 +136,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
                 <Input
                   className="bg-background"
                   disabled={
-                    form.formState.isSubmitting ||
+                    isSubmitting ||
                     (status === 'pending' && canSearch)
                   }
                   {...field}
@@ -147,7 +149,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
                   type="submit"
                   size={'icon'}
                   disabled={
-                    form.formState.isSubmitting ||
+                    isSubmitting ||
                     (status === 'pending' && canSearch)
                   }
                 >

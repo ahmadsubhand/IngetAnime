@@ -27,6 +27,7 @@ export default function LoginPage() {
       password: '',
     },
   });
+  const { isSubmitting } = form.formState;
 
   const { login } = useAuth();
 
@@ -72,7 +73,7 @@ export default function LoginPage() {
   }
 
   const [isLoading, setIsLoading] = useState(false);
-  const isDisable = form.formState.isSubmitting || isLoading;
+  const isDisable = isSubmitting || isLoading;
 
   return (
     <>
@@ -127,7 +128,7 @@ export default function LoginPage() {
         </Link>
 
         <Button type={'submit'} disabled={isDisable}>
-          {form.formState.isSubmitting ? (
+          {isSubmitting ? (
             <Spinner data-icon="inline-start" />
           ) : (
             <LogIn data-icon="inline-start" />
