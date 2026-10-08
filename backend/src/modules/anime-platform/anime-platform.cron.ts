@@ -48,15 +48,19 @@ export class AnimePlatformCron {
           const lastEpisodeAiredAt = dayjs(
             animePlatform.nextEpisodeAiringAt,
           ).toISOString();
-          let nextEpisodeAiringAt = dayjs(animePlatform.nextEpisodeAiringAt)
+
+          let nextEpisodeAiringAt: string | null = dayjs(
+            animePlatform.nextEpisodeAiringAt,
+          )
             .add(animePlatform.intervalInDays, 'day')
             .toISOString();
+
           let isHiatus = false;
           const newEpisodeNumber = animePlatform.episodeAired + 1;
 
           // Current episode is last episode
           if (animePlatform.anime.episodeTotal === newEpisodeNumber) {
-            nextEpisodeAiringAt = lastEpisodeAiredAt;
+            nextEpisodeAiringAt = null;
             isHiatus = true;
 
             // Last anime airing

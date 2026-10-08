@@ -226,8 +226,12 @@ export class AnimePlatformService {
 
       if (animePlatform) {
         this.checkEpisodeAirOrder(
-          data.lastEpisodeAiredAt || animePlatform.lastEpisodeAiredAt,
-          data.nextEpisodeAiringAt || animePlatform.nextEpisodeAiringAt,
+          data.lastEpisodeAiredAt === null
+            ? null
+            : data.lastEpisodeAiredAt || animePlatform.lastEpisodeAiredAt,
+          data.nextEpisodeAiringAt === null
+            ? null
+            : data.nextEpisodeAiringAt || animePlatform.nextEpisodeAiringAt,
         );
         animePlatform = await this.prisma.animePlatform.update({
           where: { id: animePlatform.id },
