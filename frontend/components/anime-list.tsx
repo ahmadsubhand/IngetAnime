@@ -160,6 +160,9 @@ export default function AnimeList({
           score: statusFromMal?.score,
           startDate: statusFromMal?.start_date,
           finishDate: statusFromMal?.finish_date,
+        }, {
+          shouldDirty: true,
+          shouldValidate: true,
         });
         toast.add({
           type: 'success',
@@ -229,10 +232,10 @@ export default function AnimeList({
         </Tooltip>
 
         <DialogContent
-          className={'px-0 py-0 w-full h-full sm:h-fit sm:max-w-fit flex gap-0'}
+          className={'px-0 py-0 w-full h-full sm:h-fit sm:max-w-fit flex gap-0 overflow-hidden'}
           showCloseButton={false}
         >
-          <div className="hidden lg:block w-80 h-115 relative">
+          <div className="hidden lg:block w-80 relative">
             <Image
               src={anime.picture}
               alt={anime.title}
@@ -244,7 +247,7 @@ export default function AnimeList({
           </div>
 
           <form
-            className="w-full sm:w-155 sm:h-115 py-4 px-5 flex flex-col justify-between gap-4 sm:gap-0"
+            className="w-full sm:w-155 py-4 px-5 flex flex-col justify-between gap-4"
             onSubmit={form.handleSubmit((data: CreateOrUpdateUserAnimeList) =>
               mutation.mutate(data),
             )}

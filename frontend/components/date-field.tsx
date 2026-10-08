@@ -66,6 +66,7 @@ export default function DateField<T extends FieldValues>({
                 value={field.value ?? ''}
                 id={inputId ?? id}
                 placeholder={inputPlaceholder}
+                aria-invalid={fieldState.invalid}
                 onChange={(e) => {
                   const value = e.target.value;
                   field.onChange(value || null);

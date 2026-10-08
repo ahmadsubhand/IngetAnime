@@ -16,6 +16,8 @@ import AnimeList from '@/components/anime-list';
 import getEpisodeAired from '@/helper/get-episode-aired';
 import AnimeScore from '@/components/anime-score';
 import AnimeEpisodeAired from '@/components/anime-episode-aired';
+import { useAuth } from '@/providers/auth-provider';
+import AnimeSettings from '@/components/anime-settings';
 
 export function ExplorationAnime({
   anime,
@@ -32,6 +34,7 @@ export function ExplorationAnime({
     anime.animePlatforms[0],
   );
   const isMobile = useIsMobile();
+  const { isLoading, isAdmin } = useAuth();
 
   return (
     <Card className="flex flex-row p-0 gap-0 rounded-lg">
@@ -56,6 +59,13 @@ export function ExplorationAnime({
         <div className="sm:block absolute -top-px -left-px">
           <AnimeList anime={anime} />
         </div>
+        {
+          !isLoading && isAdmin && (
+            <div className="absolute -top-px -right-px">
+              <AnimeSettings anime={anime} />
+            </div>
+          )
+        }
       </div>
       <div className="flex flex-col pl-3 pt-1.5 pb-2 pr-2 w-50 sm:w-60 h-40 sm:h-60 justify-between">
         <div className="flex flex-col gap-1">

@@ -16,9 +16,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
-import usePlatforms from '@/hooks/use-platforms';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
+import { usePlatforms } from '@/providers/platform-provider';
 import userService from '@/services/user.service';
 import { UserValidation } from '@/validator/user.validation';
 import { useInfiniteQuery } from '@tanstack/react-query';
@@ -60,14 +60,16 @@ export default function ListPage() {
     UserValidation.ListStatusFilter.all,
   );
 
-  const platformsFromDb = usePlatforms();
+  const { platforms: platformsFromDb } = usePlatforms();
   const platformOptions = [{ label: 'Semua', value: 0 }].concat(
-    platformsFromDb.map((platform) => {
-      return {
-        label: platform.name,
-        value: platform.id,
-      };
-    }),
+    platformsFromDb
+      ? platformsFromDb.map((platform) => {
+          return {
+            label: platform.name,
+            value: platform.id,
+          };
+        })
+      : [],
   );
   const [platformId, setPlatformId] = useState(0);
 
@@ -142,7 +144,9 @@ export default function ListPage() {
 
       <FieldGroup className="sm:flex-row gap-4 sm:gap-8 overflow-x-auto no-scrollbar">
         <FieldWrap>
-          <FieldLabel htmlFor="status" className='min-w-15 sm:min-w-fit'>Status</FieldLabel>
+          <FieldLabel htmlFor="status" className="min-w-15 sm:min-w-fit">
+            Status
+          </FieldLabel>
           <Select
             disabled={queryStatus === 'pending'}
             items={statusOptions}
@@ -168,7 +172,9 @@ export default function ListPage() {
         </FieldWrap>
 
         <FieldWrap>
-          <FieldLabel htmlFor="platform" className='min-w-15 sm:min-w-fit'>Platform</FieldLabel>
+          <FieldLabel htmlFor="platform" className="min-w-15 sm:min-w-fit">
+            Platform
+          </FieldLabel>
           <Select
             disabled={queryStatus === 'pending'}
             items={platformOptions}
@@ -192,7 +198,9 @@ export default function ListPage() {
         </FieldWrap>
 
         <FieldWrap>
-          <FieldLabel htmlFor="sort" className='min-w-15 sm:min-w-fit'>Urutan</FieldLabel>
+          <FieldLabel htmlFor="sort" className="min-w-15 sm:min-w-fit">
+            Urutan
+          </FieldLabel>
           <Select
             disabled={queryStatus === 'pending'}
             items={sortOptions}
@@ -273,7 +281,10 @@ export default function ListPage() {
         >
           {(queryStatus === 'pending' || isFetchingNextPage) &&
             Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonAnime key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
+              <SkeletonAnime
+                key={i}
+                className={i >= 3 ? 'hidden sm:flex' : ''}
+              />
             ))}
         </div>
       </div>
@@ -305,9 +316,5 @@ export default function ListPage() {
 }
 
 function FieldWrap({ children }: { children: ReactNode }) {
-  return (
-    <Field orientation={'horizontal'}>
-      {children}
-    </Field>
-  )
+  return <Field orientation={'horizontal'}>{children}</Field>;
 }

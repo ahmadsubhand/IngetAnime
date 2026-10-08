@@ -9,8 +9,7 @@ import AnimeUpdate from '@/components/anime-update';
 import AppTitle from '@/components/app-title';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/providers/auth-provider';
-import platformService from '@/services/platform.service';
-import { useQuery } from '@tanstack/react-query';
+import { usePlatforms } from '@/providers/platform-provider';
 import { RefreshCw } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -25,18 +24,7 @@ export default function ListPage() {
     }
   }, [isAdmin]);
 
-  const {
-    data: platforms,
-    isRefetching,
-    status,
-  } = useQuery({
-    queryKey: ['anime', 'platform'],
-    queryFn: async () => {
-      const response = await platformService.getAllPlatform();
-      return response.data;
-    },
-    staleTime: Infinity,
-  });
+  const { platforms, isRefetching, status } = usePlatforms();
 
   return (
     <>

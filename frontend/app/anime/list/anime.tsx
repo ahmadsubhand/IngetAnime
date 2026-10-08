@@ -24,6 +24,8 @@ import { toast } from '@/components/ui/toast';
 import axios from 'axios';
 import { ApiExpectedError } from '@/types';
 import CustomError from '@/helper/custom-error';
+import { useAuth } from '@/providers/auth-provider';
+import AnimeSettings from '@/components/anime-settings';
 
 export function ListAnime({
   anime,
@@ -90,6 +92,8 @@ export function ListAnime({
     },
   });
 
+  const { isLoading, isAdmin } = useAuth();
+
   return (
     <Card className="flex flex-row p-0 gap-0 rounded-lg">
       <div className="w-30 sm:w-43 h-40 sm:h-60 relative">
@@ -101,6 +105,14 @@ export function ListAnime({
           className="object-cover"
           fill
         />
+
+        {
+          !isLoading && isAdmin && (
+            <div className="absolute -top-px -right-px">
+              <AnimeSettings anime={anime} />
+            </div>
+          )
+        }
 
         {/* Mobile */}
         <div className="block sm:hidden absolute -bottom-px -left-px">

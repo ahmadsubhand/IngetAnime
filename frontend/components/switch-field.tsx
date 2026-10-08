@@ -39,7 +39,7 @@ export default function SwitchField<T extends FieldValues>({
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid} className={className}>
           <div
-            className={`flex gap-2 items-center ${labelPosition === 'left' ? 'flex-row' : 'flex-row-reverse'}`}
+            className={`flex gap-2 items-center justify-end ${labelPosition === 'left' ? 'flex-row' : 'flex-row-reverse'}`}
           >
             <FieldLabel
               htmlFor={inputId ?? id}

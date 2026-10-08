@@ -60,6 +60,9 @@ export default function InputField<T extends FieldValues>({
             {...(inputType === 'number' && {
               onChange: (e) => field.onChange(parseInt(e.target.value)),
             })}
+            {...(inputType === 'number' && {
+              min: 0
+            })}
           />
           {(fieldState.invalid || inputDescription) && (
             <FieldDescription
