@@ -11,9 +11,11 @@ import { useInView } from 'react-intersection-observer';
 import { useAuth } from '@/providers/auth-provider';
 import { useRouter } from 'next/navigation';
 import { Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import AnimeEmpty from '@/components/anime-empty';
 import AnimeUpdate from '@/components/anime-update';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export default function RecommendationPage() {
   const isMobile = useIsMobile();
@@ -101,9 +103,9 @@ export default function RecommendationPage() {
           className="sm:w-155 md:w-186"
           message="Hubungkan akun dengan MyAnimeList untuk mendapatkan rekomendasi anime"
           action={
-            <Button>
+            <Link href={'/user/settings'} className={cn(buttonVariants())}>
               <Settings /> Pengaturan
-            </Button>
+            </Link>
           }
           imageWithDiv={
             <div className="w-full h-45 sm:h-40 md:h-51 relative mt-0 sm:mt-10 md:mt-0">

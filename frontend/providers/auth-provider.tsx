@@ -15,6 +15,7 @@ import {
 import { User } from '../types/user.model';
 import { Role } from '../enums';
 import { useQueryClient } from '@tanstack/react-query';
+import { UpdateUserDetail } from '@/validator/user.validation';
 
 interface AuthContextValue {
   user: User | null;
@@ -33,6 +34,7 @@ interface AuthContextValue {
   resetPassword: (payload: ResetPassword) => Promise<void>;
   loginWithGoogle: (payload: ThirdPartyLogin) => Promise<void>;
   loginWithMal: (payload: ThirdPartyLogin) => Promise<void>;
+  updateUserDetail: (payload: UpdateUserDetail) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -63,30 +65,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function login(payload: Login) {
-    const response = await authService.login(payload);
-    setUser(response.data);
-    queryClient.invalidateQueries({ queryKey: ['anime'] });
+    try {
+      setIsLoading(true);
+      const response = await authService.login(payload);
+      setUser(response.data);
+      queryClient.invalidateQueries({ queryKey: ['anime'] });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function logout() {
     try {
+      setIsLoading(true);
       await authService.logout();
     } finally {
       setUser(null);
       queryClient.invalidateQueries({ queryKey: ['anime'] });
+      setIsLoading(false);
     }
   }
 
   async function register(payload: Register) {
+    setIsLoading(true);
     const response = await authService.register(payload);
     setUser(response.data);
     queryClient.invalidateQueries({ queryKey: ['anime'] });
+    setIsLoading(false);
   }
 
   async function verifyEmail(payload: EmailVerification) {
+    setIsLoading(true);
     const response = await authService.verifyEmail(payload);
     setUser(response.data);
     queryClient.invalidateQueries({ queryKey: ['anime'] });
+    setIsLoading(false);
   }
 
   async function resendVerification() {
@@ -98,21 +111,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function resetPassword(payload: ResetPassword) {
+    setIsLoading(true);
     const response = await authService.resetPassword(payload);
     setUser(response.data);
     queryClient.invalidateQueries({ queryKey: ['anime'] });
+    setIsLoading(false);
   }
 
   async function loginWithGoogle(payload: ThirdPartyLogin) {
-    const response = await authService.loginWithGoogle(payload);
-    setUser(response.data);
-    queryClient.invalidateQueries({ queryKey: ['anime'] });
+    try {
+      setIsLoading(true);
+      const response = await authService.loginWithGoogle(payload);
+      setUser(response.data);
+      queryClient.invalidateQueries({ queryKey: ['anime'] });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function loginWithMal(payload: ThirdPartyLogin) {
-    const response = await authService.loginWithMal(payload);
+    try {
+      setIsLoading(true);
+      const response = await authService.loginWithMal(payload);
+      setUser(response.data);
+      queryClient.invalidateQueries({ queryKey: ['anime'] });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function updateUserDetail(payload: UpdateUserDetail) {
+    setIsLoading(true);
+    const response = await userService.updateUserDetail(payload);
     setUser(response.data);
     queryClient.invalidateQueries({ queryKey: ['anime'] });
+    setIsLoading(false);
   }
 
   return (
@@ -132,6 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         resetPassword,
         loginWithGoogle,
         loginWithMal,
+        updateUserDetail,
       }}
     >
       {children}

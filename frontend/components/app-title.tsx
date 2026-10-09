@@ -5,12 +5,12 @@ export default function AppTitle({
   subtitle,
 }: {
   title: string;
-  subtitle: ReactNode;
+  subtitle?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-2 text-center">
       <h1 className="text-2xl font-bold">{title}</h1>
-      <p>{subtitle}</p>
+      {subtitle && <p>{subtitle}</p>}      
     </div>
   );
 }

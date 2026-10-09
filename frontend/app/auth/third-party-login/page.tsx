@@ -14,10 +14,10 @@ export default function ThirdPartyLoginPage() {
   const code = params.get('code');
   const error = params.get('error');
 
-  const { loginWithGoogle, loginWithMal } = useAuth();
+  const { loginWithGoogle, loginWithMal, isLoading } = useAuth();
 
   useEffect(() => {
-    if (state && code) {
+    if (state && code && !isLoading) {
       if (iss === 'https://accounts.google.com') {
         loginWithGoogle({ state, code });
       } else {
