@@ -1,5 +1,13 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
 import platformService from '@/services/platform.service';
@@ -10,9 +18,9 @@ import axios, { HttpStatusCode } from 'axios';
 import { Trash, X } from 'lucide-react';
 import { useState } from 'react';
 
-export default function DeletePlatform({ 
-  platform 
-}: { 
+export default function DeletePlatform({
+  platform,
+}: {
   platform: Platform & { _count: { animePlatforms: number } };
 }) {
   const queryClient = useQueryClient();
@@ -81,7 +89,8 @@ export default function DeletePlatform({
             Hapus platform?
           </DialogTitle>
           <DialogDescription>
-            Tindakan ini tidak bisa dibatalkan. Seluruh informasi terkait platform seperti nama dan icon akan ikut dihapus.
+            Tindakan ini tidak bisa dibatalkan. Seluruh informasi terkait
+            platform seperti nama dan icon akan ikut dihapus.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -100,14 +109,10 @@ export default function DeletePlatform({
             className={'flex-row-reverse sm:flex-row'}
           >
             Hapus
-            {isPending ? (
-              <Spinner />
-            ) : (
-              <Trash />
-            )}
+            {isPending ? <Spinner /> : <Trash />}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

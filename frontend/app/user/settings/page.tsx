@@ -33,7 +33,7 @@ export default function SettingsPage() {
     if (!isAuthLoading && !isVerified) {
       router.replace('/auth');
     }
-  }, [isVerified, router]);
+  }, [isAuthLoading, isVerified, router]);
 
   return (
     <div className='flex flex-col gap-5 sm:gap-8 lg:mb-12'>
@@ -94,7 +94,7 @@ function ProfileSection({
         },
       );
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, form]);
 
   async function onSubmit(data: UpdateUserDetail) {
     try {
@@ -205,9 +205,6 @@ function ImportSection({ user }: { user: User | null }) {
         'Menambahkan list baru, jika sudah ada akan ditimpa dengan data dari MyAnimeList',
     },
   ];
-  const [description, setDescription] = useState(
-    importTypeOptions[0].description,
-  );
 
   const form = useForm({
     resolver: zodResolver(UserValidation.IMPORT_ANIME_LIST_FROM_MAL),
@@ -264,12 +261,8 @@ function ImportSection({ user }: { user: User | null }) {
     control: form.control,
     name: 'importType',
   });
-  useEffect(() => {
-    const desc =
-      importTypeOptions.find((option) => option.value === importType)
-        ?.description || importTypeOptions[0].description;
-    setDescription(desc);
-  }, [importType]);
+  const description = importTypeOptions.find((option) => option.value === importType)
+    ?.description || importTypeOptions[0].description;
 
   return (
     <ItemWrapper title="Import List dari MyAnimeList">

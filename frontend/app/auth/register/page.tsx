@@ -105,7 +105,7 @@ export default function RegisterPage() {
     }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [usernameVal, form]);
+  }, [usernameVal, form, errors.username]);
 
   const emailVal = useWatch({
     control: form.control,
@@ -138,7 +138,7 @@ export default function RegisterPage() {
     }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [emailVal, form]);
+  }, [emailVal, errors.email, form]);
 
   const [isLoading, setIsLoading] = useState(false);
   const isDisable = isSubmitting || isLoading;

@@ -22,7 +22,7 @@ export default function ListPage() {
     if (!isLoading && !isAdmin) {
       router.back();
     }
-  }, [isAdmin]);
+  }, [isAdmin, isLoading, router]);
 
   const { platforms, isRefetching, status } = usePlatforms();
 

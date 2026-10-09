@@ -43,7 +43,7 @@ export default function ListPage() {
     if (!isLoading && !isVerified) {
       router.replace('/auth');
     }
-  }, [isVerified, router]);
+  }, [isLoading, isVerified, router]);
 
   const statusOptions = [
     { label: 'Semua', value: UserValidation.ListStatusFilter.all },

@@ -79,27 +79,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsLoading(true);
       await authService.logout();
-    } finally {
       setUser(null);
       queryClient.invalidateQueries({ queryKey: ['anime'] });
+    } finally {
       setIsLoading(false);
     }
   }
 
   async function register(payload: Register) {
-    setIsLoading(true);
-    const response = await authService.register(payload);
-    setUser(response.data);
-    queryClient.invalidateQueries({ queryKey: ['anime'] });
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const response = await authService.register(payload);
+      setUser(response.data);
+      queryClient.invalidateQueries({ queryKey: ['anime'] });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function verifyEmail(payload: EmailVerification) {
-    setIsLoading(true);
-    const response = await authService.verifyEmail(payload);
-    setUser(response.data);
-    queryClient.invalidateQueries({ queryKey: ['anime'] });
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const response = await authService.verifyEmail(payload);
+      setUser(response.data);
+      queryClient.invalidateQueries({ queryKey: ['anime'] });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function resendVerification() {
@@ -111,11 +117,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function resetPassword(payload: ResetPassword) {
-    setIsLoading(true);
-    const response = await authService.resetPassword(payload);
-    setUser(response.data);
-    queryClient.invalidateQueries({ queryKey: ['anime'] });
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const response = await authService.resetPassword(payload);
+      setUser(response.data);
+      queryClient.invalidateQueries({ queryKey: ['anime'] });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function loginWithGoogle(payload: ThirdPartyLogin) {
@@ -141,11 +150,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function updateUserDetail(payload: UpdateUserDetail) {
-    setIsLoading(true);
-    const response = await userService.updateUserDetail(payload);
-    setUser(response.data);
-    queryClient.invalidateQueries({ queryKey: ['anime'] });
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const response = await userService.updateUserDetail(payload);
+      setUser(response.data);
+      queryClient.invalidateQueries({ queryKey: ['anime'] });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

@@ -17,16 +17,29 @@ export default function ThirdPartyLoginPage() {
   const { loginWithGoogle, loginWithMal, isLoading } = useAuth();
 
   useEffect(() => {
-    if (state && code && !isLoading) {
-      if (iss === 'https://accounts.google.com') {
-        loginWithGoogle({ state, code });
-      } else {
-        loginWithMal({ state, code });
+    async function handleLogin() {
+      if (state && code && !isLoading) {
+        if (iss === 'https://accounts.google.com') {
+          await loginWithGoogle({ state, code });
+        } else {
+          await loginWithMal({ state, code });
+        }
+      } else if (error === 'access_denied' || error) {
+        router.replace('/auth');
       }
-    } else if (error === 'access_denied' || error) {
-      router.replace('/auth');
     }
-  }, [state, code, iss, loginWithGoogle, loginWithMal, error, router]);
+
+    void handleLogin();
+  }, [
+    code,
+    error,
+    isLoading,
+    iss,
+    loginWithGoogle,
+    loginWithMal,
+    router,
+    state,
+  ]);
 
   return (
     <>

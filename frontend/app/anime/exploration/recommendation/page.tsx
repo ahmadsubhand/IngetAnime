@@ -11,7 +11,7 @@ import { useInView } from 'react-intersection-observer';
 import { useAuth } from '@/providers/auth-provider';
 import { useRouter } from 'next/navigation';
 import { Settings } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import AnimeEmpty from '@/components/anime-empty';
 import AnimeUpdate from '@/components/anime-update';
 import Link from 'next/link';
@@ -27,7 +27,7 @@ export default function RecommendationPage() {
     if (!isLoading && !user?.isVerified) {
       router.replace('/auth');
     }
-  }, [user, router]);
+  }, [isLoading, router, user?.isVerified]);
 
   const {
     data,

@@ -14,10 +14,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from './ui/dialog';
 import { AccessType, AnimeStatus } from '../enums';
 import Image from 'next/image';
@@ -92,26 +88,27 @@ export default function AnimeSettings({
   const [selectedPlatformId, setSelectedPlatformId] = useState(
     anime.animePlatforms[0]?.platform.id || null,
   );
+  const effectiveSelectedPlatformId = selectedPlatformId ?? platforms?.[0]?.id ?? null;
+
   const [dialogChangePlatformOpen, setDialogChangePlatformOpen] =
     useState(false);
   const [nextPlatformId, setNextPlatformId] = useState<number | null>(null);
 
+  // NOT CLEAR YET
   useEffect(() => {
-    if (selectedPlatformId === null && platforms && platforms.length > 0) {
-      setSelectedPlatformId(platforms[0].id);
-    }
-  }, [platforms, selectedPlatformId]);
-
-  useEffect(() => {
-    if (isOpen) {
-      if (!isLoading && !isAdmin) {
-        setIsOpen(false);
-      } else {
-        setOnPlatformForm(false);
-        setSelectedPlatformId(anime.animePlatforms[0]?.platform.id || null);
+    function handleDialogState() {
+      if (isOpen) {
+        if (!isLoading && !isAdmin) {
+          setIsOpen(false);
+        } else {
+          setOnPlatformForm(false);
+          setSelectedPlatformId(anime.animePlatforms[0]?.platform.id || null);
+        }
       }
     }
-  }, [isOpen, isLoading, isAdmin]);
+    
+    handleDialogState();
+  }, [isOpen, isLoading, isAdmin, anime.animePlatforms]);
 
   return (
     <>
@@ -138,17 +135,17 @@ export default function AnimeSettings({
           </div>
 
           {onPlatformForm ? (
-            selectedPlatformId && (
+            effectiveSelectedPlatformId && (
               <PlatformSettings
-                key={selectedPlatformId}
+                key={effectiveSelectedPlatformId}
                 anime={anime}
                 animePlatform={anime.animePlatforms.find(
-                  (value) => value.platform.id === selectedPlatformId,
+                  (value) => value.platform.id === effectiveSelectedPlatformId,
                 )}
                 
                 // Platform Navigation
                 platforms={platforms ?? []}
-                selectedPlatformId={selectedPlatformId}
+                selectedPlatformId={effectiveSelectedPlatformId}
                 setSelectedPlatformId={setSelectedPlatformId}
                 setNextPlatformId={setNextPlatformId}
 
@@ -659,7 +656,7 @@ function PlatformSettings({
         { shouldDirty: true, shouldValidate: true },
       );
     }
-  }, [lastEpisodeAiredAt, dirtyFields.lastEpisodeAiredAt]);
+  }, [lastEpisodeAiredAt, dirtyFields.lastEpisodeAiredAt, form]);
 
   const nextEpisodeAiringAt = useWatch({
     control: form.control,
@@ -672,7 +669,7 @@ function PlatformSettings({
         form.setValue('isHiatus', true, { shouldDirty: true, shouldValidate: true });
       else form.setValue('isHiatus', false, { shouldDirty: true, shouldValidate: true });
     }
-  }, [nextEpisodeAiringAt]);
+  }, [dirtyFields.nextEpisodeAiringAt, form, nextEpisodeAiringAt]);
 
   const platformOptions = platforms.map((platform) => {
     return {

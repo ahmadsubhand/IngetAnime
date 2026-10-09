@@ -99,7 +99,7 @@ export default function AnimeList({
         );
       }
     }
-  }, [isOpen, anime.userAnimeList, form, isVerified, router]);
+  }, [anime.userAnimeList, form, isLoading, isOpen, isVerified, router]);
 
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
