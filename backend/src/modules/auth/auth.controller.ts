@@ -9,6 +9,7 @@ import {
   Query,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -32,7 +33,7 @@ import { CookieService } from '../../common/cookie.service';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { ConfigService } from '@nestjs/config';
-import { AuthGuard } from './guard/auth.guard';
+import { AuthGuard, OptionalAuthGuard } from './guard/auth.guard';
 import { JwtService } from '../../common/jwt.service';
 import { GoogleService } from '../../common/google.service';
 import cryptoRandomString from 'crypto-random-string';
@@ -233,7 +234,7 @@ export class AuthController {
   ): ApiResponse<{ url: string }> {
     const { mode } = data;
     const state = this.getAndSetAuthState(mode, res);
-    const url = this.google.generateAuthUrl(state);
+    const url = this.google.generateAuthUrl(state, mode);
     return {
       message: 'Generate Google auth url successfully',
       data: { url },
@@ -242,33 +243,52 @@ export class AuthController {
   }
 
   @Post('google')
+  @UseGuards(OptionalAuthGuard)
   async loginWithGoogle(
     @Body(new ZodValidationPipe(AuthValidation.THIRD_PARTY_LOGIN))
     data: ThirdPartyLogin,
     @Res({ passthrough: true }) res: Response,
-    @Req() req: Request,
+    @Req() req: Request & { user?: JwtPayload },
   ): Promise<ApiResponse<User>> {
     const stateObject = this.getAndCheckAuthState(data.state, req);
-    if (stateObject.mode !== 'login') {
-      throw new BadRequestException('Invalid state type');
-    }
 
-    const credentials = await this.google.getToken(data.code);
+    const credentials = await this.google.getToken(
+      data.code,
+      stateObject.mode as GetAuthUrl['mode'],
+    );
     this.google.setCredential(credentials);
     const { id, email, picture } = await this.google.getProfile();
-    if (id && email) {
-      const { statusCode, ...user } = await this.service.loginWithGoogle(
-        id.toString(),
-        email,
-        picture,
-      );
-      this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
 
+    if (id && email) {
+      let user: User;
+      let statusCode: HttpStatus;
+
+      if (stateObject.mode === 'connect') {
+        if (!req.user?.sub) {
+          throw new UnauthorizedException('Authentication required');
+        }
+        user = await this.service.connectToGoogle(
+          req.user.sub,
+          id.toString(),
+          email,
+          picture,
+        );
+        statusCode = HttpStatus.OK;
+      } else if (stateObject.mode === 'login') {
+        const { statusCode: resCode, ...response } =
+          await this.service.loginWithGoogle(id.toString(), email, picture);
+        user = response;
+        statusCode = resCode;
+      } else {
+        throw new BadRequestException('Invalid state type');
+      }
+
+      this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
       res.status(statusCode);
       return {
         message:
           statusCode === HttpStatus.OK
-            ? 'Login with Google successfully'
+            ? 'Connect to Google successfully'
             : 'Account created successfully. Google account linked',
         data: user,
         statusCode,
@@ -287,7 +307,7 @@ export class AuthController {
   ): ApiResponse<{ url: string }> {
     const { mode } = data;
     const state = this.getAndSetAuthState(mode, res);
-    const url = this.mal.generateAuthUrl(state);
+    const url = this.mal.generateAuthUrl(state, mode);
     return {
       message: 'Generate MyAnimeList auth url successfully',
       data: { url },
@@ -296,32 +316,53 @@ export class AuthController {
   }
 
   @Post('mal')
+  @UseGuards(OptionalAuthGuard)
   async loginWithMal(
     @Body(new ZodValidationPipe(AuthValidation.THIRD_PARTY_LOGIN))
     data: ThirdPartyLogin,
     @Res({ passthrough: true }) res: Response,
-    @Req() req: Request,
+    @Req() req: Request & { user?: JwtPayload },
   ): Promise<ApiResponse<User>> {
     const stateObject = this.getAndCheckAuthState(data.state, req);
-    if (stateObject.mode !== 'login') {
+
+    const { access_token, refresh_token } = await this.mal.getToken(
+      data.code,
+      stateObject.mode as GetAuthUrl['mode'],
+    );
+    const malProfile = await this.mal.getProfile(access_token);
+
+    let user: User;
+    let statusCode: HttpStatus;
+    if (stateObject.mode === 'connect') {
+      if (!req.user?.sub) {
+        throw new UnauthorizedException('Authentication required');
+      }
+      user = await this.service.connectToMal(
+        req.user.sub,
+        access_token,
+        refresh_token,
+        malProfile,
+      );
+      statusCode = HttpStatus.OK;
+    } else if (stateObject.mode === 'login') {
+      const { statusCode: resCode, ...response } =
+        await this.service.loginWithMal(
+          access_token,
+          refresh_token,
+          malProfile,
+        );
+      user = response;
+      statusCode = resCode;
+    } else {
       throw new BadRequestException('Invalid state type');
     }
 
-    const { access_token, refresh_token } = await this.mal.getToken(data.code);
-    const malProfile = await this.mal.getProfile(access_token);
-
-    const { statusCode, ...user } = await this.service.loginWithMal(
-      access_token,
-      refresh_token,
-      malProfile,
-    );
     this.setAuthCookie({ sub: user.id, type: 'access_token' }, res);
-
     res.status(statusCode);
     return {
       message:
         statusCode === HttpStatus.OK
-          ? 'Login with MyAnimeList successfully'
+          ? 'Connect to MyAnimeList successfully'
           : 'Account created successfully. MyAnimeList account linked',
       data: user,
       statusCode,

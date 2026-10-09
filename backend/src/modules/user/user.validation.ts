@@ -56,7 +56,11 @@ export class UserValidation {
 
   public static readonly UPDATE_USER_DETAIL = z.object({
     username: IndexValidation.USERNAME,
-    email: z.email().nullable(),
+    email: z
+      .email()
+      .or(z.literal(''))
+      .transform((value) => (value === '' ? null : value))
+      .nullable(),
   });
 }
 

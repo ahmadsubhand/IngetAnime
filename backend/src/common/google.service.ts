@@ -2,22 +2,25 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google, type Auth, Common } from 'googleapis';
 import { GoogleError } from '../types';
+import { GetAuthUrl } from '../modules/auth/auth.validation';
 
 @Injectable()
 export class GoogleService {
   private oauth2Client: Auth.OAuth2Client;
+  private authRedirect: string;
+  private settingRedirect: string;
 
   constructor(config: ConfigService) {
+    this.authRedirect = `${config.getOrThrow('CLIENT_URL')}/auth/third-party-login`;
+    this.settingRedirect = `${config.getOrThrow('CLIENT_URL')}/user/settings`;
     this.oauth2Client = new google.auth.OAuth2({
       client_id: config.getOrThrow('GOOGLE_CLIENT_ID'),
       client_secret: config.getOrThrow('GOOGLE_CLIENT_SECRET'),
-      redirect_uris: [
-        `${config.getOrThrow('CLIENT_URL')}/auth/third-party-login`,
-      ],
+      redirect_uris: [this.authRedirect, this.settingRedirect],
     });
   }
 
-  generateAuthUrl(state: string) {
+  generateAuthUrl(state: string, mode: GetAuthUrl['mode']) {
     const scopes = [
       // 'https://www.googleapis.com/auth/user.birthday.read',
       // 'https://www.googleapis.com/auth/user.gender.read',
@@ -31,17 +34,24 @@ export class GoogleService {
       include_granted_scopes: true,
       prompt: 'consent',
       state: state,
+      redirect_uri:
+        mode === 'connect' ? this.settingRedirect : this.authRedirect,
     });
 
     return authorizationUrl;
   }
 
-  async getToken(code: string) {
+  async getToken(code: string, mode: GetAuthUrl['mode']) {
     try {
-      const { tokens } = await this.oauth2Client.getToken(code);
+      const { tokens } = await this.oauth2Client.getToken({
+        code,
+        redirect_uri:
+          mode === 'connect' ? this.settingRedirect : this.authRedirect,
+      });
       return tokens;
     } catch (error) {
       if (error instanceof Common.GaxiosError) {
+        console.log(error.response);
         if (error.response) {
           const googleError = error.response.data as GoogleError;
           throw new BadRequestException(

@@ -28,13 +28,15 @@ import {
   Link as LinkPrisma,
 } from '../../generated/prisma/client';
 import { animeInclude, dateToISOString } from '../../utils/model-formatter';
+import { GetAuthUrl } from '../auth/auth.validation';
 
 @Injectable()
 export class MyAnimeListService {
   private CODE_CHALLENGE: string;
   private CLIENT_ID: string;
   private CLIENT_SECRET: string;
-  private REDIRECT_URI: string;
+  private AUTH_REDIRECT_URI: string;
+  private SETTING_REDIRECT_URI: string;
   public MIN_FIELDS: string =
     'id,title,main_picture,alternative_titles,start_date,num_episodes,status,my_list_status,';
 
@@ -48,15 +50,17 @@ export class MyAnimeListService {
     });
     this.CLIENT_ID = config.getOrThrow('MAL_CLIENT_ID');
     this.CLIENT_SECRET = config.getOrThrow('MAL_CLIENT_SECRET');
-    this.REDIRECT_URI = `${config.getOrThrow('CLIENT_URL')}/auth/third-party-login`;
+    this.AUTH_REDIRECT_URI = `${config.getOrThrow('CLIENT_URL')}/auth/third-party-login`;
+    this.SETTING_REDIRECT_URI = `${config.getOrThrow('CLIENT_URL')}/user/settings`;
   }
 
-  generateAuthUrl(state: string): string {
+  generateAuthUrl(state: string, mode: GetAuthUrl['mode']): string {
     const url = new URL('https://myanimelist.net/v1/oauth2/authorize');
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: this.CLIENT_ID,
-      redirect_uri: this.REDIRECT_URI,
+      redirect_uri:
+        mode === 'connect' ? this.SETTING_REDIRECT_URI : this.AUTH_REDIRECT_URI,
       code_challenge: this.CODE_CHALLENGE,
       code_challenge_method: 'plain',
       state,
@@ -64,13 +68,14 @@ export class MyAnimeListService {
     return `${url}?${params.toString()}`;
   }
 
-  async getToken(code: string): Promise<MalToken> {
+  async getToken(code: string, mode: GetAuthUrl['mode']): Promise<MalToken> {
     const url = 'https://myanimelist.net/v1/oauth2/token';
     const params = new URLSearchParams({
       client_id: this.CLIENT_ID,
       client_secret: this.CLIENT_SECRET,
       grant_type: 'authorization_code',
-      redirect_uri: this.REDIRECT_URI,
+      redirect_uri:
+        mode === 'connect' ? this.SETTING_REDIRECT_URI : this.AUTH_REDIRECT_URI,
       code_verifier: this.CODE_CHALLENGE,
       code,
     });
@@ -332,6 +337,7 @@ export class MyAnimeListService {
 
     const url = 'https://api.myanimelist.net/v2/users/@me/animelist';
     const params = new URLSearchParams({
+      nsfw: 'true',
       limit: limit.toString(),
       offset: offset.toString(),
       fields: this.MIN_FIELDS,

@@ -1,8 +1,8 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import {
@@ -70,7 +70,13 @@ export class UserService {
       }
 
       if (!data.email && oldUser.email) {
-        throw new BadRequestException('Cannot delete email address');
+        throw new UnprocessableEntityException('Cannot delete email address');
+      }
+
+      if (oldUser.googleId && data.email !== oldUser.email) {
+        throw new UnprocessableEntityException(
+          'Cannot delete email address while the account is connected to Google',
+        );
       }
 
       let user = await this.prisma.user.update({

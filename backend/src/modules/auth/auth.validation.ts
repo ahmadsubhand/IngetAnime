@@ -81,7 +81,7 @@ export class AuthValidation {
     });
 
   static readonly GET_AUTH_URL = z.object({
-    mode: z.enum(['login']),
+    mode: z.enum(['login', 'connect']),
   });
 
   static readonly THIRD_PARTY_LOGIN = z.object({

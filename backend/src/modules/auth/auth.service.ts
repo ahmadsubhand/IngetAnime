@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import dayjs from 'dayjs';
@@ -326,6 +327,7 @@ export class AuthService {
             googleId,
             isVerified: true,
             ...(!user.picture && { picture }),
+            ...(!user.email && { email }),
           },
           select: userSelect,
         });
@@ -386,5 +388,92 @@ export class AuthService {
       ...userResponse(user),
       statusCode,
     };
+  }
+
+  async connectToGoogle(
+    userId: number,
+    googleId: string,
+    email: string,
+    picture?: string | null,
+  ): Promise<User> {
+    let user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: userSelect,
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.googleId) {
+      throw new UnprocessableEntityException('Already connected to Google');
+    }
+
+    const conflictUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { googleId }],
+      },
+    });
+    if (conflictUser && conflictUser.id !== user.id) {
+      throw new ConflictException('Account with this email already exists');
+    }
+
+    user = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        googleId,
+        isVerified: true,
+        ...(!user.picture && { picture }),
+        ...(!user.email && { email }),
+      },
+      select: userSelect,
+    });
+
+    return userResponse(user);
+  }
+
+  async connectToMal(
+    userId: number,
+    accessToken: string,
+    refreshToken: string,
+    malProfile: MalProfile,
+  ): Promise<User> {
+    const malId = malProfile.id.toString();
+
+    let user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: userSelect,
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.malId) {
+      throw new UnprocessableEntityException(
+        'Already connected to MyAnimeList',
+      );
+    }
+
+    const conflictUser = await this.prisma.user.findFirst({
+      where: { malId },
+    });
+    if (conflictUser && conflictUser.id !== user.id) {
+      throw new ConflictException(
+        'Account with this MyAnimeList account already exists',
+      );
+    }
+
+    user = await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        ...(!user.picture && {
+          picture: malProfile.picture,
+        }),
+        malAccessToken: accessToken,
+        malRefreshToken: refreshToken,
+      },
+      select: userSelect,
+    });
+
+    return userResponse(user);
   }
 }
