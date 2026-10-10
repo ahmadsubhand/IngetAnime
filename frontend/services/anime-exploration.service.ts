@@ -1,10 +1,11 @@
 import api from '../lib/axios';
 import { ApiResponse } from '../types';
-import { AllAnimeWithMal } from '../types/anime-exploration.model';
+import { AllAnimeWithMal, AnimeDailyTimeline } from '../types/anime-exploration.model';
 import {
   AnimeSeason,
   GetAnimeList,
   GetAnimeRanking,
+  GetAnimeTimeline,
   GetSeasonalAnime,
   GetSuggestedAnime,
 } from '../validator/anime-exploration.validation';
@@ -40,6 +41,14 @@ export const animeExplorationService = {
       `${prefix}/suggestions`,
       { params: query },
     );
+    return data;
+  },
+
+  async getAnimeTimeline(query: GetAnimeTimeline) {
+    const { data } = await api.get<ApiResponse<AnimeDailyTimeline[]>>(
+      `${prefix}/timeline`,
+      { params: query },
+    )
     return data;
   },
 };

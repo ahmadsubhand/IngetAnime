@@ -1,10 +1,8 @@
 import * as React from 'react';
 
-const MOBILE_BREAKPOINT = 768;
+export function useIsMobile(breakPoint: number | undefined = 768) {
+  const mediaQuery = `(max-width: ${breakPoint - 1}px)`;
 
-const mediaQuery = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
-
-export function useIsMobile() {
   return React.useSyncExternalStore(
     (callback) => {
       const mql = window.matchMedia(mediaQuery);

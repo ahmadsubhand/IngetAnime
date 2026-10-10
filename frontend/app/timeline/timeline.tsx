@@ -1,0 +1,150 @@
+import AnimeSettings from '@/components/anime-settings';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/providers/auth-provider';
+import { AnimeDailyTimeline, AnimeTimeline, AnimeWithSchedule } from '@/types/anime-exploration.model';
+import dayjs from 'dayjs';
+import locale_id from 'dayjs/locale/id';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import { Circle, Clock } from 'lucide-react';
+import Image from 'next/image';
+import AnimePlatform from '@/components/anime-platform';
+import AnimeList from '@/components/anime-list';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
+dayjs.locale(locale_id);
+dayjs.extend(isSameOrBefore);
+
+export default function TimelineDay({
+  dailyTimeline,
+}: {
+  dailyTimeline: AnimeDailyTimeline;
+}) {
+  const dateTime = dayjs(dailyTimeline.dateTime);
+  const indexFirstPass = dailyTimeline.timelines.findIndex((timeline) => {
+    const dateTime = dayjs(timeline.dateTime);
+    return dateTime.isSame(dayjs(), 'day') && dateTime.isSameOrBefore(dayjs());
+  });
+
+  return (
+    <div className="w-full h-full flex flex-col gap-2 select-none">
+      {dailyTimeline.timelines.length ? (
+        dailyTimeline.timelines.map((timeline, index) => (
+          <div
+            className="flex flex-col gap-2"
+            key={`item-${dayjs(timeline.dateTime).toISOString()}`}
+          >
+            {indexFirstPass === -1 &&
+              index === 0 &&
+              dateTime.isSame(dayjs(), 'day') && <TimelineTimeNow />}
+            <TimelineTime timeline={timeline} />
+            {indexFirstPass !== -1 && index === indexFirstPass && (
+              <TimelineTimeNow
+                isLast={dailyTimeline.timelines.length - 1 === index}
+              />
+            )}
+          </div>
+        ))
+      ) : (
+        <p className="text-center mt-11 mb-12 px-10 sm:px-15 sm:text-base">
+          Tidak ada anime yang tayang pada hari ini
+        </p>
+      )}
+    </div>
+  );
+}
+
+function TimelineTimeNow({ isLast = false }) {
+  const now = dayjs().format('HH:mm');
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col gap-2 items-center">
+        <div
+          className={`flex w-6 h-6 items-center justify-center bg-primary rounded-full shrink-0`}
+        >
+          <Clock size={14} className="text-primary-foreground" />
+        </div>
+        {!isLast && <div className={`w-1 h-5 bg-primary`} />}
+      </div>
+
+      <p>{`Waktu saat ini: ${now}`}</p>
+    </div>
+  );
+}
+
+function TimelineTime({ timeline }: { timeline: AnimeTimeline }) {
+  const dateTime = dayjs(timeline.dateTime);
+  const isPass =
+    dateTime.isSameOrBefore(dayjs()) && dateTime.isSame(dayjs(), 'day');
+
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col gap-2 items-center">
+        <div
+          className={`flex w-6 h-6 items-center justify-center ${isPass ? 'bg-primary' : 'bg-app-gray'} rounded-full shrink-0`}
+        >
+            <Circle size={14} className="text-primary-foreground" />
+        </div>
+        <div
+          className={`w-1 h-full ${isPass ? 'bg-primary' : 'bg-app-gray'}`}
+        />
+      </div>
+
+      <div className="flex flex-col gap-2 w-full">
+        <p>{dateTime.format('HH:mm')}</p>
+        {timeline.anime.map((anime) => (
+          <TimelineAnime animeWithSchedule={anime} key={anime.id} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TimelineAnime({
+  animeWithSchedule,
+}: {
+  animeWithSchedule: AnimeWithSchedule;
+}) {
+  const isPass = dayjs(animeWithSchedule.schedule.dateTime).isSameOrBefore(
+    dayjs(),
+  );
+  const { isLoading, isAdmin } = useAuth();
+  return (
+    <div className="w-full flex gap-3">
+      <div className="sm:w-20 w-18 h-25 sm:h-28 relative shrink-0">
+        <Image
+          src={animeWithSchedule.picture}
+          alt={animeWithSchedule.title}
+          sizes="150px"
+          loading={'lazy'}
+          className="object-cover"
+          fill
+        />
+        {!isLoading && isAdmin && (
+          <div className="absolute -top-px -left-px">
+            <AnimeSettings anime={animeWithSchedule} />
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3 justify-between w-full">
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <p className="font-bold line-clamp-2 text-xs sm:text-sm">
+                {animeWithSchedule.title}
+              </p>
+            }
+          />
+          <TooltipContent>{animeWithSchedule.title}</TooltipContent>
+        </Tooltip>
+        <ScrollArea>
+          <AnimePlatform platforms={animeWithSchedule.animePlatforms} />
+        </ScrollArea>
+        <div className="flex justify-between items-end gap-3 text-xs sm:text-sm">
+          {`E${animeWithSchedule.schedule.episodeNumber} ${isPass ? 'sudah' : 'belum'} tayang`}
+          <AnimeList anime={animeWithSchedule} />
+        </div>
+      </div>
+    </div>
+  );
+}

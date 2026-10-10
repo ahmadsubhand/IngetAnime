@@ -55,7 +55,7 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
   const menuItems: MenuItem[] = [
     {
       title: 'Timeline',
-      href: '/anime/timeline',
+      href: '/timeline',
       icon: CalendarDays,
     },
     {

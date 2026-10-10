@@ -148,3 +148,11 @@
     cursor: pointer;
   }
 }
+
+.slick-slide>div {
+  margin: 0.25rem;
+}
+.slick-list > .slick-track {
+  display: flex;
+  gap: 1rem;
+}

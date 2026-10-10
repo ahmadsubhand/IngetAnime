@@ -51,7 +51,6 @@ export class GoogleService {
       return tokens;
     } catch (error) {
       if (error instanceof Common.GaxiosError) {
-        console.log(error.response);
         if (error.response) {
           const googleError = error.response.data as GoogleError;
           throw new BadRequestException(
