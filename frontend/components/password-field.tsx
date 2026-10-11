@@ -35,6 +35,7 @@ export default function PasswordField<T extends FieldValues>({
             <span className="text-red-500">{isRequired ? '*' : ''}</span>
           </FieldLabel>
           <PasswordInput
+            fieldState={fieldState}
             {...field}
             disabled={isDisable}
             id="fdsfdsfsfd"

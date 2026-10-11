@@ -46,6 +46,13 @@ export default function OtpField<T extends FieldValues>({
             <InputOTPGroup>
               {Array.from({ length: 6 }, (_, index) => (
                 <InputOTPSlot
+                  className={`${
+                    fieldState.invalid
+                      ? ''
+                      : fieldState.isDirty
+                        ? 'border-primary data-[active=true]:border-primary data-[active=true]:ring-primary/50'
+                        : ''
+                  }`}
                   aria-invalid={fieldState.invalid}
                   key={index}
                   index={index}

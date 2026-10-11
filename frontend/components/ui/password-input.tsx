@@ -26,6 +26,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import { ControllerFieldState } from 'react-hook-form';
 
 const PasswordInputContext = createContext<{ password: string } | null>(null);
 
@@ -34,9 +35,11 @@ export function PasswordInput({
   onChange,
   value,
   defaultValue,
+  fieldState,
   ...props
 }: Omit<ComponentProps<typeof Input>, 'type'> & {
   children?: ReactNode;
+  fieldState: ControllerFieldState;
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState(defaultValue ?? '');
@@ -52,7 +55,13 @@ export function PasswordInput({
   return (
     <PasswordInputContext value={{ password: currentValue.toString() }}>
       <div className="space-y-3">
-        <InputGroup>
+        <InputGroup className={`${
+          fieldState.invalid
+            ? ''
+            : fieldState.isDirty
+              ? 'border-primary has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50'
+              : ''
+        }`}>
           <InputGroupInput
             {...props}
             value={value}

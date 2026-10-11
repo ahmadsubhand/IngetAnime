@@ -291,7 +291,7 @@ export default function ListPage() {
 
       <AnimeUpdate isOpen={isRefetching} />
 
-      <div className="hidden sm:block fixed w-95 h-229 -left-34 -bottom-65 -z-1">
+      <div className="hidden sm:block fixed w-125 h-229 -left-42 -bottom-130 -z-1">
         <Image
           src={'/sakura.webp'}
           alt="Haruka Sakura"
@@ -301,7 +301,7 @@ export default function ListPage() {
           loading={'eager'}
         />
       </div>
-      <div className="hidden sm:block fixed w-110 h-170 -right-43 -bottom-40 -z-1">
+      <div className="hidden sm:block fixed w-125 h-215 -right-53 -bottom-130 -z-1">
         <Image
           src={'/loid.png'}
           alt="Loid Forger"

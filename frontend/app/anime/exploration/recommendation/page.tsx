@@ -124,7 +124,7 @@ export default function RecommendationPage() {
 
       <AnimeUpdate isOpen={isRefetching} />
 
-      <div className="hidden sm:block fixed w-84 h-205 -left-12 -bottom-50 -z-1">
+      <div className="hidden sm:block fixed w-84 h-205 -left-17 -bottom-95 -z-1">
         <Image
           src={'/gojo.png'}
           alt="Gojo Satoru"
@@ -134,7 +134,7 @@ export default function RecommendationPage() {
           loading={'eager'}
         />
       </div>
-      <div className="hidden sm:block fixed w-132 h-188 -right-50 -bottom-40 -z-1">
+      <div className="hidden sm:block fixed w-132 h-188 -right-50 -bottom-80 -z-1">
         <Image
           src={'/ayanakoji.png'}
           alt="Ayanakoji Kiyotaka"

@@ -13,6 +13,7 @@ import locale_id from 'dayjs/locale/id';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import TimelineMobile from '@/app/timeline/mobile';
 import TimelineDekstop from '@/app/timeline/dekstop';
+import Image from 'next/image';
 
 dayjs.locale(locale_id);
 dayjs.extend(isSameOrBefore);
@@ -86,6 +87,27 @@ export default function TimelinePage() {
       <TimelineDekstop dailyTimelines={dailyTimelines} isLoading={isFetching} />
 
       <AnimeUpdate isOpen={isRefetching} />
+
+      <div className="hidden sm:block fixed w-28 h-60 left-9 md:left-12 top-70 md:top-56 -z-1 -scale-x-100">
+        <Image
+          src={'/timeline-left.png'}
+          alt="Anime Girl Left"
+          fill
+          className="object-contain"
+          sizes="512px"
+          loading={'eager'}
+        />
+      </div>
+      <div className="hidden sm:block fixed w-25 h-50 right-0 bottom-0 -z-1">
+        <Image
+          src={'/timeline-right.png'}
+          alt="Anime Girl Right"
+          fill
+          className="object-contain"
+          sizes="378px"
+          loading={'eager'}
+        />
+      </div>
     </>
   )
 }

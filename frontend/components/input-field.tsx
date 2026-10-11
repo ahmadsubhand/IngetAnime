@@ -50,7 +50,13 @@ export default function InputField<T extends FieldValues>({
             </FieldLabel>
           )}
           <Input
-            className='bg-background'
+            className={`bg-background ${
+              fieldState.invalid
+                ? ''
+                : fieldState.isDirty
+                  ? 'border-primary focus-visible:border-primary focus-visible:ring-primary/50'
+                  : ''
+            }`}
             disabled={isDisable}
             {...field}
             id={inputId ?? id}

@@ -133,7 +133,7 @@ export default function BestPage() {
 
       <AnimeUpdate isOpen={isRefetching} />
 
-      <div className="hidden sm:block fixed w-60 h-150 -left-24 -bottom-25 -z-1">
+      <div className="hidden sm:block fixed w-60 h-150 -left-24 -bottom-45 -z-1">
         <Image
           src={'/fern.webp'}
           alt="Fern"
@@ -143,7 +143,7 @@ export default function BestPage() {
           loading={'eager'}
         />
       </div>
-      <div className="hidden sm:block fixed w-96 h-174 -right-48 -bottom-46 -z-1">
+      <div className="hidden sm:block fixed w-96 h-174 -right-44 -bottom-70 -z-1">
         <Image
           src={'/emilia.webp'}
           alt="Emilia"

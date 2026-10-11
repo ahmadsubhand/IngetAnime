@@ -23,9 +23,8 @@ export default function Slider({
   const maxSlide = Math.max(0, totalSlides - slidesToShow);
 
   return (
-    <div className="hidden sm:block pb-10 translate-x-2 slider-container">
+    <div className="hidden sm:block translate-x-2 slider-container">
       <Slide
-        dots={true}
         speed={300}
         slidesToShow={slidesToShow}
         slidesToScroll={slidesToScroll}

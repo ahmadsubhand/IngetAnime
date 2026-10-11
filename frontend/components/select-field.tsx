@@ -57,7 +57,13 @@ export default function SelectField<T extends FieldValues>({
             disabled={isDisable}
           >
             <SelectTrigger
-              className={`bg-background w-full`}
+              className={`bg-background w-full ${
+                fieldState.invalid
+                  ? ''
+                  : fieldState.isDirty
+                    ? 'border-primary focus-visible:border-primary focus-visible:ring-primary/50'
+                    : ''
+              }`}
               id={inputId ?? id}
             >
               <SelectValue />
