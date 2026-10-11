@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-export function useIsMobile(breakPoint: number | undefined = 768) {
-  const mediaQuery = `(max-width: ${breakPoint - 1}px)`;
+export function useIsMobile(breakPoint: number | undefined = 640) {
+  const mediaQuery = `(max-width: ${breakPoint}px)`;
 
   return React.useSyncExternalStore(
     (callback) => {

@@ -44,8 +44,8 @@ export default function TimelineDay({
             )}
           </div>
         ))
-      ) : (
-        <p className="text-center mt-11 mb-12 px-10 sm:px-15 sm:text-base">
+      ) : ( // kecil sm:besar lg:kecil xl:besar
+        <p className="text-center mt-11 mb-12 lg:mb-9 xl:mb-12 px-10 sm:px-15 text-sm sm:text-base lg:text-sm xl:text-base">
           Tidak ada anime yang tayang pada hari ini
         </p>
       )}
@@ -110,7 +110,7 @@ function TimelineAnime({
   const { isLoading, isAdmin } = useAuth();
   return (
     <div className="w-full flex gap-3">
-      <div className="sm:w-20 w-18 h-25 sm:h-28 relative shrink-0">
+      <div className="w-18 sm:w-20 lg:w-18 xl:w-20 h-25 sm:h-28 lg:h-28 xl:h-28 relative shrink-0">
         <Image
           src={animeWithSchedule.picture}
           alt={animeWithSchedule.title}
@@ -130,7 +130,7 @@ function TimelineAnime({
         <Tooltip>
           <TooltipTrigger
             render={
-              <p className="font-bold line-clamp-2 text-xs sm:text-sm">
+              <p className="font-bold line-clamp-2 text-xs sm:text-sm lg:text-xs xl:text-sm">
                 {animeWithSchedule.title}
               </p>
             }
@@ -140,7 +140,7 @@ function TimelineAnime({
         <ScrollArea>
           <AnimePlatform platforms={animeWithSchedule.animePlatforms} />
         </ScrollArea>
-        <div className="flex justify-between items-end gap-3 text-xs sm:text-sm">
+        <div className="flex justify-between items-end gap-3 text-xs sm:text-sm lg:text-xs xl:text-sm">
           {`E${animeWithSchedule.schedule.episodeNumber} ${isPass ? 'sudah' : 'belum'} tayang`}
           <AnimeList anime={animeWithSchedule} />
         </div>

@@ -11,12 +11,14 @@ export default function Slider({
   children,
   slidesToShow = 2,
   slidesToScroll = 1,
+  initialSlide = 0,
 }: {
   children: ReactNode;
   slidesToShow: number;
   slidesToScroll: number;
+  initialSlide?: number;
 }) {
-  const [currentSlide, setCurrentSlide] = useState(5);
+  const [currentSlide, setCurrentSlide] = useState(initialSlide);
   const totalSlides = Children.count(children);
   const maxSlide = Math.max(0, totalSlides - slidesToShow);
 
