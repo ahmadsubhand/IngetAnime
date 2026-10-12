@@ -1,8 +1,21 @@
-'use client';
+import AppHeader from '@/components/app-header';
+import AppFooter from '@/components/app-footer';
+import HeroHome from '@/app/hero';
+import TimelineHome from '@/app/timeline';
+import PlatformHome from '@/app/platform';
+import { IntegrationHome } from '@/app/integration';
 
-import { useAuth } from '../providers/auth-provider';
+export default function HomePage() {
+  return (
+    <div className="absolute top-0 left-0 w-full h-full">
+      <AppHeader className="fixed top-0 left-0 w-full bg-background z-100" />
 
-export default function Home() {
-  const { user } = useAuth();
-  return <div>Hallo {user ? user.username : 'Guest'}</div>;
+      <HeroHome />
+      <TimelineHome />
+      <PlatformHome />
+      <IntegrationHome />
+
+      <AppFooter />
+    </div>
+  );
 }

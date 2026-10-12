@@ -1,3 +1,5 @@
+'use client'
+
 import AnimeSettings from '@/components/anime-settings';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/providers/auth-provider';

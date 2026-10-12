@@ -14,7 +14,7 @@ import {
 } from '../validator/anime-exploration.validation';
 import { useEffect } from 'react';
 
-export default function AppHeader() {
+export default function AppHeader({ className = '' }: { className?: string }) {
   const searchParams = useSearchParams();
   const qFromParam = searchParams.get('q') || '';
 
@@ -38,7 +38,7 @@ export default function AppHeader() {
   }, [qFromParam, form]);
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className={className}>
       <header className="pr-4 py-4 flex justify-between">
         <SidebarTrigger className={'md:hidden'} />
         <AppLogo className="pl-2" />
