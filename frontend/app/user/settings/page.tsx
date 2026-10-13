@@ -13,6 +13,7 @@ import authService from '@/services/auth.service';
 import userService from '@/services/user.service';
 import { ApiExpectedError, ApiValidationError } from '@/types';
 import { User } from '@/types/user.model';
+import { ThirdPartyLogin } from '@/validator/auth.validation';
 import {
   ImportAnimeListFromMal,
   UpdateUserDetail,
@@ -21,13 +22,21 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios, { HttpStatusCode } from 'axios';
 import { Check, Plus } from 'lucide-react';
+import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import Image from 'next/image';
-import { redirect, useRouter } from 'next/navigation';
-import { ReactNode, useEffect, useState } from 'react';
+import { redirect, useRouter, useSearchParams } from 'next/navigation';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 export default function SettingsPage() {
-  const { user, isLoading: isAuthLoading, updateUserDetail, isVerified } = useAuth();
+  const {
+    user,
+    isLoading: isAuthLoading,
+    updateUserDetail,
+    isVerified,
+    loginWithGoogle,
+    loginWithMal,
+  } = useAuth();
   const router = useRouter();
   useEffect(() => {
     if (!isAuthLoading && !isVerified) {
@@ -36,12 +45,22 @@ export default function SettingsPage() {
   }, [isAuthLoading, isVerified, router]);
 
   return (
-    <div className='flex flex-col gap-5 sm:gap-8 lg:mb-12'>
+    <div className="flex flex-col gap-5 sm:gap-8 lg:mb-12">
       <AppTitle title="Pengaturan Akun" />
       <div className="w-full flex flex-col gap-5 sm:gap-10 justify-center items-center sm:flex-row sm:flex-wrap">
-        <ProfileSection user={user} isLoading={isAuthLoading} updateUserDetail={updateUserDetail} />
+        <ProfileSection
+          user={user}
+          isLoading={isAuthLoading}
+          updateUserDetail={updateUserDetail}
+        />
         <ImportSection user={user} />
-        <ThirdPartySection user={user} isLoading={isAuthLoading} />
+        <ThirdPartySection
+          user={user}
+          isLoading={isAuthLoading}
+          loginWithGoogle={loginWithGoogle}
+          loginWithMal={loginWithMal}
+          router={router}
+        />
       </div>
     </div>
   );
@@ -238,7 +257,8 @@ function ImportSection({ user }: { user: User | null }) {
         } else if (error.status === HttpStatusCode.TooManyRequests) {
           toast.add({
             type: 'error',
-            description: 'Hanya boleh dilakukan sekali setiap menit. Silakan coba lagi nanti',
+            description:
+              'Hanya boleh dilakukan sekali setiap menit. Silakan coba lagi nanti',
           });
         } else {
           const expectedError = error.response.data as ApiExpectedError;
@@ -261,8 +281,9 @@ function ImportSection({ user }: { user: User | null }) {
     control: form.control,
     name: 'importType',
   });
-  const description = importTypeOptions.find((option) => option.value === importType)
-    ?.description || importTypeOptions[0].description;
+  const description =
+    importTypeOptions.find((option) => option.value === importType)
+      ?.description || importTypeOptions[0].description;
 
   return (
     <ItemWrapper title="Import List dari MyAnimeList">
@@ -288,7 +309,7 @@ function ImportSection({ user }: { user: User | null }) {
             />
           </div>
 
-          <p className='text-center'>{description}</p>
+          <p className="text-center">{description}</p>
 
           <Button type="submit" disabled={isSubmitting}>
             Mulai Proses Import
@@ -296,7 +317,9 @@ function ImportSection({ user }: { user: User | null }) {
           </Button>
         </form>
       ) : (
-        <p className='text-center'>Hubungkan akun dengan MyAnimeList untuk mulai melakukan import</p>
+        <p className="text-center">
+          Hubungkan akun dengan MyAnimeList untuk mulai melakukan import
+        </p>
       )}
     </ItemWrapper>
   );
@@ -305,16 +328,91 @@ function ImportSection({ user }: { user: User | null }) {
 function ThirdPartySection({
   user,
   isLoading,
+  loginWithGoogle,
+  loginWithMal,
+  router,
 }: {
   user: User | null;
   isLoading: boolean;
+  loginWithGoogle: (payload: ThirdPartyLogin) => Promise<void>;
+  loginWithMal: (payload: ThirdPartyLogin) => Promise<void>;
+  router: AppRouterInstance;
 }) {
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
   const [isLoadingMal, setIsLoadingMal] = useState(false);
 
+  const params = useSearchParams();
+  const state = params.get('state');
+  const iss = params.get('iss');
+  const code = params.get('code');
+  const google = 'https://accounts.google.com';
+
+  const didRun = useRef(false)
+  useEffect(() => {
+    async function handleConnect() {
+      try {
+        if (state && code) {
+          didRun.current = true;
+          if (iss === google && !user?.googleId) {
+            await loginWithGoogle({ state, code });
+            toast.add({
+              type: 'success',
+              description: `Berhasil menghubungkan akun dengan Google`,
+            });
+          } else if (!user?.malId) {
+            await loginWithMal({ state, code });
+            toast.add({
+              type: 'success',
+              description: `Berhasil menghubungkan akun dengan MyAnimeList`,
+            });
+          }
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.data) {
+          if (error.status === HttpStatusCode.UnprocessableContent) {
+            toast.add({
+              type: 'error',
+              description: `Akun sudah terhubung dengan ${iss === google ? 'Google' : 'MyAnimeList'}`,
+            });
+          } else if (error.status === HttpStatusCode.Conflict) {
+            toast.add({
+              type: 'error',
+              description: `Sudah ada akun yang terhubung dengan akun ${iss === google ? 'Google' : 'MyAnimeList'} ini`,
+            });
+          } else {
+            const expectedError = error.response.data as ApiExpectedError;
+            toast.add({
+              type: 'error',
+              description: expectedError.message,
+            });
+          }
+        } else {
+          toast.add({
+            type: 'error',
+            description:
+              'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+          });
+        }
+      } finally {
+        router.replace('/user/settings');
+      }
+    }
+
+    if (didRun.current) return;
+    didRun.current = true;
+    void handleConnect();
+  }, [code, iss, loginWithGoogle, loginWithMal, router, state, user?.googleId, user?.malId]);
+
   async function onClickGoogle() {
     try {
       setIsLoadingGoogle(true);
+      if (user?.googleId) {
+        toast.add({
+          type: 'error',
+          description: `Akun sudah terhubung dengan Google`,
+        });
+        return;
+      }
       const { data } = await authService.getGoogleAuthUrl({ mode: 'connect' });
       redirect(data.url);
     } finally {
@@ -325,15 +423,22 @@ function ThirdPartySection({
   async function onClickMal() {
     try {
       setIsLoadingMal(true);
+      if (user?.malId) {
+        toast.add({
+          type: 'error',
+          description: `Akun sudah terhubung dengan MyAnimeList`,
+        });
+        return;
+      }
       const { data } = await authService.getMalAuthUrl({ mode: 'connect' });
-      redirect(data.url)
+      redirect(data.url);
     } finally {
       setIsLoadingMal(false);
     }
   }
 
   return (
-    <div className='w-full sm:w-fit flex flex-col items-center'>
+    <div className="w-full sm:w-fit flex flex-col items-center">
       <div className="relative hidden lg:block w-40 h-29">
         <Image
           src={'/oke.png'}
@@ -345,35 +450,45 @@ function ThirdPartySection({
         />
       </div>
 
-      <ItemWrapper title='Akun Eksternal'>
+      <ItemWrapper title="Akun Eksternal">
         <div className="flex flex-col gap-5">
           <Button
             variant={'outline'}
-            // onClick={onClickGoogle}
+            onClick={onClickGoogle}
             disabled={isLoading || isLoadingGoogle || isLoadingMal}
           >
             {isLoadingGoogle ? (
               <Spinner />
             ) : (
-              <Image src={'/google.png'} alt="google logo" width={16} height={16} />
+              <Image
+                src={'/google.png'}
+                alt="google logo"
+                width={16}
+                height={16}
+              />
             )}
             {user?.googleId ? 'Terhubung' : 'Belum Terhubung'}
           </Button>
           <Button
             variant={'ghost'}
-            // onClick={onClickMal}
+            onClick={onClickMal}
             disabled={isLoading || isLoadingGoogle || isLoadingMal}
             className={`bg-app-blue hover:text-white hover:bg-app-blue text-white [&_svg:not([class*='size-'])]:size-6`}
           >
             {isLoadingMal ? (
               <Spinner />
             ) : (
-              <Image src={'/mal.png'} alt="google logo" width={24} height={24} />
+              <Image
+                src={'/mal.png'}
+                alt="google logo"
+                width={24}
+                height={24}
+              />
             )}
             {user?.malId ? 'Terhubung' : 'Belum Terhubung'}
           </Button>
         </div>
       </ItemWrapper>
     </div>
-  )
+  );
 }

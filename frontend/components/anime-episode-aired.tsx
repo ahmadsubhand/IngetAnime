@@ -5,6 +5,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { AnimeStatus } from '@/enums';
+import addUtmParam from '@/helper/add-utm-param';
 import { cn } from '@/lib/utils';
 import { Upload } from 'lucide-react';
 import Link from 'next/link';
@@ -23,7 +24,7 @@ export default function AnimeEpisodeAired({
       <TooltipTrigger
         render={
           <Link
-            href={firstAnimePlatformLink || ''}
+            href={addUtmParam(firstAnimePlatformLink, 'platform_integration') || ''}
             target={firstAnimePlatformLink ? '_blank' : '_self'}
             className={cn(
               buttonVariants({

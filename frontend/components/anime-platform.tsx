@@ -3,6 +3,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import addUtmParam from '@/helper/add-utm-param';
 import type { AnimePlatform } from '@/types/anime-platform.model';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,7 +20,7 @@ export default function AnimePlatform({
           <TooltipTrigger
             render={
               <Link
-                href={platform.link.url}
+                href={addUtmParam(platform.link.url, 'platform_integration')}
                 target={'_blank'}
                 className="w-5 h-5 relative"
               >

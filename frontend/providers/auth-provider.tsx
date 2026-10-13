@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { ApiResponse } from '../types';
 import userService from '../services/user.service';
 import authService from '../services/auth.service';
@@ -49,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const queryClient = useQueryClient();
 
+  const didRun = useRef(false);
   useEffect(() => {
     async function initializeAuth() {
       try {
@@ -61,7 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    initializeAuth();
+    if (didRun.current) return;
+    didRun.current = true;
+    void initializeAuth();
   }, []);
 
   async function login(payload: Login) {

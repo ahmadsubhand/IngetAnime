@@ -204,10 +204,11 @@ function HeaderSettings({
     animePlatforms: AnimePlatform[];
   };
 }) {
+  const mainPlatform = anime.animePlatforms.find((platform) => platform.isMainPlatform) || anime.animePlatforms[0];
   const episodeAired = getEpisodeAired(
     anime.status,
     anime.episodeTotal,
-    anime.animePlatforms[0], // bukan gini, nanti harus isMainPlatform
+    mainPlatform,
   );
   return (
     <div className="flex flex-col gap-1 text-center">

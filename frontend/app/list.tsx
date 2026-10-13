@@ -393,11 +393,11 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
       ],
     },
     {
-      dateTime: dayjs().hour(23).minute(30).toISOString(),
+      dateTime: dayjs().hour(21).minute(30).toISOString(),
       anime: [
         {
           schedule: {
-            dateTime: dayjs().hour(23).minute(30).toISOString(),
+            dateTime: dayjs().hour(21).minute(30).toISOString(),
             episodeNumber: 4,
           },
           id: 1716,
@@ -417,7 +417,7 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platformId: 1,
               linkId: 5,
               accessType: 'free',
-              nextEpisodeAiringAt: dayjs().hour(23).minute(30).toISOString(),
+              nextEpisodeAiringAt: dayjs().hour(21).minute(30).toISOString(),
               lastEpisodeAiredAt: dayjs()
                 .hour(23)
                 .minute(30)
@@ -458,7 +458,7 @@ export function TimelineList({ className = '' }: { className?: string }) {
           <span className="font-bold tracking-wide">Hari ini</span>
           <span>{dayjs().format('dddd')}</span>
         </div>
-        <TimelineDay dailyTimeline={dailyTimelineDummy} />
+        <TimelineDay dailyTimeline={dailyTimelineDummy} isDisplay />
       </Card>
       <div className="absolute bottom-0 left-0 bg-linear-to-b to-background w-full h-25" />
     </div>
