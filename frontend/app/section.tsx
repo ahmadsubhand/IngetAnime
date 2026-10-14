@@ -11,7 +11,7 @@ export default function HomeSection({
   className?: string;
 }) {
   return (
-    <section className={`min-h-dvh w-full flex flex-col`} id={id}>
+    <section className={`min-h-svh w-full flex flex-col`} id={id}>
       <AppHeader className="opacity-0" />
       <div className={`flex-1 py-15 md:py-25 px-5 md:px-19 ${className}`}>
         {children}

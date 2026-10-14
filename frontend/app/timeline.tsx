@@ -21,7 +21,7 @@ export default function TimelineHome() {
           </p>
         </Card>
         <Link
-          href={'/anime/timeline'}
+          href={'/timeline'}
           className={cn(buttonVariants({ className: 'w-fit' }))}
         >
           <ArrowRight />

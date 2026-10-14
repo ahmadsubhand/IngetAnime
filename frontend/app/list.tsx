@@ -210,7 +210,7 @@ export function AnimeList() {
                 right: 3,
                 width: anime.platform.displayWidth,
                 height: anime.platform.displayHeight,
-                zIndex: 5,
+                zIndex: 1,
               }}
             >
               <Image
