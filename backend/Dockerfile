@@ -11,7 +11,6 @@ RUN npm ci
 COPY . .
 
 # Generate Prisma Client and build NestJS
-RUN npx prisma migrate deploy
 RUN npx prisma generate
 RUN npm run build
 
