@@ -11,7 +11,6 @@ RUN npm ci
 COPY . .
 
 # Generate Prisma Client and build NestJS
-RUN npx prisma migrate deploy
 RUN npx prisma generate
 RUN npm run build
 
@@ -36,6 +35,8 @@ RUN npm install --global pm2 \
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/dist ./dist
 COPY --from=builder --chown=node:node /app/package.json ./package.json
+COPY --from=builder --chown=node:node /app/prisma ./prisma
+COPY --from=builder --chown=node:node /app/prisma.config.ts ./prisma.config.ts
 COPY --chown=node:node ecosystem.config.cjs ./
 
 # Run as non-root user
