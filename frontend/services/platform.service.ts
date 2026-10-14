@@ -7,7 +7,9 @@ const prefix = '/platform';
 
 export const platformService = {
   async getAllPlatform() {
-    const { data } = await api.get<ApiResponse<(Platform & { _count: { animePlatforms: number } })[]>>(`${prefix}`);
+    const { data } = await api.get<
+      ApiResponse<(Platform & { _count: { animePlatforms: number } })[]>
+    >(`${prefix}`);
     return data;
   },
 
@@ -40,9 +42,9 @@ export const platformService = {
   },
 
   async deletePlatform(id: number) {
-    const { data } = await api.delete<ApiResponse<{ id: number; name: string }>>(
-      `${prefix}/${id}`,
-    );
+    const { data } = await api.delete<
+      ApiResponse<{ id: number; name: string }>
+    >(`${prefix}/${id}`);
     return data;
   },
 };

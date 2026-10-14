@@ -135,10 +135,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
               >
                 <Input
                   className="bg-background"
-                  disabled={
-                    isSubmitting ||
-                    (status === 'pending' && canSearch)
-                  }
+                  disabled={isSubmitting || (status === 'pending' && canSearch)}
                   {...field}
                   id={'query'}
                   type={'search'}
@@ -148,10 +145,7 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
                 <Button
                   type="submit"
                   size={'icon'}
-                  disabled={
-                    isSubmitting ||
-                    (status === 'pending' && canSearch)
-                  }
+                  disabled={isSubmitting || (status === 'pending' && canSearch)}
                 >
                   <Search />
                 </Button>
@@ -204,7 +198,10 @@ function PageContent({ initialQuery }: { initialQuery: string }) {
           >
             {(status === 'pending' || isFetchingNextPage) &&
               Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonAnime key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
+                <SkeletonAnime
+                  key={i}
+                  className={i >= 3 ? 'hidden sm:flex' : ''}
+                />
               ))}
           </div>
         </div>

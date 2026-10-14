@@ -15,13 +15,18 @@ interface PlatformContextValue {
     | undefined;
   isFetching: boolean;
   isRefetching: boolean;
-  status: 'error' | 'pending' | 'success'
+  status: 'error' | 'pending' | 'success';
 }
 
 const PlatformContext = createContext<PlatformContextValue | null>(null);
 
 export function PlatformProvider({ children }: { children: React.ReactNode }) {
-  const { data: platforms, isFetching, isRefetching, status } = useQuery({
+  const {
+    data: platforms,
+    isFetching,
+    isRefetching,
+    status,
+  } = useQuery({
     queryKey: ['anime', 'platform'],
     queryFn: async () => {
       const response = await platformService.getAllPlatform();

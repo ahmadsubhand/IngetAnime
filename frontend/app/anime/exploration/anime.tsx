@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -61,13 +61,11 @@ export function ExplorationAnime({
         <div className="sm:block absolute -top-px -left-px">
           <AnimeList anime={anime} />
         </div>
-        {
-          !isLoading && isAdmin && (
-            <div className="absolute -top-px -right-px">
-              <AnimeSettings anime={anime} />
-            </div>
-          )
-        }
+        {!isLoading && isAdmin && (
+          <div className="absolute -top-px -right-px">
+            <AnimeSettings anime={anime} />
+          </div>
+        )}
       </div>
       <div className="flex flex-col pl-3 pt-1.5 pb-2 pr-2 w-50 sm:w-60 h-40 sm:h-60 justify-between">
         <div className="flex flex-col gap-1">
@@ -126,7 +124,13 @@ export function ExplorationAnime({
           </ScrollArea>
         )}
         <div className="flex justify-between sm:hidden">
-          {anime.mean && <AnimeScore malId={anime.malId} score={anime.mean} scoreSource='myanimelist' />}
+          {anime.mean && (
+            <AnimeScore
+              malId={anime.malId}
+              score={anime.mean}
+              scoreSource="myanimelist"
+            />
+          )}
           {episodeAired && (
             <AnimeEpisodeAired
               episodeAired={episodeAired}

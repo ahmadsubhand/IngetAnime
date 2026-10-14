@@ -55,13 +55,15 @@ export function PasswordInput({
   return (
     <PasswordInputContext value={{ password: currentValue.toString() }}>
       <div className="space-y-3">
-        <InputGroup className={`${
-          fieldState.invalid
-            ? ''
-            : fieldState.isDirty
-              ? 'border-primary has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50'
-              : ''
-        }`}>
+        <InputGroup
+          className={`${
+            fieldState.invalid
+              ? ''
+              : fieldState.isDirty
+                ? 'border-primary has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50'
+                : ''
+          }`}
+        >
           <InputGroupInput
             {...props}
             value={value}

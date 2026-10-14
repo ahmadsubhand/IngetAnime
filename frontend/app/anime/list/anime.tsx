@@ -59,7 +59,9 @@ export function ListAnime({
         progress === undefined ||
         (anime.episodeTotal > 0 && progress > anime.episodeTotal)
       ) {
-        throw new CustomError('Progres menonton sudah mencapai episode terakhir');
+        throw new CustomError(
+          'Progres menonton sudah mencapai episode terakhir',
+        );
       }
 
       await userAnimeListService.createOrUpdate({ progress }, anime.id);
@@ -107,13 +109,11 @@ export function ListAnime({
           fill
         />
 
-        {
-          !isLoading && isAdmin && (
-            <div className="absolute -top-px -left-px">
-              <AnimeSettings anime={anime} />
-            </div>
-          )
-        }
+        {!isLoading && isAdmin && (
+          <div className="absolute -top-px -left-px">
+            <AnimeSettings anime={anime} />
+          </div>
+        )}
 
         {/* Mobile */}
         <div className="block sm:hidden absolute -bottom-px -left-px">
@@ -129,7 +129,9 @@ export function ListAnime({
       </div>
       <div className="flex flex-col pl-3 pt-1.5 pb-2 pr-2 w-50 sm:w-60 h-40 sm:h-60 justify-between">
         <div className="flex flex-col gap-1">
-          <p className="font-bold line-clamp-2 sm:line-clamp-3">{anime.title}</p>
+          <p className="font-bold line-clamp-2 sm:line-clamp-3">
+            {anime.title}
+          </p>
           {season && (
             <p className="text-xs">
               {season.season.charAt(0).toUpperCase() + season.season.slice(1)}{' '}
@@ -165,7 +167,7 @@ export function ListAnime({
                   mutate((anime.userAnimeList?.progress ?? 0) - 1);
                 }}
               >
-                {isPending ? <Spinner className='size-3' /> : <Minus />}
+                {isPending ? <Spinner className="size-3" /> : <Minus />}
               </Button>
               <Button
                 disabled={isPending}
@@ -174,7 +176,7 @@ export function ListAnime({
                   mutate((anime.userAnimeList?.progress ?? 0) + 1);
                 }}
               >
-                {isPending ? <Spinner className='size-3' /> : <Plus />}
+                {isPending ? <Spinner className="size-3" /> : <Plus />}
               </Button>
             </div>
           </div>
@@ -238,27 +240,27 @@ export function SkeletonAnime({ className = '' }: { className?: string }) {
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <div className="hidden sm:flex gap-2">
-              <Skeleton className='h-6 w-10' />
-              <Skeleton className='h-6 w-10' />
+              <Skeleton className="h-6 w-10" />
+              <Skeleton className="h-6 w-10" />
             </div>
-            <Skeleton className='h-4 w-12' />
+            <Skeleton className="h-4 w-12" />
             <div className="flex gap-2">
-              <Skeleton className='h-6 w-8' />
-              <Skeleton className='h-6 w-8' />
+              <Skeleton className="h-6 w-8" />
+              <Skeleton className="h-6 w-8" />
             </div>
           </div>
 
-          <Skeleton className='h-2 w-full' />
+          <Skeleton className="h-2 w-full" />
 
           <div className="hidden sm:flex justify-end w-full">
-            <Skeleton className='h-4 w-12' />
+            <Skeleton className="h-4 w-12" />
           </div>
         </div>
         <div className="flex justify-between">
-          <Skeleton className='hidden sm:block w-10 h-6' />
+          <Skeleton className="hidden sm:block w-10 h-6" />
           <div className="flex gap-1">
-            <Skeleton className='w-6 h-6' />
-            <Skeleton className='w-6 h-6' />
+            <Skeleton className="w-6 h-6" />
+            <Skeleton className="w-6 h-6" />
           </div>
         </div>
       </div>

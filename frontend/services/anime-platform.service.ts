@@ -4,18 +4,25 @@ import { CreateOrUpdateAnimePlatform } from '@/validator/anime-platform.validati
 import { AnimePlatformWithRelation } from '@/types/anime-platform.model';
 import dayjs from 'dayjs';
 
-
 function getPrefix(animeId: number, platformId: number) {
   return `/anime/${animeId.toString()}/platform/${platformId.toString()}`;
 }
 
 export const animePlatformService = {
-  async createOrUpdate(payload: CreateOrUpdateAnimePlatform, animeId: number, platformId: number) {
+  async createOrUpdate(
+    payload: CreateOrUpdateAnimePlatform,
+    animeId: number,
+    platformId: number,
+  ) {
     if (payload.nextEpisodeAiringAt) {
-      payload.nextEpisodeAiringAt = dayjs(payload.nextEpisodeAiringAt).toISOString();
+      payload.nextEpisodeAiringAt = dayjs(
+        payload.nextEpisodeAiringAt,
+      ).toISOString();
     }
     if (payload.lastEpisodeAiredAt) {
-      payload.lastEpisodeAiredAt = dayjs(payload.lastEpisodeAiredAt).toISOString();
+      payload.lastEpisodeAiredAt = dayjs(
+        payload.lastEpisodeAiredAt,
+      ).toISOString();
     }
 
     const { data } = await api.patch<ApiResponse<AnimePlatformWithRelation>>(

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import TimelineDay from '@/app/timeline/timeline';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -15,7 +15,8 @@ dayjs.locale(locale_id);
 dayjs.extend(isSameOrBefore);
 
 export default function TimelineMobile({
-  dailyTimelines, isLoading = false,
+  dailyTimelines,
+  isLoading = false,
 }: {
   dailyTimelines?: AnimeDailyTimeline[];
   isLoading?: boolean;
@@ -26,10 +27,17 @@ export default function TimelineMobile({
   return (
     <div className="sm:hidden w-full flex-1 bg-background px-5 py-3">
       {!isLoading && dailyTimelines?.length ? (
-        <Tabs className={'w-full flex items-center justify-center'} value={value} onValueChange={setValue}>
+        <Tabs
+          className={'w-full flex items-center justify-center'}
+          value={value}
+          onValueChange={setValue}
+        >
           <ScrollArea className="w-full">
             <div className={isSm ? '' : 'flex items-center justify-center'}>
-              <TabsList variant={'button'} className={'py-0 px-0 overflow-hidden'}>
+              <TabsList
+                variant={'button'}
+                className={'py-0 px-0 overflow-hidden'}
+              >
                 {dailyTimelines?.map((dailyTimeline) => {
                   const dateTime = dayjs(dailyTimeline.dateTime);
                   const isSameDay = dateTime.isSame(dayjs(), 'day');
@@ -43,7 +51,9 @@ export default function TimelineMobile({
                         {isSameDay ? 'Hari ini' : dateTime.format('dddd')}
                       </span>
                       <span>
-                        {isSameDay ? dateTime.format('dddd') : dateTime.format('D')}
+                        {isSameDay
+                          ? dateTime.format('dddd')
+                          : dateTime.format('D')}
                       </span>
                     </TabsTrigger>
                   );
@@ -57,7 +67,7 @@ export default function TimelineMobile({
             return (
               <TabsContent
                 value={dateTime.format('YYYY-MM-DD')}
-                key={`content-${dateTime. toISOString()}`}
+                key={`content-${dateTime.toISOString()}`}
                 className={'py-5 w-full'}
               >
                 <TimelineDay dailyTimeline={dailyTimeline} />
@@ -66,13 +76,22 @@ export default function TimelineMobile({
           })}
         </Tabs>
       ) : (
-        <Tabs className={'w-full flex items-center justify-center'} value={value} onValueChange={setValue}>
+        <Tabs
+          className={'w-full flex items-center justify-center'}
+          value={value}
+          onValueChange={setValue}
+        >
           <ScrollArea className={'w-full'}>
             <div className={isSm ? '' : 'flex items-center justify-center'}>
-              <TabsList variant={'button'} className={'py-0 px-0 overflow-hidden'}>
+              <TabsList
+                variant={'button'}
+                className={'py-0 px-0 overflow-hidden'}
+              >
                 {Array.from({ length: 7 }).map((_, index) => {
-                  const isBeforeToday = index < 3
-                  const dateTime = isBeforeToday ? dayjs().subtract(3 - index, 'day') : dayjs().add(index - 3, 'day');
+                  const isBeforeToday = index < 3;
+                  const dateTime = isBeforeToday
+                    ? dayjs().subtract(3 - index, 'day')
+                    : dayjs().add(index - 3, 'day');
                   const isSameDay = dateTime.isSame(dayjs(), 'day');
                   return (
                     <TabsTrigger
@@ -84,7 +103,9 @@ export default function TimelineMobile({
                         {isSameDay ? 'Hari ini' : dateTime.format('dddd')}
                       </span>
                       <span>
-                        {isSameDay ? dateTime.format('dddd') : dateTime.format('D')}
+                        {isSameDay
+                          ? dateTime.format('dddd')
+                          : dateTime.format('D')}
                       </span>
                     </TabsTrigger>
                   );
@@ -94,8 +115,10 @@ export default function TimelineMobile({
             <ScrollBar orientation="horizontal" className={'translate-y-5'} />
           </ScrollArea>
           {Array.from({ length: 7 }).map((_, index) => {
-            const isBeforeToday = index < 3
-            const dateTime = isBeforeToday ? dayjs().subtract(3 - index, 'day') : dayjs().add(index - 3, 'day');
+            const isBeforeToday = index < 3;
+            const dateTime = isBeforeToday
+              ? dayjs().subtract(3 - index, 'day')
+              : dayjs().add(index - 3, 'day');
             return (
               <TabsContent
                 value={dateTime.format('YYYY-MM-DD')}
@@ -103,7 +126,7 @@ export default function TimelineMobile({
                 className={'py-5 max-w-80 shrink-0'}
               >
                 <div className="flex flex-col gap-2">
-                  <Skeleton className='w-77 h-35 shrink-0' />
+                  <Skeleton className="w-77 h-35 shrink-0" />
                 </div>
               </TabsContent>
             );

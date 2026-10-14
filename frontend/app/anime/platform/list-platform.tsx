@@ -22,9 +22,9 @@ import { Check, RefreshCw, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 
-export default function ListPlatform({ 
-  platform
-}: { 
+export default function ListPlatform({
+  platform,
+}: {
   platform: Platform & { _count: { animePlatforms: number } };
 }) {
   const {
@@ -171,11 +171,7 @@ export default function ListPlatform({
           isDisable={isDisable}
         />
         <Button type="submit" disabled={isDisable}>
-          {isDisable ? (
-            <Spinner />
-          ) : (
-            <Check />
-          )}
+          {isDisable ? <Spinner /> : <Check />}
         </Button>
       </form>
     </Card>
@@ -184,7 +180,9 @@ export default function ListPlatform({
 
 export function PlatformSkeleton({ className = '' }: { className?: string }) {
   return (
-    <Card className={`relative items-center py-5 px-6 gap-3 w-full sm:w-70 ${className}`}>
+    <Card
+      className={`relative items-center py-5 px-6 gap-3 w-full sm:w-70 ${className}`}
+    >
       <div className="w-fit flex-wrap sm:flex-nowrap flex justify-center items-center gap-3">
         <Skeleton className="w-10 sm:w-20 h-10 sm:h-20" />
         <div className="flex flex-col gap-2 max-w-36 sm:max-w-27">

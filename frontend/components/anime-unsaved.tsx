@@ -1,5 +1,13 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -18,9 +26,7 @@ export default function AnimeUnsaved({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle className={'text-lg font-semibold'}>
-            {title}
-          </DialogTitle>
+          <DialogTitle className={'text-lg font-semibold'}>{title}</DialogTitle>
           <DialogDescription>
             Anda memiliki perubahan yang belum disimpan. Simpan terlebih dahulu
             jika ingin mempertahankan data yang telah diisi.

@@ -60,13 +60,15 @@ export default function DateField<T extends FieldValues>({
               <span className="text-red-500">{isRequired ? '*' : ''}</span>
             </FieldLabel>
 
-            <InputGroup className={`${
-              fieldState.invalid
-                ? ''
-                : fieldState.isDirty
-                  ? 'border-primary has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50'
-                  : ''
-            }`}>
+            <InputGroup
+              className={`${
+                fieldState.invalid
+                  ? ''
+                  : fieldState.isDirty
+                    ? 'border-primary has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50'
+                    : ''
+              }`}
+            >
               <InputGroupInput
                 disabled={isDisable}
                 value={field.value ?? ''}

@@ -347,7 +347,7 @@ function ThirdPartySection({
   const code = params.get('code');
   const google = 'https://accounts.google.com';
 
-  const didRun = useRef(false)
+  const didRun = useRef(false);
   useEffect(() => {
     async function handleConnect() {
       try {
@@ -401,7 +401,16 @@ function ThirdPartySection({
     if (didRun.current) return;
     didRun.current = true;
     void handleConnect();
-  }, [code, iss, loginWithGoogle, loginWithMal, router, state, user?.googleId, user?.malId]);
+  }, [
+    code,
+    iss,
+    loginWithGoogle,
+    loginWithMal,
+    router,
+    state,
+    user?.googleId,
+    user?.malId,
+  ]);
 
   async function onClickGoogle() {
     try {

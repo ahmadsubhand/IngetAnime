@@ -1,7 +1,7 @@
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { Season } from '../enums';
 
-export default function getCurrentSeason( todayOnDayJs?: dayjs.Dayjs) {
+export default function getCurrentSeason(todayOnDayJs?: dayjs.Dayjs) {
   const now = todayOnDayJs ?? dayjs();
   const month = now.month();
   const year = now.year();

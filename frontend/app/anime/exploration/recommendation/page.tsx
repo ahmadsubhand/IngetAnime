@@ -94,7 +94,10 @@ export default function RecommendationPage() {
           >
             {(status === 'pending' || isFetchingNextPage) &&
               Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonAnime key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
+                <SkeletonAnime
+                  key={i}
+                  className={i >= 3 ? 'hidden sm:flex' : ''}
+                />
               ))}
           </div>
         </div>

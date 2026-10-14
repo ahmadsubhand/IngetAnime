@@ -92,7 +92,7 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
       title: 'Platform',
       href: '/anime/platform',
       icon: TvMinimalPlay,
-    })
+    });
   }
 
   return (
@@ -177,9 +177,7 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
             if (item.children) {
               return (
                 <NavigationMenuItem key={item.title}>
-                  <NavigationMenuTrigger 
-                    className="flex items-center gap-1.5 [&_svg:not([class*='size-'])]:size-4 px-2 lg:px-4"
-                  >
+                  <NavigationMenuTrigger className="flex items-center gap-1.5 [&_svg:not([class*='size-'])]:size-4 px-2 lg:px-4">
                     <Icon />
                     {item.title}
                   </NavigationMenuTrigger>
@@ -206,7 +204,9 @@ export function AppSidebar({ animeSearch }: { animeSearch: ReactNode }) {
             return (
               <NavigationMenuItem key={item.title}>
                 <NavigationMenuLink
-                  className={cn(navigationMenuTriggerStyle({ className: 'px-2 lg:px-4' }))}
+                  className={cn(
+                    navigationMenuTriggerStyle({ className: 'px-2 lg:px-4' }),
+                  )}
                   render={<Link href={item.href ?? '#'} />}
                 >
                   <Icon />

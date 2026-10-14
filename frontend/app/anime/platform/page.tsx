@@ -69,7 +69,10 @@ export default function ListPage() {
         )}
         {status === 'pending' &&
           Array.from({ length: 10 }).map((_, i) => (
-            <PlatformSkeleton key={i} className={i >= 3 ? 'hidden sm:flex' : ''} />
+            <PlatformSkeleton
+              key={i}
+              className={i >= 3 ? 'hidden sm:flex' : ''}
+            />
           ))}
       </div>
 

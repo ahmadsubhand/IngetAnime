@@ -20,13 +20,13 @@ import { Controller, useForm } from 'react-hook-form';
 export default function AddPlatform() {
   const PREVIEW_SIZE = 85;
   const {
-      iconFile,
-      iconPreview,
-      fileInputRef,
-      handleIconChange,
-      handleIconReset,
-      onIconSuccess,
-    } = UseFileInput();
+    iconFile,
+    iconPreview,
+    fileInputRef,
+    handleIconChange,
+    handleIconReset,
+    onIconSuccess,
+  } = UseFileInput();
 
   const form = useForm<PlatformName>({
     resolver: zodResolver(PlatformValidation.PLATFORM_NAME),
@@ -191,11 +191,7 @@ export default function AddPlatform() {
           disabled={isDisable}
           className={'sm:flex-col w-full sm:w-fit sm:h-21 px-5'}
         >
-          {isDisable ? (
-            <Spinner />
-          ) : (
-            <Plus />
-          )}
+          {isDisable ? <Spinner /> : <Plus />}
           Tambah
         </Button>
       </FieldGroup>

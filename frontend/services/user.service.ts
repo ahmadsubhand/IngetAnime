@@ -1,7 +1,13 @@
 import api from '../lib/axios';
 import { ApiResponse } from '../types';
 import { AllAnime, User } from '../types/user.model';
-import { CheckEmail, CheckUsername, GetUserAnimeList, ImportAnimeListFromMal, UpdateUserDetail } from '../validator/user.validation';
+import {
+  CheckEmail,
+  CheckUsername,
+  GetUserAnimeList,
+  ImportAnimeListFromMal,
+  UpdateUserDetail,
+} from '../validator/user.validation';
 
 const prefix = '/user';
 
@@ -36,10 +42,7 @@ export const userService = {
   },
 
   async updateUserDetail(payload: UpdateUserDetail) {
-    const { data } = await api.put<ApiResponse<User>>(
-      `${prefix}/me`,
-      payload,
-    );
+    const { data } = await api.put<ApiResponse<User>>(`${prefix}/me`, payload);
     return data;
   },
 

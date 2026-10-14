@@ -24,7 +24,9 @@ export default function AnimeEpisodeAired({
       <TooltipTrigger
         render={
           <Link
-            href={addUtmParam(firstAnimePlatformLink, 'platform_integration') || ''}
+            href={
+              addUtmParam(firstAnimePlatformLink, 'platform_integration') || ''
+            }
             target={firstAnimePlatformLink ? '_blank' : '_self'}
             className={cn(
               buttonVariants({

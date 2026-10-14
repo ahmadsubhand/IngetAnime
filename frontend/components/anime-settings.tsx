@@ -10,11 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-} from './ui/dialog';
+import { Dialog, DialogClose, DialogContent } from './ui/dialog';
 import { AccessType, AnimeStatus } from '../enums';
 import Image from 'next/image';
 import { Field, FieldGroup, FieldLabel } from './ui/field';
@@ -88,7 +84,8 @@ export default function AnimeSettings({
   const [selectedPlatformId, setSelectedPlatformId] = useState(
     anime.animePlatforms[0]?.platform.id || null,
   );
-  const effectiveSelectedPlatformId = selectedPlatformId ?? platforms?.[0]?.id ?? null;
+  const effectiveSelectedPlatformId =
+    selectedPlatformId ?? platforms?.[0]?.id ?? null;
 
   const [dialogChangePlatformOpen, setDialogChangePlatformOpen] =
     useState(false);
@@ -106,7 +103,7 @@ export default function AnimeSettings({
         }
       }
     }
-    
+
     handleDialogState();
   }, [isOpen, isLoading, isAdmin, anime.animePlatforms]);
 
@@ -142,7 +139,7 @@ export default function AnimeSettings({
                 animePlatform={anime.animePlatforms.find(
                   (value) => value.platform.id === effectiveSelectedPlatformId,
                 )}
-                
+
                 // Platform Navigation
                 platforms={platforms ?? []}
                 selectedPlatformId={effectiveSelectedPlatformId}
@@ -166,21 +163,21 @@ export default function AnimeSettings({
       </Dialog>
 
       <AnimeUnsaved
-        title='Tetap lanjut ke jadwal platform'
+        title="Tetap lanjut ke jadwal platform"
         isOpen={dialogToPlatformOpen}
         setIsOpen={setDialogToPlatformOpen}
         onClick={() => setOnPlatformForm(true)}
       />
 
       <AnimeUnsaved
-        title='Tetap lanjut ke status anime?'
+        title="Tetap lanjut ke status anime?"
         isOpen={dialogToAnimeOpen}
         setIsOpen={setDialogToAnimeOpen}
         onClick={() => setOnPlatformForm(false)}
       />
 
-      <AnimeUnsaved 
-        title='Tetap lanjut ke platform lain?'
+      <AnimeUnsaved
+        title="Tetap lanjut ke platform lain?"
         isOpen={dialogChangePlatformOpen}
         setIsOpen={setDialogChangePlatformOpen}
         onClick={() => setSelectedPlatformId(nextPlatformId)}
@@ -204,7 +201,9 @@ function HeaderSettings({
     animePlatforms: AnimePlatform[];
   };
 }) {
-  const mainPlatform = anime.animePlatforms.find((platform) => platform.isMainPlatform) || anime.animePlatforms[0];
+  const mainPlatform =
+    anime.animePlatforms.find((platform) => platform.isMainPlatform) ||
+    anime.animePlatforms[0];
   const episodeAired = getEpisodeAired(
     anime.status,
     anime.episodeTotal,
@@ -291,17 +290,20 @@ function InformationSettings({
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: UpdateAnime) => {
       const response = (await animeService.update(data, anime.id)).data;
-      form.reset({
-        picture: response.picture || '',
-        title: response.title,
-        titleEN: response.titleEN || '',
-        titleID: response.titleID || '',
-        releaseAt: response.releaseAt || '',
-        episodeTotal: response.episodeTotal || 0,
-        status: response.status || 'not_yet_aired',
-      }, {
-        keepDirty: false
-      })
+      form.reset(
+        {
+          picture: response.picture || '',
+          title: response.title,
+          titleEN: response.titleEN || '',
+          titleID: response.titleID || '',
+          releaseAt: response.releaseAt || '',
+          episodeTotal: response.episodeTotal || 0,
+          status: response.status || 'not_yet_aired',
+        },
+        {
+          keepDirty: false,
+        },
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anime'] });
@@ -514,7 +516,7 @@ function PlatformSettings({
   selectedPlatformId,
   setSelectedPlatformId,
   setDialogChangePlatformOpen,
-  setNextPlatformId
+  setNextPlatformId,
 }: {
   anime: Anime;
   animePlatform?: AnimePlatform;
@@ -558,27 +560,32 @@ function PlatformSettings({
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: CreateOrUpdateAnimePlatform) => {
-      const response = (await animePlatformService.createOrUpdate(
-        data,
-        anime.id,
-        selectedPlatformId,
-      )).data;
-      form.reset({
-        link: response.link.url || '',
-        accessType: response.accessType || 'subscription',
-        nextEpisodeAiringAt: response.nextEpisodeAiringAt
-          ? dayjs(response.nextEpisodeAiringAt).format('YYYY-MM-DDTHH:mm')
-          : '',
-        lastEpisodeAiredAt: response.lastEpisodeAiredAt
-          ? dayjs(response.lastEpisodeAiredAt).format('YYYY-MM-DDTHH:mm')
-          : '',
-        intervalInDays: response.intervalInDays || 7,
-        episodeAired: response.episodeAired || 0,
-        isMainPlatform: response.isMainPlatform || false,
-        isHiatus: response.isHiatus || false,
-      }, {
-        keepDirty: false,
-      })
+      const response = (
+        await animePlatformService.createOrUpdate(
+          data,
+          anime.id,
+          selectedPlatformId,
+        )
+      ).data;
+      form.reset(
+        {
+          link: response.link.url || '',
+          accessType: response.accessType || 'subscription',
+          nextEpisodeAiringAt: response.nextEpisodeAiringAt
+            ? dayjs(response.nextEpisodeAiringAt).format('YYYY-MM-DDTHH:mm')
+            : '',
+          lastEpisodeAiredAt: response.lastEpisodeAiredAt
+            ? dayjs(response.lastEpisodeAiredAt).format('YYYY-MM-DDTHH:mm')
+            : '',
+          intervalInDays: response.intervalInDays || 7,
+          episodeAired: response.episodeAired || 0,
+          isMainPlatform: response.isMainPlatform || false,
+          isHiatus: response.isHiatus || false,
+        },
+        {
+          keepDirty: false,
+        },
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anime'] });
@@ -667,8 +674,15 @@ function PlatformSettings({
   useEffect(() => {
     if (dirtyFields.nextEpisodeAiringAt) {
       if (!nextEpisodeAiringAt)
-        form.setValue('isHiatus', true, { shouldDirty: true, shouldValidate: true });
-      else form.setValue('isHiatus', false, { shouldDirty: true, shouldValidate: true });
+        form.setValue('isHiatus', true, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      else
+        form.setValue('isHiatus', false, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
     }
   }, [dirtyFields.nextEpisodeAiringAt, form, nextEpisodeAiringAt]);
 

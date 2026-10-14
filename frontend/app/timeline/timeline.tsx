@@ -1,9 +1,13 @@
-'use client'
+'use client';
 
 import AnimeSettings from '@/components/anime-settings';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/providers/auth-provider';
-import { AnimeDailyTimeline, AnimeTimeline, AnimeWithSchedule } from '@/types/anime-exploration.model';
+import {
+  AnimeDailyTimeline,
+  AnimeTimeline,
+  AnimeWithSchedule,
+} from '@/types/anime-exploration.model';
 import dayjs, { Dayjs } from 'dayjs';
 import locale_id from 'dayjs/locale/id';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
@@ -11,7 +15,11 @@ import { Circle, Clock } from 'lucide-react';
 import Image from 'next/image';
 import AnimePlatform from '@/components/anime-platform';
 import AnimeList from '@/components/anime-list';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 dayjs.locale(locale_id);
 dayjs.extend(isSameOrBefore);
@@ -40,7 +48,9 @@ export default function TimelineDay({
           >
             {indexFirstPass === -1 &&
               index === 0 &&
-              dateTime.isSame(now, 'day') && <TimelineTimeNow dateTimeNow={now} />}
+              dateTime.isSame(now, 'day') && (
+                <TimelineTimeNow dateTimeNow={now} />
+              )}
             <TimelineTime timeline={timeline} dateTimeNow={now} />
             {indexFirstPass !== -1 && index === indexFirstPass && (
               <TimelineTimeNow
@@ -50,7 +60,8 @@ export default function TimelineDay({
             )}
           </div>
         ))
-      ) : ( // kecil sm:besar lg:kecil xl:besar
+      ) : (
+        // kecil sm:besar lg:kecil xl:besar
         <p className="text-center mt-11 mb-12 lg:mb-9 xl:mb-12 px-10 sm:px-15 text-sm sm:text-base lg:text-sm xl:text-base">
           Tidak ada anime yang tayang pada hari ini
         </p>
@@ -59,7 +70,13 @@ export default function TimelineDay({
   );
 }
 
-function TimelineTimeNow({ dateTimeNow, isLast = false }: { dateTimeNow: Dayjs, isLast?: boolean }) {
+function TimelineTimeNow({
+  dateTimeNow,
+  isLast = false,
+}: {
+  dateTimeNow: Dayjs;
+  isLast?: boolean;
+}) {
   return (
     <div className="flex gap-3">
       <div className="flex flex-col gap-2 items-center">
@@ -71,14 +88,20 @@ function TimelineTimeNow({ dateTimeNow, isLast = false }: { dateTimeNow: Dayjs, 
         {!isLast && <div className={`w-1 h-5 bg-primary`} />}
       </div>
 
-      <p className='translate-y-0.5'>
+      <p className="translate-y-0.5">
         {`Waktu saat ini: ${dateTimeNow.format('HH:mm')}`}
       </p>
     </div>
   );
 }
 
-function TimelineTime({ timeline, dateTimeNow }: { timeline: AnimeTimeline; dateTimeNow: Dayjs }) {
+function TimelineTime({
+  timeline,
+  dateTimeNow,
+}: {
+  timeline: AnimeTimeline;
+  dateTimeNow: Dayjs;
+}) {
   const dateTime = dayjs(timeline.dateTime);
   const isPass =
     dateTime.isSameOrBefore(dateTimeNow) && dateTime.isSame(dateTimeNow, 'day');
@@ -89,7 +112,7 @@ function TimelineTime({ timeline, dateTimeNow }: { timeline: AnimeTimeline; date
         <div
           className={`flex w-6 h-6 items-center justify-center ${isPass ? 'bg-primary' : 'bg-app-gray'} rounded-full shrink-0`}
         >
-            <Circle size={14} className="text-primary-foreground" />
+          <Circle size={14} className="text-primary-foreground" />
         </div>
         <div
           className={`w-1 h-full ${isPass ? 'bg-primary' : 'bg-app-gray'}`}
@@ -99,7 +122,11 @@ function TimelineTime({ timeline, dateTimeNow }: { timeline: AnimeTimeline; date
       <div className="flex flex-col gap-2 w-full">
         <p>{dateTime.format('HH:mm')}</p>
         {timeline.anime.map((anime) => (
-          <TimelineAnime animeWithSchedule={anime} key={anime.id} dateTimeNow={dateTimeNow} />
+          <TimelineAnime
+            animeWithSchedule={anime}
+            key={anime.id}
+            dateTimeNow={dateTimeNow}
+          />
         ))}
       </div>
     </div>
@@ -108,12 +135,14 @@ function TimelineTime({ timeline, dateTimeNow }: { timeline: AnimeTimeline; date
 
 function TimelineAnime({
   animeWithSchedule,
-  dateTimeNow
+  dateTimeNow,
 }: {
   animeWithSchedule: AnimeWithSchedule;
   dateTimeNow: Dayjs;
 }) {
-  const isPass = dayjs(animeWithSchedule.schedule.dateTime).isSameOrBefore(dateTimeNow);
+  const isPass = dayjs(animeWithSchedule.schedule.dateTime).isSameOrBefore(
+    dateTimeNow,
+  );
   const { isLoading, isAdmin } = useAuth();
   return (
     <div className="w-full flex gap-3">

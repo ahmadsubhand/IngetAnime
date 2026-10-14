@@ -1,6 +1,9 @@
 import api from '../lib/axios';
 import { ApiResponse } from '../types';
-import { AllAnimeWithMal, AnimeDailyTimeline } from '../types/anime-exploration.model';
+import {
+  AllAnimeWithMal,
+  AnimeDailyTimeline,
+} from '../types/anime-exploration.model';
 import {
   AnimeSeason,
   GetAnimeList,
@@ -48,7 +51,7 @@ export const animeExplorationService = {
     const { data } = await api.get<ApiResponse<AnimeDailyTimeline[]>>(
       `${prefix}/timeline`,
       { params: query },
-    )
+    );
     return data;
   },
 };

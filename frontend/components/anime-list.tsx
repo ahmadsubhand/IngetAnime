@@ -155,16 +155,19 @@ export default function AnimeList({
         await malService.detail({ fields: 'my_list_status' }, anime.malId)
       ).data.my_list_status;
       if (statusFromMal) {
-        form.setValues({
-          status: statusFromMal?.status,
-          progress: statusFromMal?.num_episodes_watched,
-          score: statusFromMal?.score,
-          startDate: statusFromMal?.start_date,
-          finishDate: statusFromMal?.finish_date,
-        }, {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
+        form.setValues(
+          {
+            status: statusFromMal?.status,
+            progress: statusFromMal?.num_episodes_watched,
+            score: statusFromMal?.score,
+            startDate: statusFromMal?.start_date,
+            finishDate: statusFromMal?.finish_date,
+          },
+          {
+            shouldDirty: true,
+            shouldValidate: true,
+          },
+        );
         toast.add({
           type: 'success',
           description: 'Berhasil mendapatkan status dari MyAnimeList',
@@ -183,8 +186,7 @@ export default function AnimeList({
     }
   }
 
-  const isDisable =
-    isPending || isSubmitting || isFetchDataFromMal;
+  const isDisable = isPending || isSubmitting || isFetchDataFromMal;
 
   return (
     <>
@@ -233,7 +235,9 @@ export default function AnimeList({
         </Tooltip>
 
         <DialogContent
-          className={'px-0 py-0 w-full h-full sm:h-fit sm:max-w-fit flex gap-0 overflow-hidden'}
+          className={
+            'px-0 py-0 w-full h-full sm:h-fit sm:max-w-fit flex gap-0 overflow-hidden'
+          }
           showCloseButton={false}
         >
           <div className="hidden lg:block w-80 relative">
@@ -290,7 +294,7 @@ export default function AnimeList({
                     { label: 'Ditinggalkan', value: ListStatus.dropped },
                   ]}
                 />
-                {(anime.episodeTotal && anime.episodeTotal < 101) ? (
+                {anime.episodeTotal && anime.episodeTotal < 101 ? (
                   <SelectField
                     form={form}
                     inputName={'progress'}
@@ -305,10 +309,10 @@ export default function AnimeList({
                 ) : (
                   <InputField
                     form={form}
-                    inputName='progress'
-                    inputLabel='Progress'
+                    inputName="progress"
+                    inputLabel="Progress"
                     isDisable={isDisable}
-                    inputType='number'
+                    inputType="number"
                   />
                 )}
               </FieldWrap>
@@ -543,11 +547,7 @@ function AnimeListDelete({
             className={'flex-row-reverse sm:flex-row'}
           >
             Hapus
-            {isPending ? (
-              <Spinner data-icon="inline-start" />
-            ) : (
-              <Trash />
-            )}
+            {isPending ? <Spinner data-icon="inline-start" /> : <Trash />}
           </Button>
         </DialogFooter>
       </DialogContent>

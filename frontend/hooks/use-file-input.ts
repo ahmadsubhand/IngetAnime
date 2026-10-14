@@ -30,7 +30,7 @@ export default function UseFileInput() {
     if (iconPreview) {
       URL.revokeObjectURL(iconPreview);
     }
-    
+
     const previewUrl = URL.createObjectURL(file);
     setIconFile(file);
     setIconPreview(previewUrl);
@@ -58,5 +58,12 @@ export default function UseFileInput() {
     }
   }
 
-  return { iconFile, iconPreview, fileInputRef, handleIconChange, handleIconReset, onIconSuccess }
+  return {
+    iconFile,
+    iconPreview,
+    fileInputRef,
+    handleIconChange,
+    handleIconReset,
+    onIconSuccess,
+  };
 }

@@ -22,7 +22,7 @@ export default function AppHeader({ className = '' }: { className?: string }) {
     <Suspense fallback={<HeaderLoding className={className} />}>
       <HeaderContent className={className} />
     </Suspense>
-  )
+  );
 }
 
 function HeaderContent({ className = '' }: { className?: string }) {
@@ -63,11 +63,7 @@ function HeaderContent({ className = '' }: { className?: string }) {
         <div className="flex gap-6">
           <AppSidebar
             animeSearch={
-              <AnimeSearch
-                form={form}
-                inputName="q"
-                isDisable={isSubmitting}
-              />
+              <AnimeSearch form={form} inputName="q" isDisable={isSubmitting} />
             }
           />
           <div className="hidden md:block">
@@ -81,17 +77,19 @@ function HeaderContent({ className = '' }: { className?: string }) {
 
 function HeaderLoding({ className = '' }: { className?: string }) {
   return (
-    <header className={`pr-4 py-4 flex justify-between items-center gap-4 ${className}`}>
+    <header
+      className={`pr-4 py-4 flex justify-between items-center gap-4 ${className}`}
+    >
       {/* <SidebarTrigger className={'md:hidden'} disabled /> */}
-      <Skeleton className='md:hidden w-9 h-9 ml-2' />
-      <Skeleton className='w-29 h-9 md:ml-2' />
-      <Skeleton className='w-full md:w-70 lg:w-100 h-9' />
+      <Skeleton className="md:hidden w-9 h-9 ml-2" />
+      <Skeleton className="w-29 h-9 md:ml-2" />
+      <Skeleton className="w-full md:w-70 lg:w-100 h-9" />
 
       <div className="hidden md:flex gap-6">
         <div className="flex gap-4">
-          <Skeleton className='w-16 lg:w-20 h-9' />
-          <Skeleton className='w-16 lg:w-20 h-9' />
-          <Skeleton className='w-16 lg:w-20 h-9' />
+          <Skeleton className="w-16 lg:w-20 h-9" />
+          <Skeleton className="w-16 lg:w-20 h-9" />
+          <Skeleton className="w-16 lg:w-20 h-9" />
         </div>
         {/* <AppSidebarSkeleton /> */}
         <div className="hidden md:block">
@@ -101,5 +99,5 @@ function HeaderLoding({ className = '' }: { className?: string }) {
         </div>
       </div>
     </header>
-  )
+  );
 }
