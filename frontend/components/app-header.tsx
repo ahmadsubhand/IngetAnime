@@ -12,9 +12,20 @@ import {
   AnimeExplorationValidation,
   GetAnimeList,
 } from '../validator/anime-exploration.validation';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function AppHeader({ className = '' }: { className?: string }) {
+  return (
+    <Suspense fallback={<HeaderLoding className={className} />}>
+      <HeaderContent className={className} />
+    </Suspense>
+  )
+}
+
+function HeaderContent({ className = '' }: { className?: string }) {
   const searchParams = useSearchParams();
   const qFromParam = searchParams.get('q') || '';
 
@@ -66,4 +77,29 @@ export default function AppHeader({ className = '' }: { className?: string }) {
       </header>
     </form>
   );
+}
+
+function HeaderLoding({ className = '' }: { className?: string }) {
+  return (
+    <header className={`pr-4 py-4 flex justify-between items-center gap-4 ${className}`}>
+      {/* <SidebarTrigger className={'md:hidden'} disabled /> */}
+      <Skeleton className='md:hidden w-9 h-9 ml-2' />
+      <Skeleton className='w-29 h-9 md:ml-2' />
+      <Skeleton className='w-full md:w-70 lg:w-100 h-9' />
+
+      <div className="hidden md:flex gap-6">
+        <div className="flex gap-4">
+          <Skeleton className='w-16 lg:w-20 h-9' />
+          <Skeleton className='w-16 lg:w-20 h-9' />
+          <Skeleton className='w-16 lg:w-20 h-9' />
+        </div>
+        {/* <AppSidebarSkeleton /> */}
+        <div className="hidden md:block">
+          <Button size={'icon'} disabled variant={'outline'}>
+            <Spinner />
+          </Button>
+        </div>
+      </div>
+    </header>
+  )
 }

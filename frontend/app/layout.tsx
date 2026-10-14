@@ -9,6 +9,7 @@ import { TooltipProvider } from '../components/ui/tooltip';
 import { QueryProvider } from '../providers/query-provider';
 import AppHeader from '../components/app-header';
 import { PlatformProvider } from '@/providers/platform-provider';
+import Head from 'next/head';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -41,6 +42,14 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       )}
       data-scroll-behavior="smooth"
     >
+      <Head>
+        <link
+          rel="icon"
+          href="/icon?<generated>"
+          type="image/<generated>"
+          sizes="<generated>"
+        />
+      </Head>
       <body className="min-h-full flex flex-col">
         <QueryProvider>
           <AuthProvider>
