@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: ingetanime-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in root .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in root .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in root .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ["CMD-SHELL", 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ingetanime
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ingetanime-api
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    ports:
+      - "4000:4000" # Port 4000 for production environment
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ingetanime
+  
+  # frontend deployed on different platform
+
+volumes:
+  postgres_data:
+
+networks:
+  ingetanime:
+    driver: bridge
