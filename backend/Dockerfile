@@ -15,6 +15,9 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
+# Remove development dependencies
+RUN npm prune --omit=dev
+
 # ==================================================
 
 # Production stage

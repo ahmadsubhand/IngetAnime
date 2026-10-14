@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17-alpine
+    image: docker.io/library/postgres:17-alpine
     container_name: ingetanime-db
     restart: unless-stopped
     environment:
