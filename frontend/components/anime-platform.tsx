@@ -10,8 +10,10 @@ import Link from 'next/link';
 
 export default function AnimePlatform({
   platforms,
+  isDisplay = false,
 }: {
   platforms: AnimePlatform[];
+  isDisplay?: boolean;
 }) {
   return (
     <div className="flex w-max gap-2">
@@ -25,7 +27,7 @@ export default function AnimePlatform({
                 className="w-5 h-5 relative"
               >
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${platform.platform.icon}`}
+                  src={isDisplay ? platform.platform.icon : `${process.env.NEXT_PUBLIC_API_BASE_URL}${platform.platform.icon}`}
                   alt={platform.platform.name}
                   sizes="20px"
                   className="object-contain"

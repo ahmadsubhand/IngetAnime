@@ -67,7 +67,7 @@ export default function PlatformHome() {
       <div className="flex flex-col gap-10 justify-between items-center xl:items-end self-stretch w-full xl:w-fit">
         <div className="flex gap-10">
           <div inert className="hidden md:block pointer-events-none">
-            <ExplorationAnime anime={animeDummyWithMalInfo} />
+            <ExplorationAnime anime={animeDummyWithMalInfo} isDisplay />
           </div>
 
           <div className="flex flex-col gap-10 items-center">

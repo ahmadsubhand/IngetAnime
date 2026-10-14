@@ -23,12 +23,14 @@ import AnimeSettings from '@/components/anime-settings';
 
 export function ExplorationAnime({
   anime,
+  isDisplay = false,
 }: {
   anime: MalAnime &
     Anime & {
       animePlatforms: AnimePlatformType[];
       userAnimeList?: UserAnimeList | null;
     };
+  isDisplay?: boolean;
 }) {
   const episodeAired = getEpisodeAired(
     anime.status,
@@ -120,7 +122,7 @@ export function ExplorationAnime({
         {/* Mobile */}
         {anime.animePlatforms[0]?.id && (
           <ScrollArea className="sm:hidden">
-            <AnimePlatform platforms={anime.animePlatforms} />
+            <AnimePlatform platforms={anime.animePlatforms} isDisplay={isDisplay} />
           </ScrollArea>
         )}
         <div className="flex justify-between sm:hidden">
@@ -154,7 +156,7 @@ export function ExplorationAnime({
               <ScrollArea
                 className={`hidden sm:flex${episodeAired ? ' max-w-40' : ''}`}
               >
-                <AnimePlatform platforms={anime.animePlatforms} />
+                <AnimePlatform platforms={anime.animePlatforms} isDisplay={isDisplay} />
               </ScrollArea>
             )}
           </div>

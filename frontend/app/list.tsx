@@ -287,7 +287,7 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platform: {
                 id: 1,
                 name: 'Bstation',
-                icon: '/uploads/platforms/Bstation.png',
+                icon: '/platforms/bstation.png',
                 width: 1000,
                 height: 937,
                 ratio: 1.067235859124867,
@@ -317,7 +317,7 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platform: {
                 id: 2,
                 name: 'YouTube - AniOne Indonesia',
-                icon: '/uploads/platforms/YouTube - AniOne Indonesia.png',
+                icon: '/platforms/anione.png',
                 width: 1043,
                 height: 1042,
                 ratio: 1.000959692898272,
@@ -347,7 +347,7 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platform: {
                 id: 3,
                 name: 'Crunchyroll',
-                icon: '/uploads/platforms/Crunchyrolll.svg',
+                icon: '/platforms/crunchyroll.svg',
                 width: 48,
                 height: 48,
                 ratio: 1,
@@ -377,7 +377,7 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platform: {
                 id: 4,
                 name: 'YouTube - Muse Indonesia',
-                icon: '/uploads/platforms/YouTube - Muse Indonesia.jpg',
+                icon: '/platforms/muse.jpg',
                 width: 900,
                 height: 900,
                 ratio: 1,
@@ -430,7 +430,7 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platform: {
                 id: 1,
                 name: 'Bstation',
-                icon: '/uploads/platforms/Bstation.png',
+                icon: '/platforms/bstation.png',
                 width: 1000,
                 height: 937,
                 ratio: 1.067235859124867,

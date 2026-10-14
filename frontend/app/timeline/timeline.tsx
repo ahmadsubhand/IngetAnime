@@ -51,7 +51,7 @@ export default function TimelineDay({
               dateTime.isSame(now, 'day') && (
                 <TimelineTimeNow dateTimeNow={now} />
               )}
-            <TimelineTime timeline={timeline} dateTimeNow={now} />
+            <TimelineTime timeline={timeline} dateTimeNow={now} isDisplay={isDisplay} />
             {indexFirstPass !== -1 && index === indexFirstPass && (
               <TimelineTimeNow
                 dateTimeNow={now}
@@ -98,9 +98,11 @@ function TimelineTimeNow({
 function TimelineTime({
   timeline,
   dateTimeNow,
+  isDisplay = false,
 }: {
   timeline: AnimeTimeline;
   dateTimeNow: Dayjs;
+  isDisplay?: boolean;
 }) {
   const dateTime = dayjs(timeline.dateTime);
   const isPass =
@@ -126,6 +128,7 @@ function TimelineTime({
             animeWithSchedule={anime}
             key={anime.id}
             dateTimeNow={dateTimeNow}
+            isDisplay={isDisplay}
           />
         ))}
       </div>
@@ -136,9 +139,11 @@ function TimelineTime({
 function TimelineAnime({
   animeWithSchedule,
   dateTimeNow,
+  isDisplay = false,
 }: {
   animeWithSchedule: AnimeWithSchedule;
   dateTimeNow: Dayjs;
+  isDisplay?: boolean;
 }) {
   const isPass = dayjs(animeWithSchedule.schedule.dateTime).isSameOrBefore(
     dateTimeNow,
@@ -174,7 +179,7 @@ function TimelineAnime({
           <TooltipContent>{animeWithSchedule.title}</TooltipContent>
         </Tooltip>
         <ScrollArea>
-          <AnimePlatform platforms={animeWithSchedule.animePlatforms} />
+          <AnimePlatform platforms={animeWithSchedule.animePlatforms} isDisplay={isDisplay} />
         </ScrollArea>
         <div className="flex justify-between items-end gap-3 text-xs sm:text-sm lg:text-xs xl:text-sm">
           {`E${animeWithSchedule.schedule.episodeNumber} ${isPass ? 'sudah' : 'belum'} tayang`}
