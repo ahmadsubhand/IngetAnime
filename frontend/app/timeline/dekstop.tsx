@@ -40,7 +40,7 @@ export default function TimelineDekstop({
               const isSameDay = dateTime.isSame(dayjs(), 'day');
               return (
                 <Card
-                  className="p-5"
+                  className={`p-5 ${isSameDay && 'inset-ring-2 inset-ring-primary'}`}
                   key={`card-${dateTime.toISOString()}`}
                   style={{ width: 500 }}
                 >

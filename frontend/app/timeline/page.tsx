@@ -99,7 +99,7 @@ export default function TimelinePage() {
 
       <AnimeUpdate isOpen={isRefetching} />
 
-      <div className="hidden sm:block fixed w-28 h-60 left-9 md:left-12 top-70 md:top-56 -z-1 -scale-x-100">
+      {/* <div className="hidden sm:block fixed w-28 h-60 left-9 md:left-12 top-70 md:top-56 -z-1 -scale-x-100">
         <Image
           src={'/timeline-left.png'}
           alt="Anime Girl Left"
@@ -108,7 +108,7 @@ export default function TimelinePage() {
           sizes="512px"
           loading={'eager'}
         />
-      </div>
+      </div> */}
       <div className="hidden sm:block fixed w-25 h-50 right-0 bottom-0 -z-1">
         <Image
           src={'/timeline-right.png'}
