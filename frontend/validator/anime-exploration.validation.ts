@@ -1,7 +1,9 @@
 import z from 'zod';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { RankingType, Season, Sort } from '@/enums';
+dayjs.extend(utc);
 dayjs.extend(timezone);
 
 /* 

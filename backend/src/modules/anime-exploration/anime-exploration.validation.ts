@@ -1,7 +1,9 @@
 import z from 'zod';
 import { IndexValidation } from '../../validator/index.validation';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(utc);
 dayjs.extend(timezone);
 
 /* 

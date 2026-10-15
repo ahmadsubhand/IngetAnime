@@ -2,10 +2,16 @@ import { AnimeDailyTimeline } from '@/types/anime-exploration.model';
 import Image from 'next/image';
 import dayjs from 'dayjs';
 import locale_id from 'dayjs/locale/id';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { Card } from '@/components/ui/card';
 import TimelineDay from '@/app/timeline/timeline';
 
 dayjs.locale(locale_id);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const APP_TIMEZONE = 'Asia/Jakarta';
 
 interface ImageType {
   src: string;
@@ -247,14 +253,14 @@ export function AnimeList() {
 }
 
 export const dailyTimelineDummy: AnimeDailyTimeline = {
-  dateTime: dayjs().startOf('day').toISOString(),
+  dateTime: dayjs().tz(APP_TIMEZONE).startOf('day').toISOString(),
   timelines: [
     {
-      dateTime: dayjs().hour(0).minute(5).toISOString(),
+      dateTime: dayjs().tz(APP_TIMEZONE).hour(0).minute(5).toISOString(),
       anime: [
         {
           schedule: {
-            dateTime: dayjs().hour(0).minute(5).toISOString(),
+            dateTime: dayjs().tz(APP_TIMEZONE).hour(0).minute(5).toISOString(),
             episodeNumber: 4,
           },
           id: 1811,
@@ -274,12 +280,12 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platformId: 1,
               linkId: 1,
               accessType: 'free',
-              nextEpisodeAiringAt: dayjs()
+              nextEpisodeAiringAt: dayjs().tz(APP_TIMEZONE)
                 .hour(0)
                 .minute(5)
                 .add(7, 'day')
                 .toISOString(),
-              lastEpisodeAiredAt: dayjs().hour(0).minute(5).toISOString(),
+              lastEpisodeAiredAt: dayjs().tz(APP_TIMEZONE).hour(0).minute(5).toISOString(),
               intervalInDays: 7,
               episodeAired: 4,
               isMainPlatform: false,
@@ -304,12 +310,12 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platformId: 2,
               linkId: 2,
               accessType: 'free',
-              nextEpisodeAiringAt: dayjs()
+              nextEpisodeAiringAt: dayjs().tz(APP_TIMEZONE)
                 .hour(0)
                 .minute(5)
                 .add(7, 'day')
                 .toISOString(),
-              lastEpisodeAiredAt: dayjs().hour(0).minute(5).toISOString(),
+              lastEpisodeAiredAt: dayjs().tz(APP_TIMEZONE).hour(0).minute(5).toISOString(),
               intervalInDays: 7,
               episodeAired: 4,
               isMainPlatform: false,
@@ -334,12 +340,12 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platformId: 3,
               linkId: 3,
               accessType: 'free',
-              nextEpisodeAiringAt: dayjs()
+              nextEpisodeAiringAt: dayjs().tz(APP_TIMEZONE)
                 .hour(0)
                 .minute(5)
                 .add(7, 'day')
                 .toISOString(),
-              lastEpisodeAiredAt: dayjs().hour(0).minute(5).toISOString(),
+              lastEpisodeAiredAt: dayjs().tz(APP_TIMEZONE).hour(0).minute(5).toISOString(),
               intervalInDays: 7,
               episodeAired: 4,
               isMainPlatform: false,
@@ -364,12 +370,12 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platformId: 4,
               linkId: 4,
               accessType: 'free',
-              nextEpisodeAiringAt: dayjs()
+              nextEpisodeAiringAt: dayjs().tz(APP_TIMEZONE)
                 .hour(0)
                 .minute(5)
                 .add(7, 'day')
                 .toISOString(),
-              lastEpisodeAiredAt: dayjs().hour(0).minute(5).toISOString(),
+              lastEpisodeAiredAt: dayjs().tz(APP_TIMEZONE).hour(0).minute(5).toISOString(),
               intervalInDays: 7,
               episodeAired: 4,
               isMainPlatform: false,
@@ -393,11 +399,11 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
       ],
     },
     {
-      dateTime: dayjs().hour(21).minute(30).toISOString(),
+      dateTime: dayjs().tz(APP_TIMEZONE).hour(21).minute(30).toISOString(),
       anime: [
         {
           schedule: {
-            dateTime: dayjs().hour(21).minute(30).toISOString(),
+            dateTime: dayjs().tz(APP_TIMEZONE).hour(21).minute(30).toISOString(),
             episodeNumber: 4,
           },
           id: 1716,
@@ -417,8 +423,8 @@ export const dailyTimelineDummy: AnimeDailyTimeline = {
               platformId: 1,
               linkId: 5,
               accessType: 'free',
-              nextEpisodeAiringAt: dayjs().hour(21).minute(30).toISOString(),
-              lastEpisodeAiredAt: dayjs()
+              nextEpisodeAiringAt: dayjs().tz(APP_TIMEZONE).hour(21).minute(30).toISOString(),
+              lastEpisodeAiredAt: dayjs().tz(APP_TIMEZONE)
                 .hour(23)
                 .minute(30)
                 .subtract(7, 'day')
@@ -456,7 +462,7 @@ export function TimelineList({ className = '' }: { className?: string }) {
       <Card className="p-5">
         <div className="flex flex-col gap-1 w-full text-center mb-2 select-none">
           <span className="font-bold tracking-wide">Hari ini</span>
-          <span>{dayjs().format('dddd')}</span>
+          <span>{dayjs().tz(APP_TIMEZONE).format('dddd')}</span>
         </div>
         <TimelineDay dailyTimeline={dailyTimelineDummy} isDisplay />
       </Card>

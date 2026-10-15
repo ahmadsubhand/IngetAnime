@@ -11,6 +11,8 @@ import {
 import dayjs, { Dayjs } from 'dayjs';
 import locale_id from 'dayjs/locale/id';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { Circle, Clock } from 'lucide-react';
 import Image from 'next/image';
 import AnimePlatform from '@/components/anime-platform';
@@ -24,6 +26,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 dayjs.locale(locale_id);
 dayjs.extend(isSameOrBefore);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export default function TimelineDay({
   dailyTimeline,
@@ -33,7 +37,7 @@ export default function TimelineDay({
   isDisplay?: boolean;
 }) {
   const dateTime = dayjs(dailyTimeline.dateTime);
-  const now = isDisplay ? dayjs().hour(10).minute(30) : dayjs();
+  const now = isDisplay ? dayjs().tz('Asia/Jakarta').hour(10).minute(30) : dayjs();
   const indexFirstPass = (dailyTimeline.timelines.findIndex((timeline) => {
     const dateTime = dayjs(timeline.dateTime);
     return dateTime.isSame(now, 'day') && dateTime.isAfter(now);
