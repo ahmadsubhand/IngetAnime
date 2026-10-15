@@ -245,12 +245,11 @@ export class AnimeExplorationService {
     data: GetAnimeTimeline,
     userId?: number,
   ): Promise<AnimeDailyTimeline[]> {
-    const now = dayjs().toISOString();
-    const localDate = dayjs(now).tz(data.time_zone);
-    const startDateThisWeek = localDate
+    const localDateNow = dayjs().tz(data.time_zone);
+    const startDateThisWeek = localDateNow
       .subtract(3 * data.week_count, 'day')
       .startOf('day');
-    const endDateThisWeek = localDate
+    const endDateThisWeek = localDateNow
       .add(3 * data.week_count, 'day')
       .endOf('day');
 
@@ -297,7 +296,7 @@ export class AnimeExplorationService {
         const airedAt = anime.animePlatforms[0].lastEpisodeAiredAt;
         return airedAt
           ? dayjs(airedAt).isSameOrAfter(dayjs(startDateThisWeek)) &&
-              dayjs(airedAt).isSameOrBefore(dayjs())
+              dayjs(airedAt).isSameOrBefore(localDateNow)
           : false;
       })
       .sort((a, b) =>
@@ -332,7 +331,7 @@ export class AnimeExplorationService {
           throw new InternalServerErrorException('Anime platforms not found');
         const airedAt = anime.animePlatforms[0].nextEpisodeAiringAt;
         return airedAt
-          ? dayjs(airedAt).isAfter(dayjs()) &&
+          ? dayjs(airedAt).isAfter(localDateNow) &&
               dayjs(airedAt).isSameOrBefore(dayjs(endDateThisWeek))
           : false;
       })
@@ -375,7 +374,7 @@ export class AnimeExplorationService {
     );
 
     animeWithSchedule.forEach((anime) => {
-      const dateTime = dayjs(anime.schedule.dateTime);
+      const dateTime = dayjs(anime.schedule.dateTime).tz(data.time_zone);
       const date = dateTime.date();
       const hour = dateTime.hour();
       const minute = dateTime.minute();
@@ -391,7 +390,7 @@ export class AnimeExplorationService {
 
       const timeline = dailyTimelineDate[date].timelines.find((timeline) => {
         if (timeline.dateTime === '') return false;
-        const dateTimeline = dayjs(timeline.dateTime);
+        const dateTimeline = dayjs(timeline.dateTime).tz(data.time_zone);
         const hourTimeline = dateTimeline.hour();
         const minuteTimeline = dateTimeline.minute();
         if (hourTimeline === hour && minuteTimeline === minute) return true;
