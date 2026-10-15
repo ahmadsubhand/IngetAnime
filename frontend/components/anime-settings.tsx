@@ -614,7 +614,11 @@ function PlatformSettings({
     },
     onError: (error) => {
       if (axios.isAxiosError(error) && error.response?.data) {
-        if (error.status === HttpStatusCode.BadRequest) {
+        if (error.status === HttpStatusCode.BadRequest && (error.response.data.message as string).includes('match')) {
+          form.setError('link', {
+            message: 'Link tidak sesuai dengan platform',
+          });
+        } else if (error.status === HttpStatusCode.BadRequest) {
           const zodErrors = error.response.data as ApiValidationError;
           zodErrors.error.forEach((issue) => {
             const field = issue.path[0] as keyof CreateOrUpdateAnimePlatform;

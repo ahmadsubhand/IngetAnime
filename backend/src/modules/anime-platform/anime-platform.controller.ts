@@ -134,6 +134,7 @@ export class AnimePlatformController {
         name: Platform['name'];
       };
       link: {
+        id: Link['id'];
         url: Link['url'];
       };
     }>

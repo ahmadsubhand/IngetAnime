@@ -68,6 +68,15 @@ export class AnimePlatformService {
     return linkDatabase;
   }
 
+  async deleteAnimePlatformLink(linkId: number) {
+    const linkHasAnotherPlatform = await this.prisma.animePlatform.count({
+      where: { linkId },
+    });
+    if (!linkHasAnotherPlatform) {
+      await this.prisma.link.delete({ where: { id: linkId } });
+    }
+  }
+
   private animePlatformInclude = {
     anime: true,
     platform: true,
@@ -298,6 +307,7 @@ export class AnimePlatformService {
       name: Platform['name'];
     };
     link: {
+      id: Link['id'];
       url: Link['url'];
     };
   }> {
@@ -315,10 +325,15 @@ export class AnimePlatformService {
             select: { name: true },
           },
           link: {
-            select: { url: true },
+            select: {
+              id: true,
+              url: true,
+            },
           },
         },
       });
+
+      await this.deleteAnimePlatformLink(animePlatform.link.id);
 
       return animePlatform;
     } catch (error) {
