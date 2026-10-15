@@ -6,11 +6,12 @@ import {
   Check,
   CloudDownload,
   Settings,
+  Trash,
   X,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { Dialog, DialogClose, DialogContent } from './ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { AccessType, AnimeStatus } from '../enums';
 import Image from 'next/image';
 import { Field, FieldGroup, FieldLabel } from './ui/field';
@@ -91,6 +92,8 @@ export default function AnimeSettings({
     useState(false);
   const [nextPlatformId, setNextPlatformId] = useState<number | null>(null);
 
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   // NOT CLEAR YET
   useEffect(() => {
     function handleDialogState() {
@@ -145,6 +148,7 @@ export default function AnimeSettings({
                 selectedPlatformId={effectiveSelectedPlatformId}
                 setSelectedPlatformId={setSelectedPlatformId}
                 setNextPlatformId={setNextPlatformId}
+                setIsDeleteDialogOpen={setIsDeleteDialogOpen}
 
                 // Form Navigation
                 setOnPlatformForm={setOnPlatformForm}
@@ -182,6 +186,17 @@ export default function AnimeSettings({
         setIsOpen={setDialogChangePlatformOpen}
         onClick={() => setSelectedPlatformId(nextPlatformId)}
       />
+
+      {effectiveSelectedPlatformId && (
+        <PlatformDelete 
+          animeId={anime.id}
+          animeTitle={anime.title}
+          platformId={effectiveSelectedPlatformId}
+          platforms={platforms ?? []}
+          isOpen={isDeleteDialogOpen}
+          setIsOpen={setIsDeleteDialogOpen}
+        />
+      )}
     </>
   );
 }
@@ -517,6 +532,7 @@ function PlatformSettings({
   setSelectedPlatformId,
   setDialogChangePlatformOpen,
   setNextPlatformId,
+  setIsDeleteDialogOpen,
 }: {
   anime: Anime;
   animePlatform?: AnimePlatform;
@@ -527,6 +543,7 @@ function PlatformSettings({
   setSelectedPlatformId: Dispatch<SetStateAction<number | null>>;
   setDialogChangePlatformOpen: Dispatch<SetStateAction<boolean>>;
   setNextPlatformId: Dispatch<SetStateAction<number | null>>;
+  setIsDeleteDialogOpen: Dispatch<SetStateAction<boolean>>;
 }) {
   const isMobile = useIsMobile();
 
@@ -837,22 +854,124 @@ function PlatformSettings({
       </div>
 
       <div className="flex justify-between items-center mt-1 sm:mt-0">
-        <DialogClose
-          render={
-            <Button variant={'red'} disabled={isDisable}>
-              <X /> Batal
-            </Button>
-          }
-        />
-        <Button type="submit" disabled={isDisable}>
-          Simpan
-          {isPending || isSubmitting ? (
-            <Spinner data-icon="inline-start" />
-          ) : (
-            <Check />
-          )}
+        <Button
+          variant={'red'}
+          disabled={isDisable || !animePlatform}
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          <Trash /> <span className="hidden sm:inline">Hapus</span>
         </Button>
-      </div>
+        <div className="flex gap-2 sm:gap-3">
+          <DialogClose
+            render={
+              <Button variant={'red'} disabled={isDisable}>
+                <X /> Batal
+              </Button>
+            }
+          />
+          <Button type="submit" disabled={isDisable}>
+            Simpan
+            {isPending || isSubmitting ? (
+              <Spinner data-icon="inline-start" />
+            ) : (
+              <Check />
+            )}
+          </Button>
+        </div>
+      </div>      
     </FormSettings>
+  );
+}
+
+function PlatformDelete({
+  animeId,
+  animeTitle,
+  platformId,
+  platforms,
+  isOpen,
+  setIsOpen,
+}: {
+  animeId: number;
+  animeTitle: string;
+  platformId: number;
+  platforms: Platform[];
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+}) {
+  const selectedPlatform = platforms.find(
+    (value) => value.id === platformId,
+  );
+  const platformName = selectedPlatform?.name || ''
+
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      await animePlatformService.delete(animeId, platformId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['anime'] });
+      setIsOpen(false);
+      toast.add({
+        type: 'success',
+        description: `Berhasil menghapus platform ${platformName} untuk anime ${animeTitle}`,
+      });
+    },
+    onError: (error) => {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        if (error.status === HttpStatusCode.NotFound) {
+          toast.add({
+            type: 'error',
+            description:
+              'Platform tidak ditemukan',
+          });
+        } else {
+          const expectedError = error.response.data as ApiExpectedError;
+          toast.add({
+            type: 'error',
+            description: expectedError.message,
+          });
+        }
+      } else {
+        toast.add({
+          type: 'error',
+          description:
+            'Gagal terhubung ke server. Periksa koneksi internet Anda dan coba lagi.',
+        });
+      }
+    },
+  });
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle className={'text-lg font-semibold'}>
+            Hapus platform dari anime?
+          </DialogTitle>
+          <DialogDescription>
+            Tindakan ini juga akan menghapus platform {platformName} dari pilihan pengguna pada list anime {animeTitle}.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose
+            disabled={isPending}
+            render={
+              <Button variant={'outline'}>
+                <X /> Batal
+              </Button>
+            }
+          />
+          <Button
+            variant={'red'}
+            disabled={isPending}
+            onClick={() => mutate()}
+            className={'flex-row-reverse sm:flex-row'}
+          >
+            Hapus
+            {isPending ? <Spinner data-icon="inline-start" /> : <Trash />}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

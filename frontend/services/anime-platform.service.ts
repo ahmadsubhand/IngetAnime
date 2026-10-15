@@ -1,8 +1,10 @@
 import api from '../lib/axios';
 import { ApiResponse } from '../types';
 import { CreateOrUpdateAnimePlatform } from '@/validator/anime-platform.validation';
-import { AnimePlatformWithRelation } from '@/types/anime-platform.model';
+import { AnimePlatform, AnimePlatformWithRelation, Link } from '@/types/anime-platform.model';
 import dayjs from 'dayjs';
+import { Anime } from '@/types/anime.model';
+import { Platform } from '@/types/platform.model';
 
 function getPrefix(animeId: number, platformId: number) {
   return `/anime/${animeId.toString()}/platform/${platformId.toString()}`;
@@ -31,6 +33,24 @@ export const animePlatformService = {
     );
     return data;
   },
+
+  async delete(animeId: number, platformId: number) {
+    const { data } = await api.delete<ApiResponse<{
+      id: AnimePlatform['id'];
+      anime: {
+        title: Anime['title'];
+      };
+      platform: {
+        name: Platform['name'];
+      };
+      link: {
+        url: Link['url'];
+      };
+    }>>(
+      `${getPrefix(animeId, platformId)}`,
+    );
+    return data;
+  }
 };
 
 export default animePlatformService;
