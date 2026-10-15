@@ -110,7 +110,7 @@ export function ListAnime({
         />
 
         {!isLoading && isAdmin && (
-          <div className="absolute -top-px -left-px">
+          <div className="absolute -top-px -right-px sm:-left-px">
             <AnimeSettings anime={anime} />
           </div>
         )}

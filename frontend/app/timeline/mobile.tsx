@@ -25,7 +25,7 @@ export default function TimelineMobile({
   const isSm = useIsMobile(500);
 
   return (
-    <div className="sm:hidden w-full flex-1 bg-background px-5 py-3">
+    <div className="sm:hidden w-full flex-1 bg-background px-2 sm:px-5 py-3">
       {!isLoading && dailyTimelines?.length ? (
         <Tabs
           className={'w-full flex items-center justify-center'}

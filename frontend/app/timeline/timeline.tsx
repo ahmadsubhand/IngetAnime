@@ -20,6 +20,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 dayjs.locale(locale_id);
 dayjs.extend(isSameOrBefore);
@@ -33,10 +34,11 @@ export default function TimelineDay({
 }) {
   const dateTime = dayjs(dailyTimeline.dateTime);
   const now = isDisplay ? dayjs().hour(10).minute(30) : dayjs();
-  const indexFirstPass = dailyTimeline.timelines.findIndex((timeline) => {
+  const indexFirstPass = (dailyTimeline.timelines.findIndex((timeline) => {
     const dateTime = dayjs(timeline.dateTime);
-    return dateTime.isSame(now, 'day') && dateTime.isSameOrBefore(now);
-  });
+    return dateTime.isSame(now, 'day') && dateTime.isAfter(now);
+  })) - 1;
+  const isSm = useIsMobile();
 
   return (
     <div className="w-full h-full flex flex-col gap-2 select-none">
@@ -46,15 +48,21 @@ export default function TimelineDay({
             className="flex flex-col gap-2"
             key={`item-${dayjs(timeline.dateTime).toISOString()}`}
           >
-            {indexFirstPass === -1 &&
+            {indexFirstPass < 0 &&
               index === 0 &&
               dateTime.isSame(now, 'day') && (
-                <TimelineTimeNow dateTimeNow={now} />
+                <TimelineTimeNow dateTimeNow={now} isSm={isSm} />
               )}
-            <TimelineTime timeline={timeline} dateTimeNow={now} isDisplay={isDisplay} />
-            {indexFirstPass !== -1 && index === indexFirstPass && (
+            <TimelineTime
+              timeline={timeline}
+              dateTimeNow={now}
+              isDisplay={isDisplay}
+              isSm={isSm}
+            />
+            {indexFirstPass > -1 && index === indexFirstPass && (
               <TimelineTimeNow
                 dateTimeNow={now}
+                isSm={isSm}
                 isLast={dailyTimeline.timelines.length - 1 === index}
               />
             )}
@@ -72,23 +80,25 @@ export default function TimelineDay({
 
 function TimelineTimeNow({
   dateTimeNow,
+  isSm,
   isLast = false,
 }: {
   dateTimeNow: Dayjs;
+  isSm: boolean;
   isLast?: boolean;
 }) {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-1 sm:gap-3">
       <div className="flex flex-col gap-2 items-center">
         <div
-          className={`flex w-6 h-6 items-center justify-center bg-primary rounded-full shrink-0`}
+          className={`flex w-4 sm:w-6 h-4 sm:h-6 items-center justify-center bg-primary rounded-full shrink-0`}
         >
-          <Clock size={14} className="text-primary-foreground" />
+          <Clock size={isSm ? 13 : 19} className="text-primary-foreground" />
         </div>
-        {!isLast && <div className={`w-1 h-5 bg-primary`} />}
+        {!isLast && <div className={`w-0.5 sm:w-1 h-5 bg-primary`} />}
       </div>
 
-      <p className="translate-y-0.5">
+      <p className="-translate-y-0.5 sm:translate-y-0.5">
         {`Waktu saat ini: ${dateTimeNow.format('HH:mm')}`}
       </p>
     </div>
@@ -98,10 +108,12 @@ function TimelineTimeNow({
 function TimelineTime({
   timeline,
   dateTimeNow,
+  isSm,
   isDisplay = false,
 }: {
   timeline: AnimeTimeline;
   dateTimeNow: Dayjs;
+  isSm: boolean;
   isDisplay?: boolean;
 }) {
   const dateTime = dayjs(timeline.dateTime);
@@ -109,20 +121,20 @@ function TimelineTime({
     dateTime.isSameOrBefore(dateTimeNow) && dateTime.isSame(dateTimeNow, 'day');
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-1 sm:gap-3">
       <div className="flex flex-col gap-2 items-center">
         <div
-          className={`flex w-6 h-6 items-center justify-center ${isPass ? 'bg-primary' : 'bg-app-gray'} rounded-full shrink-0`}
+          className={`flex w-4 sm:w-6 h-4 sm:h-6 items-center justify-center ${isPass ? 'bg-primary' : 'bg-app-gray'} rounded-full shrink-0`}
         >
-          <Circle size={14} className="text-primary-foreground" />
+          <Circle size={isSm ? 13 : 19} className="text-primary-foreground" />
         </div>
         <div
-          className={`w-1 h-full ${isPass ? 'bg-primary' : 'bg-app-gray'}`}
+          className={`w-0.5 sm:w-1 h-full ${isPass ? 'bg-primary' : 'bg-app-gray'}`}
         />
       </div>
 
       <div className="flex flex-col gap-2 w-full">
-        <p>{dateTime.format('HH:mm')}</p>
+        <p className='-translate-y-0.5 sm:translate-y-0'>{dateTime.format('HH:mm')}</p>
         {timeline.anime.map((anime) => (
           <TimelineAnime
             animeWithSchedule={anime}
@@ -151,7 +163,7 @@ function TimelineAnime({
   const { isLoading, isAdmin } = useAuth();
   return (
     <div className="w-full flex gap-3">
-      <div className="w-18 sm:w-20 lg:w-18 xl:w-20 h-25 sm:h-28 lg:h-28 xl:h-28 relative shrink-0">
+      <div className="w-25 lg:w-18 xl:w-20 h-33 lg:h-28 xl:h-28 relative shrink-0">
         <Image
           src={animeWithSchedule.picture}
           alt={animeWithSchedule.title}
