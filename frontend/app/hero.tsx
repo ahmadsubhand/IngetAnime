@@ -11,7 +11,7 @@ export default function HeroHome() {
       id="hero-section"
       className="flex justify-center lg:justify-between gap-10"
     >
-      <div className="flex flex-col justify-between items-center md:items-start flex-1 max-w-130 lg:max-w-fit gap-10">
+      <div className="flex flex-col justify-between items-center md:items-start flex-1 max-w-130 lg:max-w-fit gap-8">
         <div className="flex flex-col gap-8 items-center md:items-start">
           <PlatformList />
 

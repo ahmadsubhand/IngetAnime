@@ -7,10 +7,8 @@ import { AnimeDailyTimeline } from '@/types/anime-exploration.model';
 
 import dayjs from 'dayjs';
 import locale_id from 'dayjs/locale/id';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 dayjs.locale(locale_id);
-dayjs.extend(isSameOrBefore);
 
 export default function TimelineDekstop({
   dailyTimelines,

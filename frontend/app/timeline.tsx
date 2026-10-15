@@ -29,8 +29,8 @@ export default function TimelineHome() {
         </Link>
       </div>
 
-      <div className="w-80 h-118 overflow-hidden hidden lg:flex items-center justify-center">
-        <div className="relative w-140 xl:w-160 h-236 shrink-0">
+      <div className="w-80 h-115 overflow-hidden hidden lg:flex items-center justify-center">
+        <div className="relative w-140 xl:w-155 h-236 shrink-0">
           <Image
             src={'/rikka.jpg'}
             alt="Rikka Takanashi"

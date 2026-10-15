@@ -49,8 +49,8 @@ function HeaderContent({ className = '' }: { className?: string }) {
   }, [qFromParam, form]);
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className={className}>
-      <header className="pr-4 py-4 flex justify-between">
+    <form onSubmit={form.handleSubmit(onSubmit)} className={`pr-4 py-4 bg-background z-2 ${className}`}>
+      <header className="flex justify-between items-center">
         <SidebarTrigger className={'md:hidden'} />
         <AppLogo className="pl-2" />
         <AnimeSearch
@@ -78,7 +78,7 @@ function HeaderContent({ className = '' }: { className?: string }) {
 function HeaderLoding({ className = '' }: { className?: string }) {
   return (
     <header
-      className={`pr-4 py-4 flex justify-between items-center gap-4 ${className}`}
+      className={`flex justify-between items-center pr-4 py-4 bg-background z-2 gap-4 ${className}`}
     >
       {/* <SidebarTrigger className={'md:hidden'} disabled /> */}
       <Skeleton className="md:hidden w-9 h-9 ml-2" />

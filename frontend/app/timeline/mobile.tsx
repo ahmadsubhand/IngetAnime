@@ -8,11 +8,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { AnimeDailyTimeline } from '@/types/anime-exploration.model';
 import dayjs from 'dayjs';
 import locale_id from 'dayjs/locale/id';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { useState } from 'react';
 
 dayjs.locale(locale_id);
-dayjs.extend(isSameOrBefore);
 
 export default function TimelineMobile({
   dailyTimelines,
@@ -25,7 +23,7 @@ export default function TimelineMobile({
   const isSm = useIsMobile(500);
 
   return (
-    <div className="sm:hidden w-full flex-1 bg-background px-2 sm:px-5 py-3">
+    <div className="sm:hidden w-full flex-1 bg-background px-0 sm:px-5 py-3">
       {!isLoading && dailyTimelines?.length ? (
         <Tabs
           className={'w-full flex items-center justify-center'}
@@ -36,7 +34,7 @@ export default function TimelineMobile({
             <div className={isSm ? '' : 'flex items-center justify-center'}>
               <TabsList
                 variant={'button'}
-                className={'py-0 px-0 overflow-hidden'}
+                className={'py-0 px-4 sm:px-0 overflow-hidden'}
               >
                 {dailyTimelines?.map((dailyTimeline) => {
                   const dateTime = dayjs(dailyTimeline.dateTime);
@@ -68,7 +66,7 @@ export default function TimelineMobile({
               <TabsContent
                 value={dateTime.format('YYYY-MM-DD')}
                 key={`content-${dateTime.toISOString()}`}
-                className={'py-5 w-full'}
+                className={'py-5 pl-2 pr-4 sm:pr-0  w-full'}
               >
                 <TimelineDay dailyTimeline={dailyTimeline} />
               </TabsContent>

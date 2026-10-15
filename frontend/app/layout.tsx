@@ -7,7 +7,6 @@ import { AuthProvider } from '../providers/auth-provider';
 import { Toaster } from '../components/ui/toast';
 import { TooltipProvider } from '../components/ui/tooltip';
 import { QueryProvider } from '../providers/query-provider';
-import AppHeader from '../components/app-header';
 import { PlatformProvider } from '@/providers/platform-provider';
 import Head from 'next/head';
 
@@ -50,17 +49,14 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           sizes="<generated>"
         />
       </Head>
-      <body className="min-h-full flex flex-col">
+      <body>
         <QueryProvider>
           <AuthProvider>
             <PlatformProvider>
               <SidebarProvider defaultOpen={false}>
                 <TooltipProvider>
-                  <div className="w-full flex flex-col">
-                    <AppHeader />
-                    <main className="w-full h-full">{children}</main>
-                    <Toaster />
-                  </div>
+                  <Toaster />
+                  {children}
                 </TooltipProvider>
               </SidebarProvider>
             </PlatformProvider>

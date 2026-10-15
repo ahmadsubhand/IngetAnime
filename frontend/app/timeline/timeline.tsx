@@ -10,7 +10,6 @@ import {
 } from '@/types/anime-exploration.model';
 import dayjs, { Dayjs } from 'dayjs';
 import locale_id from 'dayjs/locale/id';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { Circle, Clock } from 'lucide-react';
@@ -25,7 +24,6 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 
 dayjs.locale(locale_id);
-dayjs.extend(isSameOrBefore);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -37,11 +35,14 @@ export default function TimelineDay({
   isDisplay?: boolean;
 }) {
   const dateTime = dayjs(dailyTimeline.dateTime);
-  const now = isDisplay ? dayjs().tz('Asia/Jakarta').hour(10).minute(30) : dayjs();
-  const indexFirstPass = (dailyTimeline.timelines.findIndex((timeline) => {
-    const dateTime = dayjs(timeline.dateTime);
-    return dateTime.isSame(now, 'day') && dateTime.isAfter(now);
-  })) - 1;
+  const now = isDisplay
+    ? dayjs().tz('Asia/Jakarta').hour(10).minute(30)
+    : dayjs();
+  const indexFirstPass =
+    dailyTimeline.timelines.findIndex((timeline) => {
+      const dateTime = dayjs(timeline.dateTime);
+      return dateTime.isSame(now, 'day') && dateTime.isAfter(now);
+    }) - 1;
   const isSm = useIsMobile();
 
   return (
@@ -122,7 +123,8 @@ function TimelineTime({
 }) {
   const dateTime = dayjs(timeline.dateTime);
   const isPass =
-    dateTime.isSameOrBefore(dateTimeNow) && dateTime.isSame(dateTimeNow, 'day');
+    !dateTime.isAfter(dateTimeNow) && dateTime.isSame(dateTimeNow, 'day');
+  // !isAfter same as isSameOrBefore
 
   return (
     <div className="flex gap-1 sm:gap-3">
@@ -138,7 +140,9 @@ function TimelineTime({
       </div>
 
       <div className="flex flex-col gap-2 w-full">
-        <p className='-translate-y-0.5 sm:translate-y-0'>{dateTime.format('HH:mm')}</p>
+        <p className="-translate-y-0.5 sm:translate-y-0">
+          {dateTime.format('HH:mm')}
+        </p>
         {timeline.anime.map((anime) => (
           <TimelineAnime
             animeWithSchedule={anime}
@@ -161,10 +165,12 @@ function TimelineAnime({
   dateTimeNow: Dayjs;
   isDisplay?: boolean;
 }) {
-  const isPass = dayjs(animeWithSchedule.schedule.dateTime).isSameOrBefore(
+  // !isAfter same as isSameOrBefore
+  const isPass = !dayjs(animeWithSchedule.schedule.dateTime).isAfter(
     dateTimeNow,
   );
   const { isLoading, isAdmin } = useAuth();
+
   return (
     <div className="w-full flex gap-3">
       <div className="w-25 lg:w-18 xl:w-20 h-33 lg:h-28 xl:h-28 relative shrink-0">
@@ -195,7 +201,10 @@ function TimelineAnime({
           <TooltipContent>{animeWithSchedule.title}</TooltipContent>
         </Tooltip>
         <ScrollArea>
-          <AnimePlatform platforms={animeWithSchedule.animePlatforms} isDisplay={isDisplay} />
+          <AnimePlatform
+            platforms={animeWithSchedule.animePlatforms}
+            isDisplay={isDisplay}
+          />
         </ScrollArea>
         <div className="flex justify-between items-end gap-3 text-xs sm:text-sm lg:text-xs xl:text-sm">
           {`E${animeWithSchedule.schedule.episodeNumber} ${isPass ? 'sudah' : 'belum'} tayang`}

@@ -10,13 +10,11 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 
 import locale_id from 'dayjs/locale/id';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import TimelineMobile from '@/app/timeline/mobile';
 import TimelineDekstop from '@/app/timeline/dekstop';
 import Image from 'next/image';
 
 dayjs.locale(locale_id);
-dayjs.extend(isSameOrBefore);
 
 export default function TimelinePage() {
   const [myListOnly, setMyListOnly] = useState(false);

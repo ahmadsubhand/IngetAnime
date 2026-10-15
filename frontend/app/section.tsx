@@ -1,4 +1,3 @@
-import AppHeader from '@/components/app-header';
 import { ReactNode } from 'react';
 
 export default function HomeSection({
@@ -12,7 +11,7 @@ export default function HomeSection({
 }) {
   return (
     <section className={`min-h-svh w-full flex flex-col`} id={id}>
-      <AppHeader className="opacity-0" />
+      <div className="w-full h-17 bg-white" />
       <div className={`flex-1 py-15 md:py-25 px-5 md:px-19 ${className}`}>
         {children}
       </div>

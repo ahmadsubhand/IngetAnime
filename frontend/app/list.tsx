@@ -457,7 +457,7 @@ export function TimelineList({ className = '' }: { className?: string }) {
   return (
     <div
       inert
-      className={`max-h-100 md:h-fit relative overflow-hidden p-1 pointer-events-none ${className}`}
+      className={`max-h-90 md:h-fit relative overflow-hidden p-1 pointer-events-none ${className}`}
     >
       <Card className="p-5">
         <div className="flex flex-col gap-1 w-full text-center mb-2 select-none">

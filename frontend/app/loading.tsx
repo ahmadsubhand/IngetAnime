@@ -1,11 +1,13 @@
+import AppHeader from '@/components/app-header';
 import AppTitle from '@/components/app-title';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function HomeLoading() {
   return (
-    <div className="w-full h-full flex">
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="w-full flex flex-col justify-center gap-5 sm:px-10 px-5 py-3 md:w-105 xl:mr-30">
+    <div className='w-full min-h-svh flex flex-col'>
+      <AppHeader className='sticky top-0 left-0' />
+      <main className="flex-1 flex items-center justify-center">
+        <div className="w-full flex flex-col justify-center gap-5 sm:px-10 px-5 py-3 md:w-105">
           <AppTitle
             title="Memuat Halaman"
             subtitle={
@@ -18,7 +20,7 @@ export default function HomeLoading() {
             <Spinner className="size-8" />
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
