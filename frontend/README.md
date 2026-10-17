@@ -17,32 +17,30 @@
 </p>
 
 <p align="center">
-  <img src="../assets/typescript.svg" alt="TypeScript" height="20" />
+  <img src="../assets/icon/typescript.svg" alt="TypeScript" height="20" />
   &nbsp;&nbsp;
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="../assets/nextjs-dark.svg" />
-    <source media="(prefers-color-scheme: light)" srcset="../assets/nextjs.svg" />
-    <img src="../assets/nextjs.svg" alt="Next.js" height="20" />
+    <source media="(prefers-color-scheme: dark)" srcset="../assets/icon/nextjs-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="../assets/icon/nextjs.svg" />
+    <img src="../assets/icon/nextjs.svg" alt="Next.js" height="20" />
   </picture>
   &nbsp;&nbsp;
-  <img src="../assets/tailwindcss.svg" alt="Tailwind CSS" height="20" />
+  <img src="../assets/icon/tailwindcss.svg" alt="Tailwind CSS" height="20" />
   &nbsp;&nbsp;
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="../assets/shadcn-dark.svg" />
-    <source media="(prefers-color-scheme: light)" srcset="../assets/shadcn.svg" />
-    <img src="../assets/shadcn.svg" alt="shadcn/ui" height="20" />
+    <source media="(prefers-color-scheme: dark)" srcset="../assets/icon/shadcn-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="../assets/icon/shadcn.svg" />
+    <img src="../assets/icon/shadcn.svg" alt="shadcn/ui" height="20" />
   </picture>
   &nbsp;&nbsp;
-  <img src="../assets/react-query.svg" alt="TanStack React Query" height="20" />
+  <img src="../assets/icon/react-query.svg" alt="TanStack React Query" height="20" />
   &nbsp;&nbsp;
-  <img src="../assets/react-hook-form.svg" alt="React Hook Form" height="20" />
+  <img src="../assets/icon/react-hook-form.svg" alt="React Hook Form" height="20" />
   &nbsp;&nbsp;
-  <img src="../assets/axios.svg" alt="Axios" height="20" />
+  <img src="../assets/icon/axios.svg" alt="Axios" height="20" />
 </p>
 
 The frontend of **IngetAnime** is a web application built with Next.js, React, and TypeScript. It provides the user interface for discovering anime, exploring rankings and schedules, managing personal watchlists, and viewing available streaming platforms. It uses Tailwind CSS and shadcn/ui for styling, TanStack React Query for server-state management, React Hook Form for form handling, and Axios for API communication.
-
----
 
 ## 📋 Prerequisites
 
@@ -51,8 +49,6 @@ Make sure you have the following installed:
 - **Node.js** — a version compatible with the project.
 - **npm** — for dependency management.
 - **Git** — for cloning the repository.
-
----
 
 ## 🚀 Installation
 
@@ -108,8 +104,6 @@ NODE_ENV=development
 
 **Important:** Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Do not store secrets or sensitive credentials in them.
 
----
-
 ## ▶️ Running the Application
 
 Start the development server:
@@ -133,8 +127,6 @@ npm run start
 ```
 
 > Make sure the backend application is running and `NEXT_PUBLIC_API_BASE_URL` points to the correct backend URL.
-
----
 
 ## 📁 Project Structure
 
@@ -185,15 +177,11 @@ frontend/
 - Configure environment variables in `.env` using `.env.example` as a reference.
 - `app/` follows the Next.js App Router convention, while `services/` contains API-related logic.
 
----
-
 ## 🔒 Security Notes
 
 - Never commit `.env` files containing local or sensitive configuration.
 - Do not put secrets, private API keys, or credentials in `NEXT_PUBLIC_` variables.
 - Use HTTPS for the backend URL in production.
-
----
 
 ## 📚 Related Documentation
 

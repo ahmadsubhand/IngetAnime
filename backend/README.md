@@ -17,26 +17,24 @@
 </p>
 
 <p align="center">
-  <img src="../assets/typescript.svg" alt="TypeScript" height="20" />
+  <img src="../assets/icon/typescript.svg" alt="TypeScript" height="20" />
   &nbsp;&nbsp;
-  <img src="../assets/nestjs.svg" alt="NestJS" height="20" />
+  <img src="../assets/icon/nestjs.svg" alt="NestJS" height="20" />
   &nbsp;&nbsp;
-  <img src="../assets/postgresql.svg" alt="PostgreSQL" height="20" />
+  <img src="../assets/icon/postgresql.svg" alt="PostgreSQL" height="20" />
   &nbsp;&nbsp;
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="../assets/prisma-dark.svg" />
-    <source media="(prefers-color-scheme: light)" srcset="../assets/prisma.svg" />
-    <img src="../assets/prisma.svg" alt="Prisma" height="20" />
+    <source media="(prefers-color-scheme: dark)" srcset="../assets/icon/prisma-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="../assets/icon/prisma.svg" />
+    <img src="../assets/icon/prisma.svg" alt="Prisma" height="20" />
   </picture>
   &nbsp;&nbsp;
-  <img src="../assets/google.png" alt="Google" height="20" />
+  <img src="../assets/icon/google.png" alt="Google" height="20" />
   &nbsp;&nbsp;
-  <img src="../assets/mal.png" alt="MyAnimeList" height="20" />
+  <img src="../assets/icon/mal.png" alt="MyAnimeList" height="20" />
 </p>
 
 The backend of **IngetAnime** is a REST API built with NestJS, TypeScript, PostgreSQL, and Prisma ORM. It handles authentication, anime data, user watchlists, streaming platform information, and integration with third-party services such as Google OAuth and MyAnimeList.
-
----
 
 ## 🛠️ Prerequisites
 
@@ -46,8 +44,6 @@ Make sure the following tools and services are available before getting started:
 - **npm** — for dependency management.
 - **PostgreSQL** — for the application database.
 - **Git** — for cloning the repository.
-
----
 
 ## 🚀 Installation & Setup
 
@@ -291,8 +287,6 @@ npm run start:prod
 
 The production command assumes the project's npm scripts build the application into the expected output directory.
 
----
-
 ## 📁 Project Structure
 
 ```text
@@ -341,8 +335,6 @@ backend/
 - `dist/`,  `node_modules/`, `src/generated/prisma/`, and `uploads/` are generated locally and should not be committed to version control.
 - Database schema changes are managed through Prisma migrations.
 
----
-
 ## 🔐 Security Notes
 
 - Never commit `.env` or expose credentials, API secrets, JWT secrets, or Gmail App Passwords.
@@ -351,8 +343,6 @@ backend/
 - Configure OAuth redirect URIs to match the application's actual callback URLs.
 - Use production-specific environment variables and database credentials when deploying the application.
 - Run production migrations using `npx prisma migrate deploy` rather than using development migration commands.
-
----
 
 ## 📚 Related Documentation
 
